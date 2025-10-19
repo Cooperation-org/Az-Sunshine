@@ -1,0 +1,12 @@
+Django>=4.2
+djangorestframework
+psycopg2-binary
+python-dotenv
+dj-database-url
+playwright
+celery[redis]
+redis
+requests
+beautifulsoup4
+django-cors-headers
+gunicorn==23.0.0

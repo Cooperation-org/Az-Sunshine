@@ -1,0 +1,295 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{% block title %}Arizona Sunshine{% endblock %}</title>
+
+    <!-- favicon -->
+    <link rel="icon" href="{% static 'transparency/favicon.svg' %}" type="image/svg+xml" />
+
+    <!-- Google font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="icon" href="{% static 'img/favicon.png' %}">
+
+
+    <style>
+        :root {
+            --bg: #f7f9fc;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --accent: #004aad;
+            --accent-600: #003680;
+            --text: #0f172a;
+            --glass: rgba(255, 255, 255, 0.6);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0b1220;
+            --card: #081126;
+            --muted: #94a3b8;
+            --accent: #0ea5e9;
+            --text: #e6eef9;
+            --glass: rgba(255, 255, 255, 0.04);
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            background: linear-gradient(180deg, var(--bg), #ffffff);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 36px auto;
+            padding: 28px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand svg {
+            width: 44px;
+            height: 44px;
+        }
+
+        .brand h1 {
+            font-size: 18px;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .brand p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(3, 30, 66, 0.08);
+            transition: transform .12s ease, box-shadow .12s ease;
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(3, 30, 66, 0.12);
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--muted);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        main.hero {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 36px;
+            background: var(--card);
+            border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(2, 6, 23, 0.04);
+        }
+
+        .hero-left {
+            max-width: 62%;
+        }
+
+        .eyebrow {
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .headline {
+            font-size: 28px;
+            margin: 0 0 12px 0;
+            line-height: 1.05;
+            font-weight: 700;
+        }
+
+        .tagline {
+            color: var(--muted);
+            margin-bottom: 22px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .hero-right {
+            width: 36%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-small {
+            width: 100%;
+            padding: 18px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), var(--glass));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+            text-align: left;
+            color: var(--muted);
+        }
+
+        footer {
+            margin-top: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+   
+        h2 {
+            color: var(--text);
+        }
+
+
+        /* responsive */
+        @media (max-width:900px) {
+            main.hero {
+                flex-direction: column;
+            }
+
+            .hero-left {
+                max-width: 100%;
+            }
+
+            .hero-right {
+                width: 100%;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+            }
+        }
+
+        /* small utility */
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+
+    {% block head_extra %}{% endblock %}
+</head>
+
+<body>
+    <div id="page" data-theme="light">
+        <div class="wrap">
+            <header>
+                <a class="brand" href="/">
+                    <!-- inline: reference static logo -->
+                    <img src="{% static 'transparency/favicon.svg' %}" alt="Arizona Sunshine" style="height:44px" />
+                    <div>
+                        <h1>Arizona Sunshine</h1>
+                        <p>Open Data for a Transparent Democracy</p>
+                    </div>
+                </a>
+
+                <div class="controls">
+                    <a href="/api/" class="btn">Explore API</a>
+                    <a href="/admin/" class="btn secondary">Admin</a>
+
+                    <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+                </div>
+            </header>
+
+            {% block content %}{% endblock %}
+
+            <footer>
+                <div class="muted">© 2025 Arizona Sunshine</div>
+                <div style="display:flex; gap:18px; align-items:center;">
+                    <a class="muted" href="/docs/">Docs</a>
+                    <a class="muted" href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+                    <a class="muted" href="/contact/">Contact</a>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const page = document.getElementById('page');
+            const btn = document.getElementById('themeToggle');
+            const stored = localStorage.getItem('az_theme');
+            const doc = document.documentElement;
+            function applyTheme(t) {
+                page.setAttribute('data-theme', t);
+                btn.textContent = (t === 'dark') ? '☀️' : '🌙';
+                localStorage.setItem('az_theme', t);
+            }
+            applyTheme(stored || 'light');
+            btn.addEventListener('click', () => {
+                applyTheme(page.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+            });
+        })();
+    </script>
+
+    {% block body_extra %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Arizona Sunshine — Home{% endblock %}
+
+{% block content %}
+<main class="hero" role="main" aria-labelledby="hero-heading">
+  <div class="hero-left">
+    <div class="eyebrow">Transparency Initiative</div>
+    <h2 id="hero-heading" class="headline">Transparency made simple — public data you can trust.</h2>
+    <p class="tagline">Explore independent expenditure data, candidate filings, donors, and more. Designed for researchers, journalists, and citizens.</p>
+
+    <div class="btn-row" role="navigation" aria-label="Primary actions">
+      <a href="/api/" class="btn" title="View Public API">View Public API</a>
+      <a href="/admin/" class="btn" title="Open Admin Dashboard" style="background:transparent;color:var(--text);border:1px solid rgba(0,0,0,0.06)">Admin Dashboard</a>
+    </div>
+
+    <div style="margin-top:20px;color:var(--muted)">
+      <strong>Quick links:</strong>
+      <span style="margin-left:8px"><a class="link" href="/docs/">API docs</a></span>
+      <span style="margin-left:12px"><a class="link" href="/contact/">Contact</a></span>
+    </div>
+  </div>
+
+  <aside class="hero-right" aria-hidden="true">
+    <div class="card-small">
+      <div style="font-weight:700; margin-bottom:8px">Live API Endpoints</div>
+      <div style="font-size:13px; line-height:1.4; color:var(--muted)">
+        <div>/api/candidates/ — candidates</div>
+        <div>/api/expenditures/ — independent expenditures</div>
+        <div>/api/donors/ — donor entities</div>
+        <div style="margin-top:10px"><small class="muted">Tip: use ?limit=20 for pagination</small></div>
+      </div>
+    </div>
+  </aside>
+</main>
+{% endblock %}

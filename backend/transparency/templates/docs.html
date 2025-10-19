@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}API Docs — Arizona Sunshine{% endblock %}
+{% block content %}
+<main style="padding:28px; background:var(--card); border-radius:12px;">
+  <h2 style="margin-top:0">API Documentation (starter)</h2>
+  <p class="muted">This page gives a quick overview of the available endpoints. Full OpenAPI docs can be added later.</p>
+
+  <section style="margin-top:18px">
+    <h3>Endpoints</h3>
+    <ul>
+      <li><strong>/api/candidates/</strong> — GET list, POST create (admin)</li>
+      <li><strong>/api/expenditures/</strong> — GET list of IE records</li>
+      <li><strong>/api/donors/</strong> — Donor entities</li>
+      <li><strong>/api/contributions/</strong> — Contribution records</li>
+    </ul>
+  </section>
+
+  <section style="margin-top:22px">
+    <h3>Example — list candidates</h3>
+    <pre style="background:#0b1220;color:#dff2ff;padding:14px;border-radius:8px;color:var(--muted)">{ "GET": "/api/candidates/?limit=20" }</pre>
+    <p class="muted">For more advanced docs, we can add OpenAPI / Swagger or Redoc.</p>
+  </section>
+</main>
+{% endblock %}

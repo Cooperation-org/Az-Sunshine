@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Contact — Arizona Sunshine{% endblock %}
+{% block content %}
+<main style="padding:24px; background:var(--card); border-radius:12px;">
+  <h2>Contact</h2>
+  <p class="muted">Questions, data requests or partnership inquiries — we'd love to hear from you.</p>
+
+  <div style="display:flex; gap:18px; flex-wrap:wrap; margin-top:18px;">
+    <div style="flex:1; min-width:260px;">
+      <h4>Email</h4>
+      <p><a class="link" href="mailto:arizonasunshine@gmail.com">arizonasunshine@gmail.com</a></p>
+
+      <h4 style="margin-top:18px">Office</h4>
+      <p class="muted">Arizona, Tuscon. Broadway Highway47890</p>
+    </div>
+
+    <div style="flex:1; min-width:260px;">
+      <h4>Report an Issue / Data</h4>
+      <p class="muted">If you have a dataset (like AZ SOS export) or want to report an ad, please email us with attachments.</p>
+      <!-- optional form stub -->
+      <form method="post" action="#" style="margin-top:12px;">
+        <input name="name" placeholder="Your name" style="padding:10px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);width:100%;margin-bottom:8px;"/>
+        <input name="email" placeholder="Your email" style="padding:10px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);width:100%;margin-bottom:8px;"/>
+        <textarea name="message" rows="4" placeholder="Message" style="padding:10px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);width:100%;"></textarea>
+        <div style="margin-top:10px"><button class="btn" type="submit">Send (stub)</button></div>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock %}
