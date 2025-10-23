@@ -1,4 +1,3 @@
-// frontend/src/pages/Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import { Bar, Pie } from "react-chartjs-2";
 import {
@@ -11,7 +10,6 @@ import {
   Legend,
 } from "chart.js";
 import {
-  getCandidates,
   getExpenditures,
   getTopCommittees,
   getTopDonors,
@@ -37,7 +35,7 @@ export default function Dashboard() {
           getTopDonors(),
           getExpenditures(),
         ]);
-        setMetrics(metricData);
+        setMetrics(metricData || {});
         setTopCommittees(committees.results || committees || []);
         setTopDonors(donors.results || donors || []);
         setExpenditures(exp.results || exp || []);
@@ -149,28 +147,7 @@ export default function Dashboard() {
               Top 10 IE Committees by Spending
             </h2>
             <div className="h-[400px]">
-              <Bar
-                data={committeeData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  scales: {
-                    x: {
-                      ticks: { color: "#374151" },
-                      grid: { display: false },
-                    },
-                    y: {
-                      beginAtZero: true,
-                      ticks: { color: "#374151" },
-                      grid: { color: "#E5E7EB" },
-                    },
-                  },
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: { mode: "index", intersect: false },
-                  },
-                }}
-              />
+              <Bar data={committeeData} options={{ responsive: true, maintainAspectRatio: false }} />
             </div>
           </div>
 
@@ -179,28 +156,7 @@ export default function Dashboard() {
               Top 10 Donors by Total Contribution
             </h2>
             <div className="h-[400px]">
-              <Bar
-                data={donorData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  scales: {
-                    x: {
-                      ticks: { color: "#374151" },
-                      grid: { display: false },
-                    },
-                    y: {
-                      beginAtZero: true,
-                      ticks: { color: "#374151" },
-                      grid: { color: "#E5E7EB" },
-                    },
-                  },
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: { mode: "index", intersect: false },
-                  },
-                }}
-              />
+              <Bar data={donorData} options={{ responsive: true, maintainAspectRatio: false }} />
             </div>
           </div>
         </section>

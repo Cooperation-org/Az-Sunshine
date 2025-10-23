@@ -53,35 +53,22 @@ export async function getTopCommittees() {
 
 export async function getSupportOpposeByCandidate(params = {}) {
   const res = await api.get("expenditures/", { params });
-  // frontend aggregation: sum by support_oppose
   const rows = res.data.results || res.data;
   const grouped = {};
-  rows.forEach(r => {
+  rows.forEach((r) => {
     const type = r.support_oppose || "Unknown";
     grouped[type] = (grouped[type] || 0) + Number(r.amount || 0);
   });
-  return Object.entries(grouped).map(([support_oppose, total]) => ({ support_oppose, total }));
+  return Object.entries(grouped).map(([support_oppose, total]) => ({
+    support_oppose,
+    total,
+  }));
 }
 
-// --- Metrics (since no /metrics/ endpoint exists, we'll compute them client-side) ---
+// --- Metrics (backend-provided) ---
 export async function getMetrics() {
-  const [candidates, expenditures] = await Promise.all([
-    getCandidates(),
-    getExpenditures(),
-  ]);
-
-  const totalExpenditures = expenditures.results
-    ? expenditures.results.reduce((sum, e) => sum + Number(e.amount || 0), 0)
-    : 0;
-
-  const numCandidates = candidates.length;
-  const numExpenditures = expenditures.results?.length || 0;
-
-  return {
-    total_expenditures: totalExpenditures,
-    num_candidates: numCandidates,
-    num_expenditures: numExpenditures,
-  };
+  const res = await api.get("metrics/");
+  return res.data;
 }
 
 export default api;

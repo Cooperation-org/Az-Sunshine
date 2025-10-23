@@ -1,6 +1,13 @@
 from django.db import models
 
 
+class Party(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class Race(models.Model):
     name = models.CharField(max_length=200)
     office = models.CharField(max_length=200, blank=True, null=True)
@@ -20,6 +27,8 @@ class Candidate(models.Model):
 
     name = models.CharField(max_length=255)
     race = models.ForeignKey(Race, on_delete=models.SET_NULL, null=True, blank=True, related_name="candidates")
+    party = models.ForeignKey(Party, on_delete=models.SET_NULL, null=True, blank=True, related_name="candidates")
+
     email = models.EmailField(blank=True, null=True)
     filing_date = models.DateField(blank=True, null=True)
     source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default='AZ_SOS')
@@ -66,7 +75,7 @@ class Expenditure(models.Model):
     purpose = models.TextField(blank=True, null=True)
     support_oppose = models.CharField(max_length=20, blank=True, null=True)
 
-    candidate_name = models.CharField(max_length=255, blank=True, null=True)  # (keep for reference)
+    candidate_name = models.CharField(max_length=255, blank=True, null=True)  # keep for reference
     raw = models.JSONField(blank=True, null=True)
     is_fake = models.BooleanField(default=False)
 
@@ -74,7 +83,6 @@ class Expenditure(models.Model):
 
     def __str__(self):
         return f"{self.ie_committee} -> {self.amount} on {self.date}"
-
 
 
 class Contribution(models.Model):
