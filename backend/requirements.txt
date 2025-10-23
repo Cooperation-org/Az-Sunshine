@@ -1,0 +1,17 @@
+# Backend dependencies
+Django==5.0.7
+djangorestframework==3.16.1
+django-cors-headers==4.4.0
+python-dotenv==1.0.1
+pandas==2.2.2
+plotly==5.24.1
+
+# Optional (for charts and analytics)
+matplotlib==3.9.2
+
+# For PostgreSQL (use if your DB is PostgreSQL)
+psycopg2-binary==2.9.9
+
+# Development tools
+black==24.8.0
+isort==5.13.2

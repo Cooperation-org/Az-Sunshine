@@ -1,0 +1,2001 @@
+id,name,entity_type,total_contribution,is_fake
+1,Gentry-Chen,Corporation,30824.59,True
+2,"Dickerson, Cohen and Wright",Non-Profit,41443.2,True
+3,Lee-Frazier,Corporation,39361.58,True
+4,"Miller, King and Shaw",Non-Profit,25480.88,True
+5,"Moore, Lewis and Arellano",Non-Profit,4956.07,True
+6,Ramirez-Fisher,Individual,22222.25,True
+7,Mack-Conrad,Individual,13452.23,True
+8,Levy-Pierce,Non-Profit,35660.86,True
+9,"Christian, Sanchez and Smith",Non-Profit,2693.9,True
+10,Shepard-Collins,Individual,3992.09,True
+11,Zimmerman and Sons,Non-Profit,5798.14,True
+12,"Carroll, Curtis and Hernandez",Corporation,12508.56,True
+13,"Robinson, Santos and Walter",Corporation,22145.11,True
+14,Garrett-Branch,Individual,26683.91,True
+15,"Mitchell, Garcia and Robinson",Corporation,42017.2,True
+16,Ward Ltd,Corporation,4546.16,True
+17,Jordan-Love,Individual,27137.67,True
+18,Snyder PLC,Corporation,23232.03,True
+19,Yu-Hammond,Corporation,8460.91,True
+20,"Carpenter, Martin and Parker",Non-Profit,18247.77,True
+21,"Golden, Jones and Wright",Individual,32058.89,True
+22,"Reed, Cooper and Lopez",Non-Profit,16297.74,True
+23,"Jenkins, Coleman and Roberts",Corporation,4910.14,True
+24,"Williams, Smith and Webster",Corporation,36824.6,True
+25,"Thomas, Sanchez and Johnson",Corporation,37625.4,True
+26,Hurley LLC,Non-Profit,33331.39,True
+27,"Tyler, Villanueva and Taylor",Individual,9950.15,True
+28,"Green, Baker and Evans",Corporation,44659.5,True
+29,Morales-Mendez,Corporation,21523.11,True
+30,Cox-Lopez,Individual,32219.97,True
+31,Sims-Gonzalez,Corporation,13830.49,True
+32,"Brown, Castaneda and Sloan",Non-Profit,17439.52,True
+33,Wright Group,Non-Profit,41636.25,True
+34,Adams-Bryant,Non-Profit,6191.66,True
+35,Williams Group,Non-Profit,19607.01,True
+36,"Duffy, Sanchez and Morrison",Individual,45174.71,True
+37,Gallagher Inc,Corporation,4556.98,True
+38,"Maldonado, Wise and Perkins",Individual,21404.25,True
+39,Jensen-Hughes,Non-Profit,25088.72,True
+40,"Jimenez, Shelton and Snyder",Non-Profit,15106.62,True
+41,"Wright, Smith and White",Corporation,43808.38,True
+42,"Rich, Tran and Lane",Individual,42570.13,True
+43,"Jones, Wilkerson and Horton",Individual,45549.7,True
+44,"Morgan, Baxter and Stephens",Corporation,18108.15,True
+45,"Henderson, Peck and Wilson",Individual,45647.59,True
+46,"Casey, Gonzalez and Warren",Corporation,8490.94,True
+47,Holloway-Williams,Individual,38935.16,True
+48,Howell Inc,Non-Profit,10557.07,True
+49,"Tran, Rios and Lewis",Corporation,37384.25,True
+50,"Petty, Kidd and Anderson",Individual,23584.84,True
+51,Phillips Ltd,Individual,32469.72,True
+52,Walters Group,Individual,34663.82,True
+53,"Adams, Gomez and Mayo",Individual,31210.7,True
+54,Webster LLC,Corporation,2174.93,True
+55,Stone-Martinez,Individual,33399.94,True
+56,"White, Johnson and Macdonald",Individual,49533.01,True
+57,Ramos Group,Non-Profit,46576.44,True
+58,"Ramirez, Spence and Patterson",Individual,42186.14,True
+59,"Luna, Scott and Gates",Corporation,22780.82,True
+60,George Inc,Corporation,27503.53,True
+61,"Ortiz, Contreras and Brown",Individual,46574.49,True
+62,Powers-Mcgrath,Non-Profit,10760.82,True
+63,Blankenship Inc,Individual,25481.18,True
+64,Richardson-Curtis,Individual,13481.5,True
+65,Adams Group,Non-Profit,38257.46,True
+66,Johnson-Brown,Corporation,13517.92,True
+67,Evans-Gonzalez,Individual,9364.53,True
+68,Taylor PLC,Non-Profit,35055.01,True
+69,"Mcdowell, Allen and Thomas",Corporation,37933.41,True
+70,"Davies, Montgomery and Myers",Non-Profit,9710.88,True
+71,Johnson Group,Individual,41213.8,True
+72,"Lee, Rogers and Huffman",Individual,25874.62,True
+73,Brown-Baker,Non-Profit,45122.87,True
+74,Bond Inc,Individual,18470.36,True
+75,Torres-Taylor,Non-Profit,9868.88,True
+76,Obrien-Mahoney,Non-Profit,29738.98,True
+77,Scott-Rose,Non-Profit,18356.54,True
+78,Black-Williams,Individual,42392.41,True
+79,"Daniels, Smith and Charles",Corporation,27829.62,True
+80,Miller-Lopez,Individual,48637.28,True
+81,Mcmillan PLC,Individual,21435.72,True
+82,Mckinney and Sons,Corporation,9145.98,True
+83,"Turner, Ellis and Peterson",Individual,42700.84,True
+84,Jimenez LLC,Individual,24384.1,True
+85,Graham-Hamilton,Individual,49355.74,True
+86,"Dunn, Stout and Wilson",Individual,14649.32,True
+87,Martinez-Arnold,Non-Profit,4104.41,True
+88,Ellis-Wallace,Non-Profit,15471.97,True
+89,Malone-Chavez,Individual,13106.18,True
+90,"Wilkerson, Johnston and Simpson",Non-Profit,37769.68,True
+91,"Mccormick, Mendoza and Williamson",Corporation,3245.55,True
+92,"Morgan, Collins and Hampton",Individual,24830.85,True
+93,Harrell PLC,Non-Profit,20474.23,True
+94,Webb-Reeves,Individual,39628.03,True
+95,"Grimes, Hall and Smith",Individual,28496.54,True
+96,"Rodriguez, Smith and Mccarty",Non-Profit,48053.86,True
+97,"Watson, Vincent and Austin",Corporation,3316.37,True
+98,Wright-Martinez,Non-Profit,42149.58,True
+99,Mckee Group,Corporation,32475.57,True
+100,Aguilar Group,Corporation,13587.64,True
+101,"Hines, Bennett and Collins",Non-Profit,29617.57,True
+102,Gallegos PLC,Corporation,8563.63,True
+103,Brown-Huber,Non-Profit,28544.97,True
+104,Ford and Sons,Corporation,37131.49,True
+105,"Ramos, Reed and Jackson",Individual,10362.79,True
+106,"Barrett, Robbins and King",Individual,26614.11,True
+107,Thomas-Russell,Non-Profit,13478.35,True
+108,Snyder Group,Individual,15086.63,True
+109,Hill LLC,Corporation,33112.67,True
+110,Chan-Mills,Individual,29948.37,True
+111,Roberts-Choi,Individual,26251.77,True
+112,"Cannon, Oliver and Gill",Individual,17302.3,True
+113,Walker Inc,Individual,37943.49,True
+114,Cooper-Hanna,Corporation,46930.34,True
+115,Cooper-Fuller,Non-Profit,42892.1,True
+116,"Davis, Decker and Smith",Non-Profit,6184.57,True
+117,"Miller, Dougherty and Sanchez",Non-Profit,2358.86,True
+118,Cuevas-Gonzalez,Corporation,6778.0,True
+119,Newman LLC,Individual,45653.96,True
+120,Garrett Group,Corporation,24923.1,True
+121,Hill-George,Individual,3908.34,True
+122,Gibson-Ray,Individual,24681.82,True
+123,Bond Inc,Corporation,13600.62,True
+124,Pennington LLC,Non-Profit,34852.75,True
+125,Ford-Warner,Non-Profit,6253.86,True
+126,Guerra-Gallegos,Individual,24111.61,True
+127,"Moody, Wagner and Watson",Corporation,47043.11,True
+128,Turner PLC,Non-Profit,1484.4,True
+129,"Sullivan, Brown and Chen",Individual,35791.24,True
+130,Phillips Inc,Corporation,20329.75,True
+131,"Leon, Cameron and Thompson",Non-Profit,44593.56,True
+132,Leonard Group,Non-Profit,14575.01,True
+133,"Ramirez, Brewer and Salazar",Non-Profit,20410.27,True
+134,Herrera LLC,Non-Profit,46738.14,True
+135,Liu LLC,Individual,24464.28,True
+136,"Patton, Cordova and Holloway",Corporation,30344.9,True
+137,Contreras Ltd,Corporation,19474.82,True
+138,"Brewer, Aguilar and Cooper",Individual,22681.68,True
+139,"Santiago, Cohen and Maddox",Individual,20294.14,True
+140,Saunders-Yang,Non-Profit,3844.5,True
+141,"Olson, Kelley and Gallegos",Corporation,42708.87,True
+142,"White, Brown and Shields",Corporation,13902.51,True
+143,Lee-Conner,Individual,1327.32,True
+144,Roberts Ltd,Individual,27618.33,True
+145,Powell Ltd,Individual,22381.46,True
+146,"Baker, Peterson and Gaines",Non-Profit,11324.59,True
+147,Miller-Martinez,Non-Profit,8538.67,True
+148,White-Parrish,Individual,39735.34,True
+149,Jones-King,Non-Profit,47261.73,True
+150,Booth-White,Non-Profit,14819.92,True
+151,Bryant-Woods,Corporation,11581.31,True
+152,"Guerrero, Hughes and Benton",Individual,38912.03,True
+153,"King, Moreno and Hicks",Individual,20705.54,True
+154,"Ortega, Becker and Gonzalez",Individual,20400.26,True
+155,Sawyer Group,Non-Profit,17101.85,True
+156,"Cook, Morris and Mcpherson",Corporation,19299.91,True
+157,Finley-Schultz,Non-Profit,45983.53,True
+158,"Perez, Price and Henry",Corporation,28471.3,True
+159,"Young, Garcia and Hicks",Non-Profit,46830.74,True
+160,"Crawford, Walsh and Franklin",Individual,33655.53,True
+161,"Vazquez, Park and Johnson",Individual,21940.33,True
+162,Sullivan and Sons,Corporation,24024.14,True
+163,"Fritz, Moore and Solomon",Individual,23536.73,True
+164,Ryan LLC,Individual,13819.62,True
+165,"Anderson, Nelson and Mejia",Non-Profit,28120.3,True
+166,Young-Riley,Individual,17576.85,True
+167,Anderson and Sons,Corporation,19888.21,True
+168,Brooks PLC,Corporation,8679.87,True
+169,Phillips-Velez,Non-Profit,12271.84,True
+170,"Burton, Hill and Weaver",Non-Profit,11790.47,True
+171,"Perez, Briggs and Ramirez",Individual,47859.6,True
+172,Sherman-Norris,Corporation,12776.14,True
+173,Hicks-Malone,Corporation,7646.81,True
+174,Villegas PLC,Non-Profit,44241.13,True
+175,Johnson-Moore,Corporation,3046.57,True
+176,Hernandez Group,Non-Profit,27327.65,True
+177,Jones PLC,Corporation,10222.09,True
+178,"Weiss, Riggs and Anderson",Non-Profit,40483.92,True
+179,"Long, Tucker and Payne",Corporation,44103.54,True
+180,"Williams, Mccoy and Ross",Corporation,35535.99,True
+181,Cooper-Powell,Individual,5556.61,True
+182,Thompson and Sons,Corporation,31350.66,True
+183,Orozco PLC,Non-Profit,24952.93,True
+184,"Wade, Contreras and Brooks",Non-Profit,15924.44,True
+185,"Murphy, Wilson and Hoffman",Corporation,14344.4,True
+186,Bailey Group,Corporation,10883.56,True
+187,Harmon-Martin,Non-Profit,23026.87,True
+188,"Spence, Martin and Stephens",Corporation,2810.11,True
+189,"Moore, Miller and Olsen",Non-Profit,47685.45,True
+190,Duran-Campbell,Individual,29220.25,True
+191,"Buchanan, Walker and Allen",Corporation,23482.23,True
+192,"Gregory, Padilla and Delgado",Individual,30554.58,True
+193,Lee Inc,Corporation,41321.15,True
+194,Richardson-Cain,Corporation,48856.46,True
+195,Hogan-Jackson,Corporation,29173.24,True
+196,Yates-Russo,Corporation,12417.7,True
+197,Wyatt-Johnson,Corporation,5610.52,True
+198,Fuller-Taylor,Individual,33502.85,True
+199,Rogers-Richmond,Non-Profit,13290.08,True
+200,Phillips-Simmons,Corporation,24036.96,True
+201,Shaffer-Torres,Corporation,27530.3,True
+202,Taylor LLC,Non-Profit,29447.3,True
+203,Cook-Garcia,Individual,26425.55,True
+204,Robles PLC,Non-Profit,1988.75,True
+205,Bowman LLC,Individual,35582.32,True
+206,"Chung, Oneal and Moore",Corporation,48352.43,True
+207,Macias Inc,Corporation,22036.42,True
+208,"Brown, Mays and Garcia",Non-Profit,14617.78,True
+209,Price-Andrade,Individual,2553.15,True
+210,Leon-Adams,Non-Profit,45683.47,True
+211,Johnson-Martin,Individual,44994.29,True
+212,"Watson, Mason and Lopez",Non-Profit,33351.57,True
+213,"Peck, Sawyer and Quinn",Non-Profit,23359.46,True
+214,"Soto, Cabrera and Dixon",Corporation,40291.95,True
+215,Nelson PLC,Non-Profit,36226.54,True
+216,"Sharp, Wilcox and Graham",Non-Profit,29821.49,True
+217,"Martin, Carter and Lopez",Corporation,16693.46,True
+218,Gonzales and Sons,Corporation,9870.87,True
+219,"Myers, Espinoza and Williams",Corporation,13115.11,True
+220,"Smith, Gomez and Delgado",Individual,6817.02,True
+221,"Bass, Figueroa and Abbott",Corporation,27363.4,True
+222,"Ortiz, Brooks and Taylor",Corporation,22543.03,True
+223,"Dean, Garner and King",Non-Profit,45942.75,True
+224,"Petersen, Williamson and Wilson",Corporation,23013.43,True
+225,Gutierrez PLC,Individual,47103.57,True
+226,Hood Inc,Corporation,17056.9,True
+227,Duke-Floyd,Corporation,35017.71,True
+228,"Santiago, Taylor and Maldonado",Non-Profit,41763.85,True
+229,Duncan-Hernandez,Non-Profit,48471.15,True
+230,Davis-Barrera,Non-Profit,42163.25,True
+231,"Donovan, Brown and Carter",Individual,42625.31,True
+232,Gilbert LLC,Non-Profit,31565.84,True
+233,Medina-Bell,Non-Profit,25935.67,True
+234,Edwards Inc,Non-Profit,9065.64,True
+235,Pierce-Buchanan,Non-Profit,47808.89,True
+236,Brooks-Wilson,Non-Profit,4135.08,True
+237,Rodriguez-Melendez,Corporation,2265.82,True
+238,"Horn, Russell and Baker",Non-Profit,15317.97,True
+239,"Miranda, French and Obrien",Non-Profit,35088.73,True
+240,Lopez-Walls,Non-Profit,49970.04,True
+241,"Meza, Tyler and Beck",Corporation,43907.72,True
+242,Walker LLC,Individual,23794.77,True
+243,Wilson-Stevens,Individual,4023.87,True
+244,Miller LLC,Corporation,11510.72,True
+245,Morris and Sons,Corporation,10956.89,True
+246,"Franklin, Rodriguez and Brooks",Non-Profit,16722.38,True
+247,"Rodriguez, Page and Mendez",Non-Profit,20774.42,True
+248,"York, Tyler and Butler",Corporation,2068.13,True
+249,Parsons-Archer,Individual,22325.15,True
+250,Pollard Inc,Non-Profit,41895.85,True
+251,Hill and Sons,Corporation,27824.39,True
+252,Tyler and Sons,Individual,14278.18,True
+253,Buckley-White,Corporation,1111.06,True
+254,"Escobar, Perez and Flynn",Individual,37570.96,True
+255,"Burgess, Williams and Nelson",Corporation,2774.25,True
+256,Melton and Sons,Corporation,19109.99,True
+257,"Curry, Wilson and Lopez",Individual,8300.86,True
+258,Rojas Inc,Individual,3494.89,True
+259,"Lee, Scott and Gutierrez",Corporation,16305.08,True
+260,Ellis Inc,Individual,22782.12,True
+261,Bridges-Garcia,Non-Profit,24827.1,True
+262,Perez Ltd,Non-Profit,21145.08,True
+263,Whitaker Inc,Non-Profit,8905.1,True
+264,"Lawson, Cochran and Lopez",Non-Profit,28528.99,True
+265,Dalton and Sons,Non-Profit,45020.4,True
+266,Fowler-Kramer,Non-Profit,39809.43,True
+267,Hogan-Barnes,Individual,23219.15,True
+268,"Solomon, Jones and Acevedo",Individual,37389.39,True
+269,Gonzalez-Johnson,Corporation,49749.58,True
+270,Boyle and Sons,Non-Profit,24785.75,True
+271,Juarez and Sons,Non-Profit,30361.18,True
+272,Moore PLC,Corporation,6630.46,True
+273,"Kennedy, Parker and Marshall",Non-Profit,46065.32,True
+274,"Carpenter, Hobbs and David",Corporation,34793.02,True
+275,Hobbs-Rogers,Corporation,20985.41,True
+276,Jones-Boyd,Corporation,49597.6,True
+277,"Murphy, Schwartz and Blake",Corporation,36905.44,True
+278,Barrett Ltd,Corporation,25927.73,True
+279,Miller-Roberts,Corporation,41979.45,True
+280,Mendoza Ltd,Non-Profit,48940.34,True
+281,Rios Ltd,Non-Profit,48408.93,True
+282,Vazquez-Davis,Individual,47782.73,True
+283,Clark PLC,Corporation,45579.53,True
+284,Stewart Ltd,Individual,42135.87,True
+285,Williams and Sons,Corporation,10188.2,True
+286,Miller Inc,Non-Profit,37497.95,True
+287,"Marsh, Lee and Cruz",Individual,18375.71,True
+288,Estes Ltd,Non-Profit,29914.45,True
+289,"Williams, Summers and Lambert",Corporation,34966.9,True
+290,Carpenter-Bates,Corporation,23519.94,True
+291,"Riggs, Pittman and Barron",Non-Profit,16866.82,True
+292,"Berg, Bruce and Griffin",Non-Profit,20663.8,True
+293,Willis-Jacobs,Non-Profit,6234.1,True
+294,Anderson and Sons,Corporation,46490.94,True
+295,Hamilton-Greene,Non-Profit,1981.01,True
+296,Forbes Inc,Individual,48187.62,True
+297,Long-Bernard,Individual,18159.52,True
+298,"Jennings, Glover and May",Individual,3290.33,True
+299,Bray PLC,Individual,10847.93,True
+300,Lee-Holloway,Individual,21041.43,True
+301,Garcia-Santiago,Corporation,42489.4,True
+302,Stanley-Hodge,Corporation,18254.01,True
+303,Bryant-Castro,Corporation,39044.14,True
+304,Taylor-Murray,Individual,22453.11,True
+305,Taylor-Woods,Individual,44185.98,True
+306,Hicks-Klein,Non-Profit,49651.22,True
+307,Burch Group,Non-Profit,34738.05,True
+308,"Wood, Hughes and Spears",Individual,22514.85,True
+309,Harding-Franklin,Individual,37323.17,True
+310,Sullivan-Evans,Corporation,1454.26,True
+311,Benitez-Montoya,Corporation,9743.95,True
+312,Hale-Johnson,Non-Profit,23467.44,True
+313,Padilla-Hernandez,Non-Profit,36314.3,True
+314,"Ryan, Tran and Meadows",Individual,34690.15,True
+315,Henry Group,Individual,26074.32,True
+316,"Boyd, Davis and Burke",Non-Profit,5933.9,True
+317,Garcia-Parker,Non-Profit,20952.91,True
+318,Greene Ltd,Corporation,7639.18,True
+319,Martinez-Hayes,Individual,42561.12,True
+320,Schaefer LLC,Corporation,2697.63,True
+321,Reeves-Rivas,Non-Profit,18039.3,True
+322,Montoya and Sons,Individual,47587.0,True
+323,"Luna, Velasquez and Wood",Corporation,32377.13,True
+324,Mahoney LLC,Individual,29153.14,True
+325,"Leonard, Bailey and Kennedy",Corporation,26003.48,True
+326,Reese Group,Corporation,14362.75,True
+327,"Moore, Dixon and Vincent",Corporation,7179.42,True
+328,Crawford and Sons,Corporation,3654.77,True
+329,Patton Ltd,Corporation,19813.56,True
+330,"Gibson, Grant and Alvarez",Corporation,49452.64,True
+331,"Atkins, Mccarty and Cole",Non-Profit,8721.19,True
+332,Schultz-Roberts,Non-Profit,3195.36,True
+333,Cook-Green,Individual,22356.01,True
+334,"Murray, Harmon and Brown",Individual,20148.27,True
+335,"Johnson, Jones and Lee",Individual,16693.35,True
+336,"Ellis, Mathis and Woodward",Non-Profit,18195.14,True
+337,Sexton LLC,Non-Profit,40843.92,True
+338,Anderson-Acevedo,Corporation,45604.03,True
+339,Elliott PLC,Individual,13610.95,True
+340,"Ryan, Cunningham and Le",Non-Profit,31567.8,True
+341,Austin-Cochran,Corporation,12095.32,True
+342,"Russell, Gomez and Smith",Individual,8581.72,True
+343,Stewart LLC,Non-Profit,3715.72,True
+344,Hall LLC,Non-Profit,22166.02,True
+345,Ramirez-Perry,Corporation,22335.92,True
+346,"Castro, Sloan and Roman",Corporation,15037.86,True
+347,Harrison Inc,Individual,16891.77,True
+348,Ramirez-Cooke,Non-Profit,32111.32,True
+349,"Martinez, Lee and Hopkins",Corporation,8681.84,True
+350,Schwartz Ltd,Non-Profit,6582.05,True
+351,"Jordan, Jacobs and Murphy",Corporation,48914.0,True
+352,Beasley PLC,Corporation,11841.48,True
+353,"Flores, Young and Cooper",Individual,35362.49,True
+354,Jenkins-Johnson,Non-Profit,37525.29,True
+355,Zimmerman-Hall,Individual,23851.73,True
+356,Butler PLC,Non-Profit,1589.3,True
+357,"Alvarado, Rodriguez and Thompson",Non-Profit,44583.89,True
+358,Hall LLC,Individual,48823.89,True
+359,Hubbard-Higgins,Non-Profit,2569.09,True
+360,"Smith, Nelson and Young",Corporation,23201.12,True
+361,"Mills, Cummings and Owens",Individual,6671.48,True
+362,Salazar LLC,Corporation,39012.56,True
+363,"Cox, Gilbert and Gonzalez",Corporation,43005.63,True
+364,"Carter, Thompson and Frank",Non-Profit,28444.46,True
+365,James Ltd,Corporation,18488.01,True
+366,"Hill, Jackson and Trujillo",Corporation,7535.77,True
+367,"Hogan, Garcia and Graham",Individual,16449.84,True
+368,"Garcia, Hoffman and Choi",Individual,22582.91,True
+369,"Bryant, Fletcher and Castro",Non-Profit,18041.25,True
+370,Mitchell Ltd,Corporation,49107.09,True
+371,"Perez, Peterson and James",Individual,18844.34,True
+372,Ellis-Hamilton,Individual,31521.83,True
+373,Shaw LLC,Corporation,2769.78,True
+374,King-Powell,Corporation,27048.53,True
+375,"Hester, Munoz and Mitchell",Corporation,15175.39,True
+376,"Stevens, Schultz and Rogers",Individual,38849.57,True
+377,"Long, Kim and Garcia",Corporation,46490.93,True
+378,Phillips PLC,Non-Profit,29544.41,True
+379,"Nguyen, Smith and Hood",Non-Profit,27761.97,True
+380,Stewart LLC,Corporation,33134.22,True
+381,Williams-Gamble,Corporation,28504.5,True
+382,"Vargas, Boone and Daniel",Non-Profit,8372.99,True
+383,"Clark, Hall and Garcia",Corporation,13078.95,True
+384,"Olson, Smith and Wood",Corporation,2222.83,True
+385,Mcknight Ltd,Corporation,32759.7,True
+386,"Smith, Herrera and Garrett",Corporation,33610.09,True
+387,Harris Inc,Individual,18944.02,True
+388,"Rivera, Baker and Bass",Corporation,40216.58,True
+389,Ferguson Inc,Non-Profit,43755.23,True
+390,Day Ltd,Corporation,35044.57,True
+391,Morgan-Scott,Corporation,4702.26,True
+392,Alvarado-Davis,Non-Profit,10837.05,True
+393,Adams LLC,Non-Profit,13272.74,True
+394,Foster LLC,Corporation,11676.1,True
+395,"Sanders, Williams and Smith",Individual,23262.78,True
+396,"Davis, Mendez and Schneider",Individual,14088.79,True
+397,Reed Ltd,Corporation,40554.5,True
+398,Soto-Wolf,Corporation,26968.06,True
+399,"Hansen, Miller and Barnes",Individual,33782.86,True
+400,"Gould, Ortiz and Thompson",Non-Profit,49685.65,True
+401,Torres-Parks,Corporation,34698.17,True
+402,"Jordan, Campbell and Johnson",Individual,10670.63,True
+403,White Group,Corporation,21426.97,True
+404,Fowler-Gonzales,Individual,20438.84,True
+405,White-Heath,Non-Profit,19458.64,True
+406,Cohen-Cole,Corporation,8286.15,True
+407,Cruz and Sons,Non-Profit,40422.08,True
+408,"Pena, Bennett and Gonzales",Corporation,38731.05,True
+409,Castaneda-Gonzalez,Individual,8407.25,True
+410,Beck-Conway,Individual,7247.81,True
+411,"Evans, Smith and Hayes",Non-Profit,39752.4,True
+412,Anderson-Butler,Corporation,2917.18,True
+413,Jones PLC,Non-Profit,25992.84,True
+414,Horn-Gaines,Individual,6253.34,True
+415,Crawford-Alvarado,Non-Profit,34858.42,True
+416,Freeman-Morrison,Individual,29560.08,True
+417,Juarez and Sons,Corporation,4542.78,True
+418,Meyer-Mann,Non-Profit,27226.96,True
+419,"Bates, Bowman and Cox",Individual,38945.3,True
+420,"Sanders, Rodriguez and Robinson",Non-Profit,30453.45,True
+421,Sanchez-Garcia,Non-Profit,13302.44,True
+422,Jones LLC,Corporation,38634.65,True
+423,"Perry, Johnson and Wilkerson",Corporation,28136.36,True
+424,"Schneider, Mcdonald and Adams",Non-Profit,36642.95,True
+425,Johnson Inc,Non-Profit,44203.56,True
+426,Macdonald-Reyes,Individual,44817.84,True
+427,"Vance, Grimes and Fernandez",Non-Profit,6388.32,True
+428,Wall PLC,Non-Profit,13237.21,True
+429,"English, Grant and Walters",Non-Profit,1696.05,True
+430,"Figueroa, Osborne and Martinez",Individual,16857.9,True
+431,Barnes-Wright,Non-Profit,40515.0,True
+432,Brown Inc,Non-Profit,43758.54,True
+433,Logan Ltd,Corporation,42785.42,True
+434,"Nolan, Preston and Hogan",Non-Profit,3048.22,True
+435,Parker-Barber,Individual,14120.76,True
+436,Wood-Buck,Individual,11614.89,True
+437,Crawford and Sons,Non-Profit,42128.31,True
+438,Bishop Ltd,Corporation,49704.49,True
+439,"Khan, Jones and Smith",Non-Profit,42103.59,True
+440,Lloyd PLC,Individual,35049.03,True
+441,"Wheeler, Alvarado and Coleman",Individual,17616.05,True
+442,"Phillips, Owens and Walker",Non-Profit,11846.45,True
+443,"Patton, Patterson and Johnson",Non-Profit,26392.45,True
+444,Jackson PLC,Non-Profit,22173.73,True
+445,Mullins PLC,Non-Profit,29924.65,True
+446,"Johnston, Smith and Schroeder",Non-Profit,10034.51,True
+447,Bailey-Miller,Individual,39116.78,True
+448,Johnson-Singleton,Individual,5763.45,True
+449,Reid and Sons,Non-Profit,21327.22,True
+450,Hall-Garcia,Corporation,21482.96,True
+451,"Daniel, Adams and Mclaughlin",Individual,48079.3,True
+452,Dean-Green,Individual,8877.4,True
+453,Perez and Sons,Corporation,45380.16,True
+454,Schmidt-Clark,Corporation,41643.54,True
+455,West and Sons,Corporation,8065.15,True
+456,"Shepherd, Peterson and Sullivan",Individual,8302.59,True
+457,Mcdaniel Inc,Non-Profit,36480.29,True
+458,Little Group,Corporation,28733.12,True
+459,Lynch-Wilson,Individual,20430.41,True
+460,"Rose, Allen and Fuller",Individual,3527.15,True
+461,Greene PLC,Corporation,31472.81,True
+462,Medina PLC,Non-Profit,39387.64,True
+463,"Edwards, Ramirez and Alexander",Corporation,29654.61,True
+464,Sullivan-Williams,Non-Profit,36494.65,True
+465,Obrien LLC,Non-Profit,4667.73,True
+466,"Sanchez, Lam and Lin",Individual,20050.85,True
+467,"Bush, Nguyen and Mcguire",Non-Profit,8283.14,True
+468,"Franklin, Hudson and Thompson",Individual,11980.5,True
+469,Walter PLC,Non-Profit,42328.01,True
+470,Johnson Group,Non-Profit,22204.04,True
+471,"Wells, Faulkner and Morton",Corporation,48462.3,True
+472,Barry-Vaughn,Corporation,25276.38,True
+473,Wolf-Peterson,Individual,38191.61,True
+474,"Craig, Espinoza and York",Corporation,18366.72,True
+475,"Acosta, Peterson and Gallagher",Non-Profit,31954.2,True
+476,"Martinez, Martinez and Martin",Individual,2112.28,True
+477,Lewis Group,Non-Profit,31557.46,True
+478,Roberts and Sons,Individual,15857.11,True
+479,"Parker, Brown and Nolan",Non-Profit,28920.67,True
+480,"Barrett, Stout and Clark",Corporation,15244.39,True
+481,Santos-Jones,Individual,20498.84,True
+482,Peters-Cole,Corporation,2933.77,True
+483,Morgan LLC,Corporation,8064.23,True
+484,Barber LLC,Non-Profit,35615.68,True
+485,Wilkinson Group,Non-Profit,43997.88,True
+486,Hahn-Bender,Individual,39921.03,True
+487,Jacobson PLC,Individual,38674.3,True
+488,Sanders Inc,Individual,2125.38,True
+489,"Klein, Hampton and Reed",Individual,49667.66,True
+490,"Patterson, Williams and Watson",Non-Profit,48970.3,True
+491,Lucas Group,Non-Profit,45955.5,True
+492,"Kirk, Brown and Contreras",Corporation,13478.98,True
+493,Wilson-Sutton,Individual,21247.82,True
+494,"Boyle, Kelley and Lang",Individual,33805.56,True
+495,Spencer Inc,Non-Profit,18839.65,True
+496,Hammond PLC,Corporation,25010.36,True
+497,Booth-Thomas,Corporation,27660.31,True
+498,Martinez Group,Individual,25695.28,True
+499,Tate-Parks,Individual,34703.64,True
+500,Maldonado LLC,Non-Profit,10803.8,True
+501,Graham-Walker,Individual,16302.31,True
+502,Mcdonald Group,Individual,26385.83,True
+503,"Parrish, Carr and Oliver",Corporation,14293.47,True
+504,"Poole, Ruiz and Medina",Corporation,42179.56,True
+505,Williamson-Harris,Non-Profit,32314.26,True
+506,Kline PLC,Non-Profit,26989.63,True
+507,Myers Ltd,Non-Profit,27740.56,True
+508,Vasquez PLC,Non-Profit,7124.23,True
+509,Santana Group,Individual,1743.7,True
+510,"Bond, Nguyen and Newton",Non-Profit,19770.61,True
+511,Hardy-Garcia,Corporation,31048.01,True
+512,Donaldson-Sandoval,Individual,19152.34,True
+513,Hodge-Cabrera,Non-Profit,21324.56,True
+514,Townsend-Cooper,Individual,47641.75,True
+515,Rhodes Ltd,Corporation,34728.63,True
+516,"Thompson, Jones and Murphy",Individual,12759.64,True
+517,Matthews and Sons,Non-Profit,12561.86,True
+518,"Mills, Guerra and Perry",Individual,24030.53,True
+519,Quinn Ltd,Individual,45382.97,True
+520,Richardson and Sons,Individual,27088.74,True
+521,Graham LLC,Non-Profit,37236.97,True
+522,Abbott-Vazquez,Non-Profit,37877.09,True
+523,"Lowe, Greene and Sullivan",Corporation,48297.35,True
+524,"Campbell, Gross and Howell",Non-Profit,49515.99,True
+525,Lopez-Best,Non-Profit,41238.36,True
+526,Booker-Wright,Individual,8888.96,True
+527,Burns Group,Individual,44806.83,True
+528,Hernandez-Mendez,Individual,5308.59,True
+529,Becker-Wood,Corporation,25359.54,True
+530,"Bennett, Tucker and Tran",Non-Profit,48684.83,True
+531,Dunn-Nixon,Corporation,7367.26,True
+532,Parker LLC,Corporation,18779.88,True
+533,Fox Ltd,Individual,7542.46,True
+534,Garrett-Freeman,Corporation,33366.47,True
+535,James Group,Non-Profit,15026.91,True
+536,Franklin-Dawson,Corporation,11937.28,True
+537,"Lee, Curry and Willis",Corporation,33680.35,True
+538,"Morris, White and Harrington",Corporation,5678.64,True
+539,"Smith, Harvey and Mcmahon",Non-Profit,14811.85,True
+540,Johnson-Peterson,Individual,31442.96,True
+541,Hall PLC,Individual,37406.23,True
+542,"Smith, Perez and Salinas",Individual,47539.25,True
+543,Jones LLC,Non-Profit,35310.86,True
+544,Martin Ltd,Non-Profit,22128.0,True
+545,Russell Group,Non-Profit,37672.32,True
+546,Gonzalez LLC,Corporation,42980.51,True
+547,"Gibson, Soto and Garcia",Non-Profit,3446.92,True
+548,Williams-Campbell,Corporation,21679.41,True
+549,Hill-Garcia,Corporation,48025.4,True
+550,Reed-Ruiz,Corporation,24064.02,True
+551,"Pugh, Anthony and Frye",Non-Profit,32102.73,True
+552,Ochoa-Day,Individual,35909.09,True
+553,Johnson Inc,Individual,4894.18,True
+554,Barr-Rodriguez,Individual,15468.5,True
+555,"Smith, Garcia and White",Non-Profit,12292.6,True
+556,Campbell Inc,Corporation,13098.08,True
+557,Perry Inc,Corporation,42463.04,True
+558,Jennings Ltd,Individual,20319.75,True
+559,Hamilton-Jackson,Individual,32478.14,True
+560,Todd-Williams,Corporation,23970.0,True
+561,Adkins Group,Corporation,39506.56,True
+562,Adams LLC,Corporation,32573.16,True
+563,Harrell PLC,Individual,43457.61,True
+564,Kennedy-Jones,Non-Profit,46688.68,True
+565,Barnes and Sons,Individual,7529.27,True
+566,Singleton-Kim,Individual,29982.17,True
+567,Williams-Allen,Non-Profit,7353.92,True
+568,Hall-Kane,Corporation,7279.29,True
+569,Fuller and Sons,Corporation,24367.76,True
+570,"Barnes, Roberts and Jackson",Individual,23343.41,True
+571,"Watson, Carney and Jackson",Corporation,18743.49,True
+572,"Lee, Perez and Moreno",Non-Profit,17614.77,True
+573,Chase-Parker,Individual,49761.06,True
+574,"Young, Haney and Lee",Non-Profit,40421.74,True
+575,"Bonilla, Campbell and Marshall",Non-Profit,43985.94,True
+576,Brown-Martinez,Individual,5568.49,True
+577,Hodge-Petersen,Corporation,26790.25,True
+578,"Osborn, Lam and Gutierrez",Corporation,49768.76,True
+579,Davis PLC,Individual,35837.8,True
+580,"Roberts, Hess and Cortez",Individual,27031.0,True
+581,Lewis-Flores,Non-Profit,41528.13,True
+582,Liu-Villanueva,Non-Profit,38527.25,True
+583,"Smith, Richmond and Parker",Corporation,27558.98,True
+584,Lee-Stewart,Non-Profit,43785.89,True
+585,"Chavez, Sanders and Bell",Individual,40755.43,True
+586,"Phillips, Glass and Trujillo",Individual,38147.89,True
+587,Mccarty PLC,Non-Profit,14982.74,True
+588,Brown-Austin,Corporation,45110.56,True
+589,Mckinney-Mcgee,Non-Profit,34905.28,True
+590,"Carlson, Torres and Parker",Non-Profit,38821.05,True
+591,Hickman-Cole,Individual,19056.8,True
+592,"Gomez, Robertson and Hansen",Non-Profit,39788.19,True
+593,Smith-Olson,Corporation,22906.62,True
+594,"Reynolds, Anthony and Hernandez",Corporation,3742.91,True
+595,"Lucas, Diaz and Collins",Corporation,29235.19,True
+596,"Barrera, Armstrong and Schmitt",Non-Profit,41640.21,True
+597,"Rivera, Estes and Hurley",Non-Profit,29897.41,True
+598,Long-Hart,Non-Profit,17676.32,True
+599,Crawford Group,Individual,32615.49,True
+600,Sanchez Group,Individual,8360.46,True
+601,Kim-Hill,Corporation,16213.84,True
+602,Thomas-Rivera,Individual,42756.53,True
+603,Walker-Calderon,Non-Profit,33593.07,True
+604,Stevens-Green,Non-Profit,24235.84,True
+605,Wright-Warner,Corporation,21163.96,True
+606,Boyd-Foster,Corporation,32597.39,True
+607,"Miranda, Macdonald and Moore",Non-Profit,33560.81,True
+608,"Brown, Schwartz and Green",Individual,26471.06,True
+609,Murphy Ltd,Non-Profit,26322.25,True
+610,"Crosby, Ross and Rogers",Corporation,11547.21,True
+611,Lawson-Hanson,Corporation,37568.32,True
+612,Gentry PLC,Individual,43782.32,True
+613,"Jones, Johnson and Butler",Non-Profit,16952.84,True
+614,Bishop LLC,Non-Profit,15238.24,True
+615,Carr-Garcia,Non-Profit,17073.45,True
+616,Lane-Richardson,Non-Profit,7618.32,True
+617,Williamson and Sons,Individual,6623.54,True
+618,"Cook, Prince and Patel",Non-Profit,17430.48,True
+619,Clark-Davis,Corporation,9472.91,True
+620,Wilkins Ltd,Non-Profit,17277.24,True
+621,Higgins-Maldonado,Non-Profit,3531.29,True
+622,"Thomas, Horn and Owens",Non-Profit,14758.44,True
+623,Bradford-Acosta,Individual,25222.14,True
+624,"Nash, Arellano and Smith",Non-Profit,21703.47,True
+625,Rios-Schmidt,Corporation,34059.5,True
+626,Guerrero-Carpenter,Non-Profit,45848.33,True
+627,"Owens, Dyer and Reed",Non-Profit,19574.57,True
+628,Arnold Ltd,Corporation,15310.93,True
+629,"Foster, Alvarez and Powell",Non-Profit,47239.1,True
+630,Pham PLC,Corporation,34269.35,True
+631,Ross LLC,Non-Profit,5208.84,True
+632,Watson-Chandler,Corporation,28143.81,True
+633,Foster Inc,Non-Profit,8531.35,True
+634,Weaver-Crawford,Individual,1995.94,True
+635,"Warner, Black and Lewis",Non-Profit,36186.85,True
+636,"Cole, Diaz and Williams",Individual,2138.83,True
+637,Castro-Lee,Individual,5773.45,True
+638,Garcia-Perkins,Corporation,9717.38,True
+639,Tucker Group,Corporation,33722.44,True
+640,Watson Ltd,Non-Profit,3827.73,True
+641,"Anderson, Lee and Perkins",Individual,16667.1,True
+642,Bell PLC,Corporation,24933.69,True
+643,Rodriguez-Jones,Non-Profit,17669.54,True
+644,Reyes-Wu,Corporation,43485.0,True
+645,Sheppard-Melton,Individual,28688.06,True
+646,Roberts and Sons,Corporation,22819.94,True
+647,Myers PLC,Non-Profit,35167.02,True
+648,"Johnson, Ramirez and Miller",Non-Profit,49553.66,True
+649,"Thompson, Brown and Morris",Individual,33526.2,True
+650,Johnson-Welch,Individual,1076.68,True
+651,"Murphy, Rush and Payne",Corporation,31926.96,True
+652,Morales Group,Corporation,26227.37,True
+653,"Hall, Hall and Ross",Corporation,45110.33,True
+654,Hoffman PLC,Corporation,8674.7,True
+655,"Robertson, Jones and Yang",Individual,24704.77,True
+656,Ortiz-Holland,Non-Profit,45090.56,True
+657,Briggs-Moore,Corporation,43951.93,True
+658,Green-Obrien,Non-Profit,34920.96,True
+659,"Johnson, Whitehead and Wright",Corporation,21753.42,True
+660,Ramos-James,Non-Profit,33302.27,True
+661,"Taylor, Smith and Evans",Non-Profit,15573.14,True
+662,Mejia PLC,Non-Profit,10720.37,True
+663,"Perry, Sanders and Rodriguez",Individual,47542.69,True
+664,Newman-Campbell,Corporation,6633.38,True
+665,"Hill, Franco and Rodriguez",Individual,29729.86,True
+666,Torres Ltd,Individual,37404.17,True
+667,"Bennett, Moore and Mullins",Individual,9822.03,True
+668,Terrell-Ross,Individual,43367.61,True
+669,Carr-Orozco,Corporation,11077.93,True
+670,Harper Ltd,Individual,17049.79,True
+671,Gibson-Thompson,Corporation,23701.49,True
+672,"Sutton, Nguyen and Gibson",Non-Profit,22927.28,True
+673,Martinez-Hodges,Corporation,25387.61,True
+674,Morgan-Mcmillan,Individual,13283.85,True
+675,Rush-Johnson,Non-Profit,39563.79,True
+676,Keller and Sons,Individual,20012.13,True
+677,Summers PLC,Corporation,27069.59,True
+678,Morgan-Myers,Corporation,16810.87,True
+679,Taylor PLC,Individual,33615.17,True
+680,Espinoza-Gonzalez,Individual,15678.27,True
+681,White Group,Non-Profit,29924.16,True
+682,Ward and Sons,Non-Profit,5515.36,True
+683,Reyes-Rodriguez,Individual,24045.31,True
+684,Reed-Davis,Corporation,4675.6,True
+685,Ruiz Ltd,Non-Profit,31759.83,True
+686,"Owen, Johnson and Campbell",Non-Profit,2462.46,True
+687,Ibarra-Moore,Corporation,5181.61,True
+688,Ferguson and Sons,Non-Profit,49572.94,True
+689,"Abbott, Carroll and Bean",Non-Profit,2726.29,True
+690,Wagner and Sons,Corporation,49825.99,True
+691,Castro Inc,Corporation,44482.09,True
+692,Williams and Sons,Corporation,30608.14,True
+693,Watson Group,Corporation,41793.73,True
+694,Hill-Keller,Corporation,24253.8,True
+695,"Salinas, Bell and Brown",Non-Profit,5415.02,True
+696,"Price, Brown and Bradshaw",Individual,37784.23,True
+697,"Flynn, Rivera and Price",Individual,15201.72,True
+698,Bartlett-Mills,Individual,19044.36,True
+699,Smith Group,Corporation,25522.15,True
+700,Mccoy-Miller,Individual,39349.08,True
+701,Richardson-Smith,Non-Profit,3470.48,True
+702,"Macdonald, Collins and Wilson",Individual,18064.98,True
+703,Mueller-Garcia,Individual,19956.01,True
+704,Allen Inc,Non-Profit,19214.03,True
+705,Howard Ltd,Individual,44295.28,True
+706,"Mitchell, Lewis and Pineda",Corporation,27068.93,True
+707,"Gonzalez, Hardy and Rubio",Non-Profit,37060.42,True
+708,"Wise, Dean and Olson",Corporation,24991.39,True
+709,"Swanson, Avery and Flowers",Corporation,36735.46,True
+710,Gonzales Group,Corporation,48509.68,True
+711,"Sullivan, Glenn and Ellis",Individual,37559.77,True
+712,Parker LLC,Non-Profit,25461.74,True
+713,"Turner, Haynes and Henderson",Non-Profit,34740.07,True
+714,Palmer LLC,Non-Profit,30173.97,True
+715,"Avila, Cooper and Guzman",Corporation,42215.73,True
+716,Walker-Johnson,Corporation,47417.08,True
+717,Moran LLC,Corporation,37709.05,True
+718,Farley-Gutierrez,Individual,9987.28,True
+719,"Doyle, Bryant and Ross",Corporation,5320.21,True
+720,Saunders LLC,Non-Profit,35185.79,True
+721,Adams LLC,Non-Profit,11025.87,True
+722,"Montgomery, Edwards and Haynes",Corporation,33838.79,True
+723,Adams Group,Individual,6258.52,True
+724,Scott Ltd,Non-Profit,20348.15,True
+725,Conway Group,Corporation,17353.54,True
+726,Stewart-Patterson,Non-Profit,15607.55,True
+727,Bailey-King,Individual,29424.62,True
+728,"Stone, Lee and Oconnor",Individual,29570.36,True
+729,Dillon Ltd,Individual,31847.81,True
+730,Knight-Thompson,Corporation,20269.19,True
+731,"Carpenter, Cook and Fuller",Corporation,11667.89,True
+732,Miller-Moore,Individual,4021.55,True
+733,Mckee Group,Corporation,10841.72,True
+734,"Ferguson, Peterson and Martin",Individual,35839.32,True
+735,"Brown, Daniels and Valdez",Individual,39834.57,True
+736,Liu LLC,Individual,18576.45,True
+737,Galvan Group,Individual,20053.2,True
+738,Salazar Group,Individual,22821.33,True
+739,Hill-Huffman,Corporation,43636.22,True
+740,Cruz and Sons,Non-Profit,42495.94,True
+741,"Brown, Price and Mills",Individual,43683.66,True
+742,"Jimenez, Cunningham and Johnson",Non-Profit,6296.62,True
+743,Mitchell Group,Individual,37303.89,True
+744,Pacheco-Greene,Corporation,38492.24,True
+745,Smith Ltd,Individual,43808.6,True
+746,Hart Inc,Non-Profit,36744.03,True
+747,Bishop-Collins,Non-Profit,31957.81,True
+748,"Moore, Watkins and Klein",Non-Profit,31918.92,True
+749,Jones-Richardson,Non-Profit,21365.18,True
+750,Smith-Greer,Individual,24653.8,True
+751,Ingram-Williams,Non-Profit,44455.09,True
+752,Green Ltd,Non-Profit,16528.24,True
+753,Harris Group,Non-Profit,27662.14,True
+754,Jefferson and Sons,Corporation,23579.73,True
+755,"Lee, Nelson and Kim",Non-Profit,3998.27,True
+756,"Ramos, Hicks and Case",Corporation,15611.77,True
+757,"Gutierrez, Stevenson and Jones",Non-Profit,29653.75,True
+758,"Campbell, Rogers and Delgado",Individual,24235.96,True
+759,"Barnes, Hatfield and Wright",Individual,34976.36,True
+760,Brown-Campbell,Non-Profit,19824.85,True
+761,Soto-Flores,Non-Profit,46591.96,True
+762,Doyle-Meyers,Corporation,15329.63,True
+763,"Clark, Hatfield and Mckinney",Non-Profit,9970.96,True
+764,Patterson Ltd,Corporation,1463.81,True
+765,Ward Ltd,Non-Profit,7237.33,True
+766,"Page, Small and Ibarra",Individual,11627.66,True
+767,"Perez, Mosley and Thompson",Non-Profit,41443.37,True
+768,Williamson-Winters,Individual,49049.86,True
+769,Rios-Riley,Corporation,25956.41,True
+770,"Richardson, Graves and Ashley",Individual,24077.29,True
+771,Bailey-Martinez,Corporation,21613.93,True
+772,Howard LLC,Individual,4152.59,True
+773,"Matthews, Harris and Allen",Corporation,38134.39,True
+774,Brady-Nguyen,Non-Profit,15069.25,True
+775,Hawkins-Dunn,Corporation,25486.39,True
+776,Taylor Group,Individual,34966.24,True
+777,"Barker, Everett and Ruiz",Non-Profit,30768.88,True
+778,"Nielsen, Norman and Montgomery",Individual,26788.74,True
+779,Morse-Green,Individual,35318.85,True
+780,Cook-Middleton,Non-Profit,19346.09,True
+781,Carter LLC,Non-Profit,29931.36,True
+782,"Becker, Riley and Rodgers",Corporation,37891.53,True
+783,"Ramirez, Davila and Garcia",Corporation,22350.93,True
+784,Potts PLC,Corporation,17463.83,True
+785,Collier-Lewis,Non-Profit,8669.04,True
+786,Richards-Anthony,Individual,34943.31,True
+787,Graham-Foley,Corporation,44262.59,True
+788,Michael Ltd,Non-Profit,27792.98,True
+789,Simmons-Jimenez,Non-Profit,25022.06,True
+790,Tanner Ltd,Individual,43611.69,True
+791,Morrison Inc,Corporation,10553.01,True
+792,York LLC,Non-Profit,8416.71,True
+793,Nguyen-Miller,Individual,27799.96,True
+794,King Inc,Non-Profit,9689.46,True
+795,"Meyer, Wright and Burns",Individual,40071.53,True
+796,Salinas Ltd,Corporation,47575.69,True
+797,Martinez-Harrington,Non-Profit,42839.23,True
+798,Obrien PLC,Non-Profit,31010.85,True
+799,Sheppard LLC,Individual,19353.65,True
+800,"Tucker, Wilson and Rivera",Individual,18186.74,True
+801,Santana-Bell,Non-Profit,32797.0,True
+802,Esparza and Sons,Corporation,24736.79,True
+803,Moreno-Cardenas,Individual,21116.39,True
+804,Nelson-Garcia,Non-Profit,16180.34,True
+805,"Strickland, Curry and Roberts",Non-Profit,25443.0,True
+806,"Hunter, Cortez and Hernandez",Corporation,14572.04,True
+807,Sullivan and Sons,Corporation,16726.98,True
+808,Soto PLC,Corporation,34537.97,True
+809,"Berry, Gonzalez and Castillo",Non-Profit,13024.09,True
+810,Hammond-Delgado,Individual,46241.76,True
+811,"Ortiz, Taylor and Ball",Individual,49936.82,True
+812,Hampton Group,Corporation,36572.74,True
+813,"Frazier, Riddle and Daniels",Individual,26790.43,True
+814,Gray-Small,Individual,46796.87,True
+815,"Johnson, Williams and Jensen",Corporation,16488.51,True
+816,Martinez and Sons,Non-Profit,16214.45,True
+817,"Joseph, Christian and Richards",Corporation,37758.22,True
+818,"Hoffman, Johnson and Cox",Non-Profit,34204.81,True
+819,Vargas-Johnson,Non-Profit,6444.61,True
+820,"Sanchez, Snow and White",Individual,16682.96,True
+821,Johnson PLC,Individual,6334.74,True
+822,"Chung, Smith and White",Non-Profit,45319.51,True
+823,Gonzales-Evans,Non-Profit,44592.95,True
+824,Mcdonald-Powell,Corporation,24837.61,True
+825,Garcia-Dorsey,Corporation,40382.07,True
+826,Parker-Harris,Corporation,13428.3,True
+827,Freeman-Cook,Corporation,4889.59,True
+828,"Davis, Brown and Perry",Individual,22880.3,True
+829,Bishop-Johnson,Non-Profit,27854.61,True
+830,Brewer-Le,Corporation,19469.46,True
+831,Tran-Lee,Corporation,39504.49,True
+832,"Blake, Waller and Banks",Corporation,20044.44,True
+833,Hodges Group,Corporation,12869.61,True
+834,Huynh Inc,Individual,12464.54,True
+835,Lawson-Wells,Corporation,22691.61,True
+836,"Edwards, Hayden and Martin",Non-Profit,29129.7,True
+837,Smith Group,Individual,10733.0,True
+838,"Miller, Morse and Wang",Corporation,29280.7,True
+839,"Hall, Alexander and Underwood",Individual,8654.63,True
+840,Mccann Group,Non-Profit,22089.81,True
+841,Lopez-Miller,Individual,25597.93,True
+842,Washington PLC,Non-Profit,46318.62,True
+843,Davies-Ibarra,Corporation,1025.41,True
+844,Barton-Rodgers,Individual,24761.24,True
+845,Short-Johnson,Individual,27921.34,True
+846,Le LLC,Non-Profit,25438.1,True
+847,Rodriguez-Mitchell,Corporation,49360.21,True
+848,Taylor-Walker,Individual,16833.48,True
+849,Bowman-Aguirre,Individual,6649.89,True
+850,Santana Inc,Corporation,1424.98,True
+851,Kane PLC,Non-Profit,1191.34,True
+852,"Singleton, Henderson and Boyd",Corporation,7397.65,True
+853,Boyle-Smith,Corporation,2294.61,True
+854,Macias-Contreras,Corporation,43350.6,True
+855,Anderson PLC,Non-Profit,28619.96,True
+856,"Kent, Rogers and Thompson",Individual,30163.45,True
+857,Taylor PLC,Corporation,18414.74,True
+858,"Jones, Petersen and Stanley",Non-Profit,24853.79,True
+859,Watson Inc,Individual,48848.83,True
+860,Stevens-Welch,Corporation,19504.81,True
+861,Nelson-Smith,Non-Profit,27099.03,True
+862,Gray Ltd,Non-Profit,46854.38,True
+863,Rodriguez Group,Non-Profit,6627.72,True
+864,"Foster, Bennett and Middleton",Non-Profit,5563.56,True
+865,"Torres, Ballard and Griffin",Corporation,24749.78,True
+866,Garcia-Jordan,Non-Profit,12360.45,True
+867,Barnett-Robertson,Corporation,18877.1,True
+868,"Cunningham, Dennis and Brooks",Non-Profit,22619.8,True
+869,"Rodriguez, Ross and Matthews",Non-Profit,26830.51,True
+870,"Harper, Davis and Simmons",Non-Profit,23069.63,True
+871,"Warner, Cole and Richardson",Corporation,25792.29,True
+872,Frost-Hill,Non-Profit,34467.99,True
+873,"Woods, Little and White",Corporation,45254.75,True
+874,Parker PLC,Corporation,23181.48,True
+875,Preston PLC,Individual,6548.34,True
+876,Quinn-Garcia,Non-Profit,30991.63,True
+877,"Moore, Floyd and Camacho",Corporation,48000.3,True
+878,Smith Ltd,Corporation,47946.7,True
+879,Gray and Sons,Non-Profit,30445.42,True
+880,Thompson PLC,Corporation,4161.49,True
+881,"Noble, Dean and Ayala",Corporation,12914.76,True
+882,Williams-Dickerson,Non-Profit,16686.51,True
+883,Rodriguez and Sons,Corporation,24465.71,True
+884,"Warren, Page and Woods",Corporation,24359.81,True
+885,Stephens PLC,Corporation,12613.16,True
+886,"Edwards, Rodriguez and Silva",Non-Profit,8732.74,True
+887,"Smith, Mcguire and Lopez",Individual,11890.74,True
+888,Stark-Berry,Corporation,26245.45,True
+889,"Martinez, Dean and Barker",Corporation,19090.34,True
+890,Rodriguez-Frazier,Individual,39487.04,True
+891,"Graham, Adams and Weiss",Non-Profit,4987.79,True
+892,Lopez Inc,Non-Profit,38041.74,True
+893,Brown Inc,Non-Profit,23984.67,True
+894,Osborne-Chen,Corporation,25146.04,True
+895,Ramirez-Cole,Non-Profit,27355.46,True
+896,Martinez-Wright,Individual,7214.81,True
+897,Greene Ltd,Individual,40884.81,True
+898,Dickerson Ltd,Individual,32323.27,True
+899,"Miller, Myers and Johnston",Individual,45989.09,True
+900,Cunningham-Mcclain,Corporation,29870.53,True
+901,"Wilson, Martinez and Lewis",Corporation,15045.98,True
+902,Jones-Martin,Non-Profit,6552.19,True
+903,"Bailey, Hobbs and Perry",Individual,19609.42,True
+904,Wilson and Sons,Non-Profit,18851.7,True
+905,Everett and Sons,Individual,16803.47,True
+906,Hobbs and Sons,Non-Profit,4290.7,True
+907,Boyd-Bryant,Individual,14585.2,True
+908,Griffin-Jackson,Individual,15232.04,True
+909,Villanueva-Chase,Individual,43126.72,True
+910,"Andrews, Anderson and Miller",Non-Profit,43616.74,True
+911,Prince PLC,Individual,49053.1,True
+912,"Davies, Owen and Patel",Individual,30893.32,True
+913,"Wright, Lewis and Bryant",Individual,46949.09,True
+914,Johnson-Brown,Individual,38964.05,True
+915,Smith-Torres,Corporation,17475.5,True
+916,Perkins-Williams,Individual,19221.11,True
+917,"Klein, Payne and Kim",Individual,43962.34,True
+918,"Becker, Stephenson and Martin",Corporation,31014.08,True
+919,Turner Ltd,Corporation,16374.66,True
+920,"Salas, Hall and Fitzgerald",Non-Profit,33856.76,True
+921,"Hernandez, Ferguson and Wagner",Individual,28945.76,True
+922,Johnson and Sons,Individual,25684.69,True
+923,"Calderon, Brooks and Parker",Non-Profit,35492.37,True
+924,Barrera-Wright,Non-Profit,20763.63,True
+925,Thomas-Jackson,Individual,26742.02,True
+926,"Myers, Norman and Buchanan",Non-Profit,24951.0,True
+927,"Thornton, Taylor and Gutierrez",Non-Profit,16935.61,True
+928,Hall PLC,Corporation,25708.12,True
+929,"Gutierrez, Walker and Howe",Non-Profit,8168.71,True
+930,Reynolds-Vaughn,Non-Profit,39551.68,True
+931,Lee-Garrett,Individual,23788.4,True
+932,Steele-Davis,Corporation,13130.0,True
+933,Roy-Gomez,Non-Profit,46666.4,True
+934,Rodriguez-Key,Corporation,11755.13,True
+935,"Owens, Moore and Cole",Non-Profit,40834.78,True
+936,White Group,Non-Profit,13115.7,True
+937,"Leblanc, Hernandez and Santiago",Corporation,42431.64,True
+938,Mathis-Nunez,Corporation,2334.04,True
+939,Clark and Sons,Corporation,33209.99,True
+940,Harrison-Mccoy,Corporation,25659.0,True
+941,"Griffith, Smith and Patterson",Corporation,46566.71,True
+942,Acosta PLC,Individual,39757.2,True
+943,"Koch, Blankenship and Lewis",Individual,34619.78,True
+944,"Manning, Stewart and Johnson",Corporation,14594.63,True
+945,"Gardner, Griffith and Daniels",Corporation,33426.22,True
+946,"Perry, Rodriguez and Ray",Corporation,35508.56,True
+947,"Rowe, Martin and Williams",Non-Profit,20586.76,True
+948,Rodriguez Ltd,Non-Profit,44841.06,True
+949,Elliott LLC,Non-Profit,49489.81,True
+950,"Harrington, Lee and Kent",Non-Profit,2332.92,True
+951,Clark-Blanchard,Individual,1843.67,True
+952,Olson LLC,Corporation,30995.54,True
+953,Garcia and Sons,Non-Profit,9916.35,True
+954,Sims-Phillips,Individual,20833.31,True
+955,Riggs-Macdonald,Individual,22983.32,True
+956,"Johnson, Rivera and Miller",Individual,17935.95,True
+957,Le-Adams,Corporation,12642.49,True
+958,"Carter, Gray and Casey",Corporation,31436.45,True
+959,Hess-Cabrera,Non-Profit,4842.06,True
+960,Larson LLC,Corporation,21842.4,True
+961,"White, Rowland and Powers",Individual,4316.7,True
+962,Mcdaniel-Peterson,Corporation,16654.9,True
+963,Jones-Carlson,Non-Profit,28006.13,True
+964,Atkins and Sons,Non-Profit,47334.61,True
+965,Smith Ltd,Corporation,9064.93,True
+966,Burke-Watkins,Non-Profit,16470.84,True
+967,Wall-Chambers,Individual,36117.21,True
+968,"Weeks, Noble and Anderson",Non-Profit,39539.69,True
+969,Goodman LLC,Non-Profit,23557.3,True
+970,Payne PLC,Individual,49128.74,True
+971,"Cervantes, Long and Cooper",Non-Profit,25539.9,True
+972,"Smith, Garcia and Jones",Individual,25247.36,True
+973,Davis PLC,Non-Profit,16455.75,True
+974,"Spencer, Herman and Delacruz",Individual,34843.45,True
+975,Mcknight-Weiss,Individual,18863.75,True
+976,"Ford, Keith and Sparks",Non-Profit,20202.23,True
+977,Wise Inc,Non-Profit,31706.14,True
+978,Douglas-Gaines,Individual,22431.56,True
+979,Thomas and Sons,Individual,43650.96,True
+980,Harris Ltd,Corporation,2628.6,True
+981,"Smith, Rivers and Guerra",Corporation,37297.24,True
+982,Brown-Ball,Individual,18110.83,True
+983,"Lawrence, Clark and Wolfe",Individual,42750.72,True
+984,"Smith, Wong and Moore",Corporation,30694.48,True
+985,Lopez-Schroeder,Corporation,9901.96,True
+986,Meza and Sons,Individual,27201.74,True
+987,West PLC,Corporation,20018.2,True
+988,Perez Group,Individual,28086.74,True
+989,"Guzman, Simpson and Curtis",Individual,41569.25,True
+990,Warren-Rivas,Individual,24691.75,True
+991,Taylor-Hall,Non-Profit,46906.62,True
+992,Booth Ltd,Individual,23039.98,True
+993,"Clark, Jones and Lopez",Non-Profit,38774.45,True
+994,Fleming Inc,Individual,15150.49,True
+995,Proctor Inc,Non-Profit,29101.72,True
+996,"Roberts, Lee and Zhang",Corporation,5139.09,True
+997,Stevens Ltd,Corporation,6067.82,True
+998,Gillespie-Acevedo,Individual,1123.6,True
+999,Diaz-Henson,Corporation,34736.0,True
+1000,Green Inc,Non-Profit,2731.67,True
+1001,"Mccarthy, Craig and Morton",Non-Profit,19226.97,True
+1002,"Chang, Juarez and Fox",Individual,2633.62,True
+1003,Lopez and Sons,Non-Profit,13779.41,True
+1004,Hernandez-Compton,Non-Profit,11005.24,True
+1005,"Johnson, Blackwell and Kirby",Corporation,39139.82,True
+1006,Martinez Ltd,Non-Profit,46514.38,True
+1007,Ford-Kemp,Corporation,22709.23,True
+1008,Copeland LLC,Individual,27250.78,True
+1009,Wilson-Kent,Corporation,17462.63,True
+1010,"Gonzalez, Trevino and Brandt",Corporation,3250.47,True
+1011,Herman-Hayden,Corporation,24265.36,True
+1012,Noble Ltd,Corporation,49788.43,True
+1013,Scott-Bentley,Corporation,28641.97,True
+1014,Berry-Mitchell,Corporation,39448.44,True
+1015,Gibson-Cook,Non-Profit,45786.67,True
+1016,Stafford and Sons,Corporation,15239.92,True
+1017,Hayes-Baker,Individual,16604.12,True
+1018,"Cook, Nolan and Ortega",Non-Profit,38103.52,True
+1019,"Irwin, Morrison and Torres",Non-Profit,44528.51,True
+1020,Hayes-Vasquez,Corporation,45109.95,True
+1021,"Brooks, Davis and Grimes",Individual,18335.79,True
+1022,"Robertson, Campbell and Lewis",Individual,15389.54,True
+1023,Brown-Mcguire,Individual,17082.27,True
+1024,"Dunn, Warren and Patton",Non-Profit,27126.48,True
+1025,"Adams, Jackson and Galloway",Non-Profit,37132.03,True
+1026,"Ramirez, Watkins and Hicks",Non-Profit,4169.9,True
+1027,"Garrett, Campbell and Turner",Non-Profit,27488.4,True
+1028,Hernandez-Wilkerson,Corporation,40490.29,True
+1029,Carr Ltd,Non-Profit,22930.15,True
+1030,Castro-Robertson,Individual,17788.0,True
+1031,Day Inc,Non-Profit,15306.09,True
+1032,Garrett PLC,Corporation,39425.15,True
+1033,Morris Ltd,Non-Profit,8299.96,True
+1034,Walker Group,Non-Profit,2042.73,True
+1035,Gonzalez-Nixon,Corporation,47118.78,True
+1036,"Edwards, Cowan and Hernandez",Individual,39855.58,True
+1037,Jones LLC,Individual,19122.58,True
+1038,Carr Ltd,Corporation,37021.98,True
+1039,Curtis-Rice,Corporation,29412.83,True
+1040,Le-Reynolds,Individual,20897.3,True
+1041,"Cook, Bell and Gamble",Individual,26626.85,True
+1042,"Allen, Davila and Brown",Individual,21977.99,True
+1043,Estrada-Pitts,Non-Profit,41284.75,True
+1044,Martin Group,Individual,17820.54,True
+1045,Porter LLC,Corporation,31854.63,True
+1046,"Kelly, Burke and Butler",Corporation,5377.29,True
+1047,Alexander-Hunt,Non-Profit,14942.1,True
+1048,Lopez-Hernandez,Non-Profit,14499.14,True
+1049,Campbell-Herrera,Non-Profit,33065.84,True
+1050,Adams-Waller,Individual,3062.52,True
+1051,Bauer-Walker,Corporation,17450.04,True
+1052,Prince Ltd,Corporation,2661.92,True
+1053,"Ryan, Lopez and Lewis",Non-Profit,28132.81,True
+1054,"Rodriguez, Horton and Williams",Individual,7376.03,True
+1055,Melendez-Macias,Corporation,2132.08,True
+1056,Anderson-Martinez,Non-Profit,31525.56,True
+1057,"Sandoval, Chambers and Robinson",Individual,46415.79,True
+1058,Garrett-Hardy,Corporation,16198.28,True
+1059,"Goodman, Phillips and Levine",Corporation,31566.93,True
+1060,Wilson-Hurley,Corporation,22417.64,True
+1061,"Carter, Allen and Murray",Corporation,37216.0,True
+1062,Gomez-Williamson,Non-Profit,41395.26,True
+1063,Richardson-Chung,Individual,46095.4,True
+1064,Howard-Neal,Individual,39637.02,True
+1065,Hill-Villa,Corporation,11347.12,True
+1066,"Blackwell, Barnett and Smith",Individual,20769.05,True
+1067,"Murray, Guerrero and Taylor",Corporation,7865.13,True
+1068,"Mcguire, Smith and Perez",Individual,15915.67,True
+1069,Castillo LLC,Corporation,38789.56,True
+1070,"Buckley, Davis and Hawkins",Non-Profit,5766.66,True
+1071,Morrison PLC,Individual,26674.9,True
+1072,Hill LLC,Individual,12549.91,True
+1073,Foster PLC,Individual,39335.04,True
+1074,Moyer-Taylor,Corporation,43687.72,True
+1075,"Anderson, Bryant and Lane",Non-Profit,10014.91,True
+1076,"Petersen, Graves and Johnson",Corporation,32698.29,True
+1077,"Bailey, Larson and Lane",Non-Profit,31902.93,True
+1078,"Hall, Oneal and Anderson",Non-Profit,20941.61,True
+1079,"Everett, Allen and Russell",Non-Profit,13141.45,True
+1080,"Wang, Nguyen and Eaton",Non-Profit,2725.68,True
+1081,Blair Group,Individual,36751.93,True
+1082,Li PLC,Corporation,18491.33,True
+1083,Leon-Long,Non-Profit,45451.9,True
+1084,"Smith, Smith and Rodriguez",Non-Profit,27889.88,True
+1085,Moore and Sons,Corporation,35372.31,True
+1086,Martin-Thompson,Non-Profit,27956.72,True
+1087,"Jenkins, Quinn and Berg",Non-Profit,40152.59,True
+1088,"Barber, Rose and Burns",Corporation,25294.95,True
+1089,"Anderson, Sanchez and Fernandez",Individual,42266.27,True
+1090,Thomas-Evans,Individual,15777.96,True
+1091,Perkins and Sons,Non-Profit,29192.32,True
+1092,Wilson-Miller,Individual,37198.28,True
+1093,Castillo Ltd,Individual,28666.82,True
+1094,Vaughan-Watson,Non-Profit,47315.83,True
+1095,"Neal, Patrick and Jacobson",Individual,4602.29,True
+1096,Sanchez PLC,Individual,47668.01,True
+1097,Henry PLC,Non-Profit,48461.67,True
+1098,"Brooks, Mcdowell and Taylor",Corporation,48512.03,True
+1099,Anthony-Nelson,Non-Profit,45640.49,True
+1100,"Pacheco, Foster and Thomas",Individual,11921.04,True
+1101,"Ward, Walker and Jones",Individual,12261.31,True
+1102,Arnold Inc,Non-Profit,27733.11,True
+1103,Jimenez PLC,Corporation,30534.17,True
+1104,"Stewart, Torres and Smith",Non-Profit,9851.02,True
+1105,Morgan-Jones,Individual,18876.89,True
+1106,"Morales, Garcia and Smith",Individual,19670.09,True
+1107,"Robinson, Rivas and Hicks",Corporation,13794.34,True
+1108,Hayes PLC,Corporation,19867.71,True
+1109,Johnson PLC,Individual,19114.93,True
+1110,Ward LLC,Individual,6473.43,True
+1111,"Phillips, Bolton and Patton",Corporation,11732.76,True
+1112,"Arnold, Krause and Dean",Individual,7234.31,True
+1113,White and Sons,Corporation,30081.69,True
+1114,Tate LLC,Corporation,20338.45,True
+1115,Burns and Sons,Individual,39544.97,True
+1116,"Camacho, Swanson and Crawford",Non-Profit,18378.11,True
+1117,Smith Ltd,Corporation,39797.23,True
+1118,Scott-Porter,Non-Profit,29633.68,True
+1119,Horn Group,Corporation,24925.84,True
+1120,Baker-Floyd,Corporation,2819.11,True
+1121,"Baird, Romero and Chen",Individual,31912.63,True
+1122,Brock and Sons,Non-Profit,25774.98,True
+1123,Bates-Walters,Corporation,6866.92,True
+1124,Mccarthy Group,Individual,32949.42,True
+1125,"Hicks, Bennett and Morales",Individual,38163.79,True
+1126,Barr Ltd,Corporation,5608.34,True
+1127,"Young, Hudson and Rodriguez",Corporation,2804.32,True
+1128,Chambers-Parker,Corporation,9451.99,True
+1129,Hernandez-Jefferson,Individual,13987.73,True
+1130,"Adams, Lopez and Lee",Corporation,22942.07,True
+1131,"Smith, Moore and Kemp",Corporation,17315.45,True
+1132,Martinez Group,Corporation,13862.12,True
+1133,Martin-Gross,Individual,19128.97,True
+1134,Smith-Roberts,Corporation,13800.56,True
+1135,"Giles, Johnson and Garza",Corporation,34427.17,True
+1136,"Robinson, Vaughn and Thompson",Non-Profit,37252.96,True
+1137,Castro-Ruiz,Individual,30380.16,True
+1138,"Walters, Bowen and Collins",Corporation,37188.48,True
+1139,Moore-Wilson,Corporation,36691.62,True
+1140,Miller-Mccarthy,Corporation,13590.62,True
+1141,"Patrick, Miller and Green",Non-Profit,33985.19,True
+1142,"Hernandez, Williams and Ferguson",Non-Profit,40109.91,True
+1143,"Richard, Porter and Vargas",Individual,41925.98,True
+1144,"Lowe, Snow and Thomas",Non-Profit,41072.26,True
+1145,"Mitchell, Blackburn and Williams",Non-Profit,3182.3,True
+1146,Garcia-Mills,Non-Profit,25793.09,True
+1147,Dalton PLC,Corporation,7616.81,True
+1148,Bond Ltd,Non-Profit,10278.19,True
+1149,"Morgan, Wiggins and Robinson",Non-Profit,40590.75,True
+1150,"Young, Johnson and Clark",Corporation,13080.0,True
+1151,Green-White,Corporation,46614.47,True
+1152,Castro-Sutton,Non-Profit,9074.28,True
+1153,Meyer Ltd,Individual,41020.86,True
+1154,Fox-Ho,Non-Profit,21427.9,True
+1155,"Ball, Warren and Patel",Non-Profit,40280.74,True
+1156,"David, Lewis and Long",Corporation,33334.89,True
+1157,Simpson-Simpson,Individual,16238.65,True
+1158,"Barr, Sanchez and Hendricks",Corporation,42398.04,True
+1159,"Williams, Haney and Campbell",Corporation,1166.7,True
+1160,"Thomas, Lopez and Carrillo",Individual,22331.2,True
+1161,Olson Ltd,Individual,10326.42,True
+1162,"Peterson, Ortiz and Gordon",Individual,14838.33,True
+1163,Johnson-Price,Corporation,18307.87,True
+1164,Brown-Lin,Corporation,5229.35,True
+1165,Smith PLC,Individual,8025.54,True
+1166,Smith and Sons,Corporation,36273.75,True
+1167,Johnson PLC,Individual,11183.27,True
+1168,Griffith-Rivera,Corporation,47003.85,True
+1169,Snow PLC,Non-Profit,18644.18,True
+1170,Wright-Lawson,Individual,42280.83,True
+1171,Huynh-Patrick,Non-Profit,33683.65,True
+1172,Ryan and Sons,Corporation,46556.93,True
+1173,"Williams, Alvarez and Myers",Non-Profit,18739.36,True
+1174,"Gregory, Gillespie and Levine",Individual,43447.3,True
+1175,"Leonard, Sullivan and Johnson",Corporation,1324.78,True
+1176,Farley-Glover,Corporation,45228.16,True
+1177,Sloan and Sons,Non-Profit,32292.02,True
+1178,Hunter and Sons,Non-Profit,45332.15,True
+1179,"Williams, Patton and Harris",Non-Profit,43963.91,True
+1180,Williams-Mclaughlin,Individual,35159.06,True
+1181,Wallace-Stewart,Corporation,8661.36,True
+1182,"Rivera, Weaver and Knox",Individual,8413.55,True
+1183,"Simpson, Short and White",Individual,11070.58,True
+1184,Phelps-Anderson,Individual,34921.05,True
+1185,Wells Inc,Individual,33172.18,True
+1186,Stark and Sons,Individual,24946.93,True
+1187,"Spence, Jackson and Carpenter",Individual,36931.85,True
+1188,Jenkins Ltd,Individual,8420.86,True
+1189,Richardson-Keith,Corporation,8759.51,True
+1190,"Robinson, Hughes and Miller",Individual,12948.3,True
+1191,Steele-Allen,Corporation,7143.34,True
+1192,Martin-Randall,Corporation,45878.61,True
+1193,Nash Ltd,Corporation,22509.35,True
+1194,Jenkins Ltd,Corporation,44222.33,True
+1195,"Bird, Williams and Wallace",Corporation,45664.52,True
+1196,Baker-White,Non-Profit,43136.03,True
+1197,Greene-Williams,Non-Profit,32093.38,True
+1198,Sims LLC,Corporation,38353.5,True
+1199,Montoya Inc,Non-Profit,48507.04,True
+1200,Ayala-Hensley,Non-Profit,35612.75,True
+1201,Keller Inc,Corporation,29594.92,True
+1202,Mcdonald and Sons,Individual,48805.91,True
+1203,Bowman-Guzman,Corporation,14155.83,True
+1204,"Hopkins, Brown and Perry",Non-Profit,10500.24,True
+1205,Rubio-Mcdonald,Individual,10861.44,True
+1206,Lewis-Henry,Corporation,17982.32,True
+1207,Wright-Pope,Corporation,8692.17,True
+1208,Andrade LLC,Non-Profit,37763.01,True
+1209,Taylor-Russell,Corporation,21034.61,True
+1210,"Yoder, Strong and Beck",Corporation,35756.52,True
+1211,Brown-Kline,Non-Profit,48232.89,True
+1212,Henderson-Acosta,Individual,45581.42,True
+1213,Lee Group,Corporation,12265.58,True
+1214,Garcia Ltd,Non-Profit,21711.91,True
+1215,Moreno LLC,Corporation,32662.19,True
+1216,Boyd LLC,Individual,38399.57,True
+1217,Wood-Burton,Individual,10378.09,True
+1218,"Brock, Smith and Quinn",Corporation,7048.67,True
+1219,"Riley, Patrick and Hudson",Non-Profit,35850.81,True
+1220,"Golden, Elliott and Ortiz",Individual,43840.47,True
+1221,Prince LLC,Corporation,23059.04,True
+1222,Bryant and Sons,Individual,17735.63,True
+1223,Jarvis-Robbins,Corporation,3020.31,True
+1224,"Rhodes, Moore and Obrien",Individual,28174.33,True
+1225,"Chandler, Garcia and Dixon",Non-Profit,11858.8,True
+1226,Clements-Wilson,Individual,5988.65,True
+1227,"Levy, Wilson and Wright",Corporation,39978.95,True
+1228,Davis Ltd,Non-Profit,47128.44,True
+1229,Dunn-Howard,Non-Profit,5695.96,True
+1230,Parker-Welch,Individual,6164.61,True
+1231,Mcdonald Inc,Corporation,14697.83,True
+1232,Hines-Luna,Individual,8718.45,True
+1233,"Johnson, Ayala and Velasquez",Corporation,7623.43,True
+1234,"Kelley, Williams and Wood",Individual,43567.04,True
+1235,"Gutierrez, Norton and Morgan",Non-Profit,11882.0,True
+1236,Murillo PLC,Non-Profit,41990.91,True
+1237,Clark Inc,Non-Profit,45808.03,True
+1238,Turner-Perez,Non-Profit,43794.38,True
+1239,Charles-Hobbs,Individual,4526.17,True
+1240,Robinson-Brown,Corporation,14525.54,True
+1241,White LLC,Non-Profit,44810.61,True
+1242,"Best, Salazar and Dudley",Non-Profit,24717.18,True
+1243,Riley LLC,Individual,18614.49,True
+1244,Butler-Harmon,Individual,13744.45,True
+1245,"Hunter, Murray and Barber",Individual,43152.5,True
+1246,Hernandez-Russell,Non-Profit,40369.91,True
+1247,Richardson Group,Individual,34013.75,True
+1248,Parker-Barber,Corporation,1603.29,True
+1249,"Clarke, Smith and Mckinney",Corporation,42455.56,True
+1250,"Rivera, Davis and Miller",Individual,36070.5,True
+1251,"Gonzalez, Dickson and Smith",Corporation,3920.63,True
+1252,Turner Inc,Corporation,2855.8,True
+1253,"Mitchell, Sanders and Vargas",Individual,21109.5,True
+1254,Turner-Bullock,Non-Profit,9554.87,True
+1255,Gill Inc,Individual,16236.03,True
+1256,"Carlson, Mckee and Cervantes",Corporation,28057.54,True
+1257,"Bullock, Sanchez and Vasquez",Non-Profit,7459.55,True
+1258,Stokes-Knox,Corporation,6133.51,True
+1259,"Taylor, Fischer and Johnson",Non-Profit,49663.37,True
+1260,Larson Group,Individual,43572.43,True
+1261,"Smith, Hamilton and Waller",Corporation,48121.67,True
+1262,"Cochran, Huang and Ewing",Individual,47195.47,True
+1263,Williams-Winters,Individual,17530.19,True
+1264,"Gutierrez, Ho and Williams",Corporation,7143.26,True
+1265,Wilcox-Harding,Individual,26938.94,True
+1266,"Wilson, Gordon and Johnson",Individual,4791.94,True
+1267,Hoffman-Lewis,Corporation,42373.25,True
+1268,Campos-Taylor,Non-Profit,25324.55,True
+1269,White-Hughes,Non-Profit,1865.41,True
+1270,Perez-Logan,Individual,35745.74,True
+1271,Kelly-Deleon,Non-Profit,4150.48,True
+1272,Garrett-Eaton,Non-Profit,49942.78,True
+1273,Taylor and Sons,Corporation,32485.8,True
+1274,Hanson Inc,Individual,43495.68,True
+1275,Hall-Reed,Corporation,27017.76,True
+1276,"Wright, Elliott and Flores",Corporation,46706.15,True
+1277,"Mclaughlin, Lawrence and Brooks",Individual,49050.37,True
+1278,"Wise, Taylor and Foster",Individual,21518.64,True
+1279,Guerrero-Jackson,Individual,38377.21,True
+1280,Walker-Hendricks,Non-Profit,46569.45,True
+1281,Ryan Inc,Non-Profit,46709.92,True
+1282,"Newman, Hudson and Bartlett",Individual,15254.62,True
+1283,Mays Group,Corporation,47737.09,True
+1284,Delgado Inc,Corporation,49296.29,True
+1285,Lambert-Bowers,Individual,26747.26,True
+1286,Jones-Adams,Corporation,5055.1,True
+1287,Miller-Gregory,Corporation,37966.97,True
+1288,Jensen Ltd,Non-Profit,1876.62,True
+1289,Williams Inc,Non-Profit,1490.58,True
+1290,"Moss, Davis and Hughes",Individual,2282.14,True
+1291,Obrien-Harrison,Individual,17723.17,True
+1292,Johnson and Sons,Non-Profit,33583.15,True
+1293,"Woods, Daniels and Morgan",Individual,20492.4,True
+1294,Davis PLC,Individual,24636.42,True
+1295,Miller-Malone,Non-Profit,9686.3,True
+1296,Weaver Inc,Non-Profit,46851.63,True
+1297,Rodriguez and Sons,Corporation,14985.4,True
+1298,Morgan-Rivera,Corporation,44747.82,True
+1299,Mason PLC,Corporation,31561.36,True
+1300,Mcdaniel and Sons,Non-Profit,27178.79,True
+1301,Blake Ltd,Non-Profit,31186.2,True
+1302,Valdez Group,Individual,12320.79,True
+1303,"Schmidt, Campbell and Berry",Corporation,12192.19,True
+1304,Day-Davis,Individual,44598.14,True
+1305,Blackburn and Sons,Individual,8481.13,True
+1306,Keller-Mendoza,Individual,9473.12,True
+1307,Singh-Williams,Non-Profit,23222.18,True
+1308,Grant-Gomez,Non-Profit,9558.04,True
+1309,Malone-Conway,Corporation,13540.19,True
+1310,House-Kim,Individual,15539.04,True
+1311,Bartlett-Acosta,Non-Profit,42821.06,True
+1312,Jones-Mcpherson,Individual,27982.71,True
+1313,Tanner PLC,Corporation,24975.84,True
+1314,Wright LLC,Corporation,15290.41,True
+1315,Jones-Jones,Non-Profit,5180.56,True
+1316,"Campbell, Gray and Cooper",Non-Profit,20689.1,True
+1317,Miller PLC,Corporation,18689.37,True
+1318,"Henderson, Wilson and Villa",Corporation,23271.57,True
+1319,Acevedo Group,Individual,3814.1,True
+1320,Gutierrez-Fields,Non-Profit,41726.62,True
+1321,Foster-Jackson,Non-Profit,9511.28,True
+1322,Mcknight-Barrett,Corporation,37922.54,True
+1323,Murphy-Olson,Individual,20589.38,True
+1324,"Blackwell, Harrison and Ritter",Non-Profit,41956.0,True
+1325,Matthews-Vance,Individual,24424.0,True
+1326,Thomas PLC,Corporation,18614.31,True
+1327,"Williams, Carter and Johnson",Non-Profit,32828.8,True
+1328,Alexander-Brown,Non-Profit,1836.34,True
+1329,"Moore, Miranda and Wilkerson",Corporation,27663.57,True
+1330,"Owen, Nelson and Klein",Non-Profit,25149.05,True
+1331,"Carpenter, Patel and Jones",Individual,1666.94,True
+1332,Hill Ltd,Non-Profit,25490.27,True
+1333,Stokes Group,Corporation,48496.01,True
+1334,Haynes-Macdonald,Non-Profit,29471.8,True
+1335,Bennett Group,Non-Profit,10225.97,True
+1336,Schwartz Group,Corporation,39687.66,True
+1337,"Arnold, Meza and Craig",Individual,31877.32,True
+1338,Perez-Brown,Individual,39886.4,True
+1339,Nelson LLC,Corporation,49577.46,True
+1340,Scott-Montgomery,Non-Profit,25515.88,True
+1341,Mccarthy PLC,Corporation,10454.35,True
+1342,Edwards-Carr,Individual,6389.57,True
+1343,Valenzuela Group,Corporation,33993.15,True
+1344,Smith LLC,Non-Profit,21605.7,True
+1345,Eaton Group,Individual,6661.06,True
+1346,Dean Ltd,Individual,16306.74,True
+1347,"Hoffman, Powell and Young",Individual,5441.12,True
+1348,"Dillon, Young and Ashley",Non-Profit,34181.73,True
+1349,"Montes, Mason and Snyder",Individual,17016.92,True
+1350,Fowler Inc,Individual,42611.17,True
+1351,Maxwell Ltd,Corporation,9152.67,True
+1352,"Sanders, Riley and Roach",Individual,40663.16,True
+1353,Lee-Thomas,Corporation,3673.37,True
+1354,"Jenkins, Adams and Rogers",Non-Profit,11146.31,True
+1355,Edwards and Sons,Corporation,37418.82,True
+1356,Clark and Sons,Individual,38266.11,True
+1357,Newman PLC,Corporation,42056.09,True
+1358,Gates-Miller,Individual,12324.04,True
+1359,Wagner and Sons,Corporation,5630.06,True
+1360,Campbell-Davis,Individual,45302.81,True
+1361,Craig-Aguilar,Individual,10324.77,True
+1362,"Schneider, Guerrero and Guzman",Individual,4126.52,True
+1363,"Gonzales, Holden and Stevens",Individual,34863.79,True
+1364,Novak-Perez,Individual,30501.21,True
+1365,"Wang, Perry and Martinez",Non-Profit,15460.06,True
+1366,Barrett-Sandoval,Corporation,46140.79,True
+1367,Jackson and Sons,Corporation,3263.86,True
+1368,"Terrell, Coffey and Carlson",Individual,30582.44,True
+1369,Dunn-Reyes,Non-Profit,29060.21,True
+1370,"Ramsey, Davis and Winters",Individual,28149.9,True
+1371,Watson Inc,Non-Profit,44903.37,True
+1372,Olson-Deleon,Individual,1278.3,True
+1373,Mckinney-Wagner,Corporation,21240.4,True
+1374,Rose-Vasquez,Corporation,40098.32,True
+1375,"Mason, Rivera and Baxter",Individual,32246.7,True
+1376,Higgins Inc,Individual,40325.88,True
+1377,"Carr, Hunt and Keller",Individual,18875.28,True
+1378,Walker Inc,Corporation,5264.39,True
+1379,Lucas PLC,Corporation,12692.93,True
+1380,"Wright, Wilkins and Reyes",Individual,13922.91,True
+1381,"Barrera, Garcia and Deleon",Individual,32955.85,True
+1382,"Rice, Brown and Gamble",Individual,8353.55,True
+1383,Smith-Armstrong,Individual,40508.01,True
+1384,Wood-Miller,Non-Profit,39385.76,True
+1385,Roberts LLC,Corporation,24467.92,True
+1386,"Shelton, Sparks and Zavala",Individual,3661.8,True
+1387,Frederick-Johnson,Corporation,17000.14,True
+1388,Walker-Perez,Corporation,2063.4,True
+1389,Brady Ltd,Corporation,29474.86,True
+1390,Moore and Sons,Individual,18950.29,True
+1391,West and Sons,Corporation,22574.72,True
+1392,Farmer-Hardy,Corporation,4976.51,True
+1393,Mayo and Sons,Corporation,29418.85,True
+1394,Vincent Inc,Corporation,24070.12,True
+1395,Russo Group,Corporation,17519.42,True
+1396,Howe PLC,Individual,7296.75,True
+1397,Armstrong-Garcia,Corporation,43323.42,True
+1398,Gibson-Castro,Non-Profit,46568.44,True
+1399,"Richmond, Williams and Frazier",Corporation,35010.81,True
+1400,Moore LLC,Non-Profit,38653.25,True
+1401,"Perry, Lewis and Shannon",Individual,20294.49,True
+1402,"Gonzales, Nichols and Rodriguez",Individual,16479.51,True
+1403,Snyder Group,Corporation,47250.03,True
+1404,"Coleman, Myers and Baldwin",Non-Profit,31597.88,True
+1405,Hill LLC,Non-Profit,30144.02,True
+1406,"Simmons, Bailey and Randall",Non-Profit,6651.96,True
+1407,"Arias, Smith and Bond",Non-Profit,28138.07,True
+1408,Carpenter-Frank,Individual,5833.05,True
+1409,Brown Group,Individual,16545.17,True
+1410,"Henry, Thompson and Lane",Individual,5587.2,True
+1411,Stanley Ltd,Corporation,8961.62,True
+1412,"Smith, Stanton and Bennett",Corporation,6684.47,True
+1413,Mccall and Sons,Corporation,35384.22,True
+1414,Larson-Serrano,Non-Profit,16275.94,True
+1415,Mullins-Martin,Corporation,44454.98,True
+1416,Cole-Mason,Corporation,22540.42,True
+1417,"Chambers, Nelson and Gregory",Individual,45850.04,True
+1418,Clark-Pruitt,Individual,22739.79,True
+1419,"James, Johnson and Marsh",Non-Profit,24028.19,True
+1420,Harmon Inc,Non-Profit,13921.19,True
+1421,Sexton LLC,Non-Profit,44676.41,True
+1422,"Brown, Garcia and Griffin",Individual,34437.27,True
+1423,"Pratt, Le and Barnes",Corporation,30258.45,True
+1424,Herman-Campbell,Corporation,45330.12,True
+1425,Ellis PLC,Corporation,33078.05,True
+1426,Lin-Smith,Non-Profit,18242.31,True
+1427,"French, Vazquez and Jimenez",Non-Profit,40905.13,True
+1428,Powell-Monroe,Individual,13454.15,True
+1429,"Nichols, Bishop and Schwartz",Individual,32826.93,True
+1430,Young-Holland,Individual,46723.84,True
+1431,Hall Inc,Corporation,44263.71,True
+1432,"Bird, Scott and Jordan",Individual,23613.81,True
+1433,Conner-Duncan,Corporation,6109.03,True
+1434,Washington-Ellison,Non-Profit,43965.07,True
+1435,"Carroll, Fitzgerald and Johnson",Individual,6072.91,True
+1436,"Adams, Conway and Salazar",Individual,23144.81,True
+1437,Castro-Roberts,Non-Profit,11861.17,True
+1438,Hayes LLC,Individual,33568.66,True
+1439,Dixon-Thompson,Non-Profit,31941.81,True
+1440,"Smith, Hicks and Bell",Non-Profit,5304.55,True
+1441,"Diaz, Martinez and Martinez",Individual,2451.06,True
+1442,"Turner, Ingram and Davis",Individual,48275.68,True
+1443,"Kent, Jackson and Thomas",Corporation,29769.43,True
+1444,Mitchell Ltd,Corporation,47795.91,True
+1445,Young and Sons,Corporation,13716.88,True
+1446,Terry LLC,Individual,4118.92,True
+1447,Weaver Ltd,Individual,33619.49,True
+1448,Nicholson LLC,Non-Profit,46564.42,True
+1449,Scott-Schmidt,Corporation,15247.7,True
+1450,Sanchez-Moore,Individual,39276.17,True
+1451,Jenkins Group,Non-Profit,3805.29,True
+1452,Chan LLC,Corporation,28094.81,True
+1453,"Lopez, Phillips and Ramirez",Individual,42738.22,True
+1454,"Anderson, Smith and Hale",Individual,7025.64,True
+1455,"Willis, Bauer and Hardin",Corporation,11082.99,True
+1456,Nelson LLC,Non-Profit,9453.87,True
+1457,Parker-Meadows,Non-Profit,35660.83,True
+1458,Aguilar-Vasquez,Individual,41974.58,True
+1459,Howard-Morrison,Corporation,44048.18,True
+1460,Montoya and Sons,Corporation,16538.08,True
+1461,"Miles, Perez and Johnson",Corporation,33285.03,True
+1462,Reyes PLC,Corporation,8080.2,True
+1463,"Novak, Stevens and Wheeler",Non-Profit,8146.91,True
+1464,"Patterson, Anderson and Ford",Individual,47664.26,True
+1465,"Oconnor, Cole and Mata",Individual,32566.82,True
+1466,Rodriguez Inc,Corporation,7188.5,True
+1467,"Collins, Guerra and Sexton",Individual,40033.13,True
+1468,Miller and Sons,Corporation,46107.7,True
+1469,"Townsend, King and Daugherty",Corporation,20616.24,True
+1470,Knox-Smith,Individual,26407.45,True
+1471,Owen-Middleton,Non-Profit,40638.5,True
+1472,Proctor-Lane,Individual,31767.76,True
+1473,Lin LLC,Corporation,31055.7,True
+1474,Davis Group,Individual,14674.81,True
+1475,Edwards Ltd,Non-Profit,21705.9,True
+1476,Adams Inc,Corporation,8196.25,True
+1477,"Griffith, Anthony and Cordova",Corporation,15044.59,True
+1478,"Alvarado, Merritt and Little",Corporation,16912.84,True
+1479,"Salinas, Nelson and Baker",Individual,5828.93,True
+1480,Sampson-Anderson,Corporation,37851.09,True
+1481,Jones-Quinn,Corporation,29443.92,True
+1482,Garcia-Deleon,Corporation,1467.91,True
+1483,"Patterson, Thornton and Taylor",Individual,39177.28,True
+1484,Ramirez-Castro,Non-Profit,41254.85,True
+1485,Jenkins-Bell,Individual,5710.29,True
+1486,"Jackson, Stephens and Stout",Individual,24314.45,True
+1487,Oconnor-Anderson,Non-Profit,6107.06,True
+1488,Phelps-Martin,Individual,32451.17,True
+1489,Marshall-Wilkins,Corporation,32397.6,True
+1490,Collins Group,Non-Profit,44355.1,True
+1491,"Bennett, Morales and Ortega",Individual,32004.09,True
+1492,Johnson-Martin,Non-Profit,1582.21,True
+1493,"Cooper, Greer and Martin",Corporation,27622.77,True
+1494,Ward-Rodriguez,Non-Profit,3230.14,True
+1495,"Parker, West and Jacobs",Corporation,27240.91,True
+1496,Riley PLC,Non-Profit,41944.92,True
+1497,Vaughan LLC,Non-Profit,16740.26,True
+1498,Cox Ltd,Non-Profit,19411.3,True
+1499,Burke-Owens,Individual,28313.98,True
+1500,Brown-Hernandez,Non-Profit,12143.67,True
+1501,"Ballard, Kelly and Schwartz",Individual,14440.18,True
+1502,Garrison Group,Non-Profit,34010.31,True
+1503,Lopez and Sons,Non-Profit,43074.64,True
+1504,Woods-Liu,Corporation,32297.56,True
+1505,"Willis, Gonzalez and Jordan",Corporation,16015.65,True
+1506,Soto-Powell,Corporation,12781.8,True
+1507,"Francis, Sullivan and Williams",Corporation,35404.58,True
+1508,"Weber, Lawson and Hicks",Corporation,49300.75,True
+1509,"Moore, Gates and Sawyer",Non-Profit,42971.05,True
+1510,Adams PLC,Corporation,13181.86,True
+1511,"Garcia, Huang and Martin",Non-Profit,24412.96,True
+1512,White Inc,Individual,33577.83,True
+1513,"Waters, Castillo and Smith",Non-Profit,38816.49,True
+1514,Vasquez-Rodriguez,Individual,41968.96,True
+1515,Navarro Group,Corporation,41997.47,True
+1516,"Graham, Mcintyre and Sanders",Individual,33622.29,True
+1517,"Hurley, Wood and Vasquez",Non-Profit,24700.68,True
+1518,Smith-Pineda,Corporation,3390.29,True
+1519,"Lewis, Perez and Craig",Individual,39962.98,True
+1520,Burch-Harris,Individual,24214.65,True
+1521,Torres-Nelson,Individual,45684.9,True
+1522,"Nguyen, Gross and Ramirez",Individual,26398.64,True
+1523,"Jones, Hodge and Ortiz",Non-Profit,20493.58,True
+1524,Taylor Ltd,Non-Profit,35130.03,True
+1525,Sanchez and Sons,Corporation,32568.92,True
+1526,"Smith, Smith and Mills",Non-Profit,31387.52,True
+1527,Williams Ltd,Individual,28668.31,True
+1528,Ramirez Ltd,Corporation,36488.72,True
+1529,"Jackson, Hayes and Hines",Non-Profit,46966.12,True
+1530,Roach-Jackson,Individual,30349.19,True
+1531,"Berry, Barr and Alexander",Corporation,46163.33,True
+1532,Mitchell-Boyd,Individual,25607.32,True
+1533,"Rodgers, Ochoa and Carter",Non-Profit,14078.16,True
+1534,Campbell PLC,Non-Profit,8512.63,True
+1535,Beck Inc,Corporation,25761.0,True
+1536,Ruiz LLC,Corporation,47369.99,True
+1537,"Leon, Warren and Juarez",Non-Profit,44059.43,True
+1538,Wood-Johnson,Non-Profit,32120.2,True
+1539,"Gordon, Cantrell and Coleman",Individual,15112.99,True
+1540,Peters-Garcia,Corporation,47055.49,True
+1541,Bryant Inc,Individual,5428.88,True
+1542,Hardy-Hobbs,Corporation,43229.95,True
+1543,Lopez LLC,Individual,40812.4,True
+1544,Jones PLC,Non-Profit,36460.07,True
+1545,Chavez and Sons,Non-Profit,41631.05,True
+1546,Frye-Le,Corporation,9697.59,True
+1547,Farmer-Sullivan,Corporation,26127.18,True
+1548,"Bass, Chung and Hamilton",Non-Profit,2270.56,True
+1549,"Martin, Ritter and Thomas",Non-Profit,49847.8,True
+1550,"Garcia, Shepherd and Parrish",Non-Profit,33150.32,True
+1551,Davis and Sons,Corporation,25612.82,True
+1552,Dixon-Collins,Individual,5362.47,True
+1553,Chen-Mills,Individual,8354.56,True
+1554,"Santos, Jacobs and Smith",Non-Profit,41262.32,True
+1555,Hunter Ltd,Corporation,46891.0,True
+1556,Andrews-Mcdaniel,Corporation,30531.11,True
+1557,Powell Ltd,Non-Profit,8277.48,True
+1558,Obrien and Sons,Individual,11273.7,True
+1559,"Juarez, Conway and Smith",Individual,10083.47,True
+1560,Osborne Ltd,Corporation,24816.24,True
+1561,Weber LLC,Individual,17964.6,True
+1562,"Campbell, Bennett and Farrell",Non-Profit,35713.75,True
+1563,Powell-Morris,Individual,26436.06,True
+1564,Higgins-Lambert,Corporation,47200.87,True
+1565,Williams Inc,Corporation,7041.03,True
+1566,"Mooney, Clayton and Oneal",Individual,34764.27,True
+1567,Schneider-Rhodes,Non-Profit,6690.23,True
+1568,"Rogers, Mitchell and Simpson",Corporation,5504.52,True
+1569,Patel-Gamble,Corporation,39766.71,True
+1570,Freeman Ltd,Corporation,32982.79,True
+1571,Davis-Lopez,Corporation,10242.82,True
+1572,Henry-Graham,Individual,16461.87,True
+1573,Duarte-Butler,Corporation,12393.63,True
+1574,Wells PLC,Corporation,43282.97,True
+1575,"Patrick, Watts and Robinson",Individual,45501.89,True
+1576,"Cooper, Schwartz and Edwards",Individual,34135.47,True
+1577,"Baker, Sutton and Williams",Corporation,36399.04,True
+1578,"Anderson, Mcdowell and Parker",Individual,30850.87,True
+1579,Campbell and Sons,Individual,2699.62,True
+1580,Morris Ltd,Non-Profit,12684.53,True
+1581,"Fisher, Thomas and Harrington",Corporation,13784.3,True
+1582,Charles LLC,Corporation,32824.66,True
+1583,"Anthony, Martin and Osborne",Corporation,4209.77,True
+1584,Murray Inc,Non-Profit,31205.73,True
+1585,Mills LLC,Individual,17776.59,True
+1586,Tran-Reynolds,Non-Profit,17135.03,True
+1587,Turner Inc,Non-Profit,7661.14,True
+1588,Burns-Williams,Corporation,12085.03,True
+1589,"Mora, Griffith and Fisher",Non-Profit,40530.02,True
+1590,Lewis Inc,Individual,43312.26,True
+1591,"Martin, Cook and Cohen",Non-Profit,18842.67,True
+1592,Bass and Sons,Non-Profit,42570.92,True
+1593,"Jones, Reilly and Robles",Non-Profit,27822.49,True
+1594,"Clark, Daniel and Carson",Corporation,30781.97,True
+1595,Walker PLC,Non-Profit,30737.0,True
+1596,Thompson-Morris,Corporation,15473.79,True
+1597,Byrd-Moore,Individual,24939.61,True
+1598,"Aguilar, Shelton and Coleman",Corporation,29663.59,True
+1599,"Cummings, Yang and Thompson",Corporation,8299.14,True
+1600,Glover and Sons,Non-Profit,36361.35,True
+1601,Brown-Tucker,Individual,21691.5,True
+1602,"Burns, Dougherty and Brock",Non-Profit,39458.9,True
+1603,"Palmer, Lester and Brown",Individual,7255.32,True
+1604,Todd Group,Individual,5168.3,True
+1605,"Cruz, Mitchell and Butler",Corporation,6079.77,True
+1606,Fuentes-Morales,Non-Profit,44519.17,True
+1607,Fuller PLC,Individual,12729.61,True
+1608,"Andrews, Davila and Wagner",Individual,3485.52,True
+1609,Harrison-Dalton,Individual,24295.78,True
+1610,Buchanan-Roberts,Individual,19274.83,True
+1611,"Decker, Cooper and Mcgrath",Non-Profit,3173.21,True
+1612,Miller-Pierce,Corporation,20845.28,True
+1613,Smith Inc,Non-Profit,14667.05,True
+1614,Velasquez and Sons,Non-Profit,41781.99,True
+1615,Martinez Ltd,Corporation,35861.83,True
+1616,Ferguson-Austin,Individual,9356.0,True
+1617,Brown Inc,Individual,41316.02,True
+1618,Powell Inc,Individual,9886.63,True
+1619,Hunt and Sons,Individual,45411.09,True
+1620,Mcclain-Rios,Non-Profit,24720.7,True
+1621,Johnson-Tapia,Individual,26662.41,True
+1622,Brady-Hinton,Corporation,44437.74,True
+1623,"Fernandez, Gilbert and Jimenez",Corporation,3902.49,True
+1624,"Cooper, Melendez and Mahoney",Non-Profit,29200.53,True
+1625,"Brady, Perez and Cooke",Individual,29653.57,True
+1626,Smith-Hall,Individual,13179.04,True
+1627,Nguyen and Sons,Individual,49215.06,True
+1628,Dawson Inc,Corporation,28530.99,True
+1629,Lopez Inc,Corporation,47980.69,True
+1630,Mora-Jones,Individual,24506.52,True
+1631,"Torres, Watson and Mckinney",Individual,7070.8,True
+1632,Acosta-Mcguire,Individual,21788.29,True
+1633,Sherman PLC,Non-Profit,28140.76,True
+1634,"Hernandez, Moreno and Adkins",Individual,19413.42,True
+1635,Carter Inc,Individual,26277.35,True
+1636,Young-Guzman,Non-Profit,49780.17,True
+1637,"Riley, Valdez and Hammond",Non-Profit,11247.87,True
+1638,"Peterson, Garcia and Charles",Individual,19246.44,True
+1639,Richards Group,Non-Profit,12362.37,True
+1640,Farmer PLC,Corporation,42280.05,True
+1641,Cross Group,Corporation,14227.89,True
+1642,Beck-Parker,Non-Profit,27678.76,True
+1643,"Clark, Short and Burns",Individual,27475.3,True
+1644,Wilson and Sons,Individual,22768.88,True
+1645,"Jackson, Hansen and Barton",Corporation,49245.73,True
+1646,"Moran, Mays and Gomez",Corporation,44506.96,True
+1647,Levine LLC,Individual,27642.76,True
+1648,Rose LLC,Individual,11943.27,True
+1649,Bell PLC,Individual,22823.98,True
+1650,Williams Ltd,Non-Profit,13260.16,True
+1651,Gomez-Moreno,Corporation,20388.74,True
+1652,Eaton-Lynch,Corporation,42273.39,True
+1653,Miller and Sons,Corporation,16120.73,True
+1654,Bailey Ltd,Corporation,42959.77,True
+1655,Simmons LLC,Individual,1760.23,True
+1656,Pacheco-Santiago,Individual,45992.68,True
+1657,Jackson and Sons,Corporation,32850.58,True
+1658,Ellis-Warren,Non-Profit,26420.44,True
+1659,Reed-Lyons,Individual,45943.75,True
+1660,King-Cummings,Non-Profit,36453.61,True
+1661,"Garcia, Flores and Garcia",Non-Profit,7091.62,True
+1662,"Dudley, Bryant and Zamora",Non-Profit,2344.24,True
+1663,Butler-Fischer,Non-Profit,40745.16,True
+1664,"Williams, Dean and Harrison",Non-Profit,32943.58,True
+1665,"Romero, Evans and Patterson",Individual,26356.25,True
+1666,"Martin, Burch and Vasquez",Corporation,3839.99,True
+1667,Black-Grimes,Individual,36728.84,True
+1668,Thomas Inc,Non-Profit,14736.29,True
+1669,"Gray, Price and Vincent",Corporation,29986.41,True
+1670,Murray LLC,Non-Profit,38424.56,True
+1671,Boyd Group,Corporation,26256.82,True
+1672,"Rodriguez, Calhoun and White",Non-Profit,18351.23,True
+1673,"Williams, Garcia and Kim",Corporation,4437.4,True
+1674,Reed-Medina,Corporation,21882.26,True
+1675,"Keller, Johnson and Lewis",Corporation,5915.43,True
+1676,Briggs Group,Individual,11601.88,True
+1677,Johnson-Reeves,Individual,22866.16,True
+1678,"Kelley, Hartman and Lynn",Individual,19684.95,True
+1679,White-Long,Corporation,34372.09,True
+1680,Thomas PLC,Corporation,3981.84,True
+1681,Cooper PLC,Non-Profit,35207.13,True
+1682,"Peters, Jones and Wilson",Individual,38511.98,True
+1683,"Carr, Dickson and Peterson",Individual,5439.92,True
+1684,"Baker, Cruz and Best",Non-Profit,39649.59,True
+1685,Huff and Sons,Individual,36213.05,True
+1686,Thomas Inc,Non-Profit,5571.64,True
+1687,"Woodard, Rojas and Mitchell",Individual,49471.22,True
+1688,Leblanc-Stephens,Non-Profit,17287.08,True
+1689,Hawkins-Torres,Non-Profit,11790.71,True
+1690,Richards Ltd,Non-Profit,13000.24,True
+1691,Jackson Inc,Individual,36593.47,True
+1692,Baker-Fowler,Individual,13526.05,True
+1693,Haas Group,Individual,12287.92,True
+1694,Fuller-Miller,Corporation,31515.68,True
+1695,Powers Ltd,Corporation,1412.64,True
+1696,Schmidt-Garcia,Individual,24796.63,True
+1697,Lamb-Clark,Non-Profit,32954.39,True
+1698,Bartlett-Hines,Individual,21294.26,True
+1699,Morrison Inc,Non-Profit,29454.78,True
+1700,Rosario LLC,Individual,44911.65,True
+1701,Huang Inc,Corporation,49263.3,True
+1702,"Coleman, Kennedy and Holloway",Corporation,26350.63,True
+1703,"Morales, Wright and Knight",Individual,24364.08,True
+1704,Nunez-Green,Individual,20166.53,True
+1705,Nichols Group,Corporation,22989.53,True
+1706,"Garcia, Chandler and Banks",Non-Profit,15629.87,True
+1707,"Anderson, Camacho and Frazier",Corporation,22148.35,True
+1708,Warren-Lyons,Corporation,46652.2,True
+1709,Wood Inc,Individual,8224.13,True
+1710,"Estrada, Morrison and Miller",Corporation,3970.37,True
+1711,Martinez-Hunt,Corporation,47306.22,True
+1712,"Kirk, Sexton and Nichols",Individual,29201.14,True
+1713,Vaughn Ltd,Non-Profit,2179.8,True
+1714,Henderson Ltd,Non-Profit,44664.25,True
+1715,Brown-Hughes,Corporation,40546.34,True
+1716,Stanley-Diaz,Corporation,31589.31,True
+1717,"Montoya, Moses and Acevedo",Individual,7339.9,True
+1718,"Frank, French and Taylor",Corporation,49343.97,True
+1719,Macdonald Group,Non-Profit,36684.62,True
+1720,"Turner, Hernandez and Neal",Non-Profit,17933.6,True
+1721,Allen-Pope,Non-Profit,40822.5,True
+1722,Valdez Inc,Non-Profit,2112.01,True
+1723,"Johnson, Williams and Hammond",Individual,16375.04,True
+1724,Walters Ltd,Non-Profit,16720.25,True
+1725,Simmons-Mendoza,Non-Profit,5837.09,True
+1726,Cortez Group,Non-Profit,37922.94,True
+1727,"Brown, Walker and Vasquez",Corporation,27440.74,True
+1728,"Simmons, Allen and Horton",Non-Profit,13889.63,True
+1729,Shaffer-Davidson,Corporation,22336.33,True
+1730,Torres Inc,Non-Profit,22888.22,True
+1731,Meyer-Hernandez,Non-Profit,35154.1,True
+1732,Jensen-Sloan,Non-Profit,39209.75,True
+1733,"Walker, Sandoval and Mccullough",Non-Profit,22915.87,True
+1734,Fitzpatrick-Harris,Corporation,49806.61,True
+1735,Powell Ltd,Individual,48516.91,True
+1736,Allen Ltd,Corporation,3721.06,True
+1737,Gonzalez LLC,Non-Profit,18716.58,True
+1738,Mendoza PLC,Individual,48713.5,True
+1739,"Mullins, Johnson and Blackwell",Corporation,46238.8,True
+1740,Hines-Fox,Non-Profit,16965.71,True
+1741,Miller-Taylor,Corporation,40080.66,True
+1742,Gardner PLC,Corporation,1471.37,True
+1743,Cox Inc,Individual,3376.66,True
+1744,Stephens PLC,Non-Profit,20284.37,True
+1745,"Combs, Tran and Mclaughlin",Corporation,40145.73,True
+1746,"Miller, Davis and Velazquez",Non-Profit,37079.79,True
+1747,Davis Inc,Non-Profit,12893.99,True
+1748,Clark-Garcia,Individual,4506.16,True
+1749,Jackson-Reyes,Corporation,43340.67,True
+1750,"Weiss, Hart and Sweeney",Individual,15857.85,True
+1751,Reed-Bridges,Individual,18106.62,True
+1752,"Robertson, Terry and Perry",Non-Profit,27403.37,True
+1753,Cochran-Collins,Corporation,31873.84,True
+1754,"Howard, Miller and Ellis",Individual,28974.65,True
+1755,"Harrison, Howard and Martinez",Corporation,39387.97,True
+1756,"Davidson, Jacobs and Randolph",Corporation,47718.22,True
+1757,"Ellis, Carr and Villarreal",Corporation,16157.13,True
+1758,Ford-Jenkins,Corporation,1272.31,True
+1759,Smith-Salazar,Individual,1664.02,True
+1760,Cruz-Benson,Corporation,2833.09,True
+1761,King-Hutchinson,Corporation,35947.31,True
+1762,"Allen, Franklin and Tucker",Corporation,42613.49,True
+1763,Nelson-Hubbard,Corporation,31540.24,True
+1764,"Richardson, Hernandez and King",Corporation,26892.73,True
+1765,Garcia-Crawford,Individual,15488.85,True
+1766,"Campbell, Collins and May",Non-Profit,40676.71,True
+1767,"Lewis, Castillo and Malone",Corporation,9349.41,True
+1768,Schaefer-Doyle,Corporation,1927.41,True
+1769,"Brown, Webb and Thomas",Non-Profit,29467.14,True
+1770,Hines-Turner,Individual,43124.19,True
+1771,"Richards, Pierce and Gonzalez",Corporation,21824.95,True
+1772,Reed Ltd,Corporation,22730.67,True
+1773,Cox Inc,Individual,5074.62,True
+1774,Hall LLC,Individual,26986.87,True
+1775,"Gutierrez, Conner and Miller",Non-Profit,24055.12,True
+1776,"Hudson, Allen and Robles",Corporation,37185.48,True
+1777,"Baldwin, Hawkins and Olson",Individual,49399.28,True
+1778,"Harrison, Kirby and Hall",Individual,9361.28,True
+1779,Adams-Perez,Individual,39838.37,True
+1780,"Nelson, Thomas and Jensen",Corporation,18292.29,True
+1781,"Lawson, Jones and Neal",Non-Profit,33235.89,True
+1782,Henry LLC,Individual,28286.77,True
+1783,Campbell Ltd,Individual,19038.64,True
+1784,"Sutton, Huff and Mann",Corporation,30481.46,True
+1785,Miller-Stewart,Corporation,12772.96,True
+1786,Mitchell Ltd,Corporation,47064.08,True
+1787,Gross Inc,Corporation,43532.89,True
+1788,"Miller, Smith and Cooper",Individual,39018.25,True
+1789,"Matthews, Hughes and Cochran",Corporation,4486.65,True
+1790,Miller Inc,Corporation,34504.37,True
+1791,"Lopez, Duran and Avila",Corporation,47520.87,True
+1792,"Wood, Pena and Ashley",Corporation,42981.07,True
+1793,Rich-Bradshaw,Non-Profit,33403.89,True
+1794,Mullins Inc,Individual,41109.37,True
+1795,Archer-White,Individual,31666.33,True
+1796,Harrington-Beck,Non-Profit,48158.58,True
+1797,"Mack, Reynolds and Hill",Individual,39067.78,True
+1798,Turner-Perry,Individual,35328.84,True
+1799,Parks-Sparks,Individual,29612.98,True
+1800,Smith-Morgan,Corporation,24118.69,True
+1801,Hunt-Wright,Individual,18748.85,True
+1802,"Gonzalez, Matthews and Li",Corporation,5882.37,True
+1803,Patel-Contreras,Non-Profit,13444.99,True
+1804,"Brown, Underwood and Gillespie",Corporation,14625.12,True
+1805,Frank-Mckinney,Non-Profit,21551.6,True
+1806,Anderson-Hernandez,Corporation,38292.92,True
+1807,Lane PLC,Non-Profit,25748.74,True
+1808,Patel PLC,Individual,13313.47,True
+1809,Berry-Le,Corporation,5115.88,True
+1810,Chambers PLC,Non-Profit,27569.88,True
+1811,"Rodriguez, Smith and Singleton",Individual,25915.94,True
+1812,"Mahoney, Contreras and Taylor",Individual,43473.75,True
+1813,"Gilbert, Richmond and Moreno",Individual,43333.38,True
+1814,Patel PLC,Non-Profit,7222.77,True
+1815,Thompson Inc,Non-Profit,34459.6,True
+1816,Harris and Sons,Corporation,38603.77,True
+1817,"Weaver, Simmons and Lee",Non-Profit,30189.14,True
+1818,Barber Ltd,Non-Profit,8698.82,True
+1819,Edwards-Perez,Non-Profit,23420.37,True
+1820,"Gallagher, Wang and Moore",Non-Profit,16906.12,True
+1821,Davis LLC,Non-Profit,5523.53,True
+1822,"Mason, Novak and Rose",Corporation,45856.98,True
+1823,"Payne, Aguilar and Vargas",Corporation,48599.05,True
+1824,Rodriguez PLC,Non-Profit,49630.22,True
+1825,Campbell-Cherry,Individual,44564.45,True
+1826,"Nash, Stone and Wong",Non-Profit,33366.93,True
+1827,Lambert LLC,Corporation,17648.09,True
+1828,"Garner, Yates and Rose",Non-Profit,13498.36,True
+1829,Rivera-Mueller,Corporation,12496.75,True
+1830,Archer-Spencer,Non-Profit,8578.69,True
+1831,"Ramos, Perez and Williams",Non-Profit,15170.61,True
+1832,"Browning, Drake and Kelley",Non-Profit,42307.03,True
+1833,"Ortiz, Jacobs and Jackson",Non-Profit,25222.24,True
+1834,Wolfe LLC,Individual,32556.97,True
+1835,Mccormick LLC,Corporation,37845.26,True
+1836,Clark Group,Corporation,20467.56,True
+1837,House and Sons,Non-Profit,34005.09,True
+1838,Terry Group,Corporation,21485.04,True
+1839,Burke Group,Corporation,42831.33,True
+1840,Hutchinson-Obrien,Corporation,46336.43,True
+1841,Rivera-Guzman,Corporation,27025.41,True
+1842,"Stark, Burch and Norris",Corporation,13163.34,True
+1843,King-Mcdonald,Individual,18179.94,True
+1844,Hamilton-Taylor,Non-Profit,5881.17,True
+1845,"Dominguez, Mullins and Lloyd",Non-Profit,23274.34,True
+1846,"Ross, Noble and Smith",Corporation,7213.04,True
+1847,White Inc,Non-Profit,29010.84,True
+1848,Long PLC,Corporation,22635.46,True
+1849,"Wilson, Ortiz and Morton",Corporation,22194.0,True
+1850,Davis-Porter,Non-Profit,47569.47,True
+1851,Boyd-Hicks,Individual,34911.54,True
+1852,Ware-Patrick,Individual,29828.05,True
+1853,"Rios, Cervantes and Marshall",Non-Profit,10296.6,True
+1854,"Eaton, Lopez and Garrett",Corporation,9020.41,True
+1855,"Johnson, Glass and Smith",Corporation,7182.8,True
+1856,Romero-Castillo,Non-Profit,33233.23,True
+1857,"Weeks, Pratt and Fuller",Non-Profit,11319.14,True
+1858,"Stokes, Collins and Patel",Corporation,22326.19,True
+1859,"Williams, Wu and Lin",Non-Profit,25314.65,True
+1860,"Santiago, Fisher and Figueroa",Individual,27016.42,True
+1861,Wilson and Sons,Corporation,21602.55,True
+1862,"Black, Hayes and Bennett",Corporation,16609.39,True
+1863,Garcia-Scott,Individual,2281.74,True
+1864,"Morris, Byrd and Whitaker",Corporation,42440.04,True
+1865,Taylor Group,Corporation,36949.29,True
+1866,Molina LLC,Individual,40028.67,True
+1867,"Wallace, Steele and Bennett",Non-Profit,29969.5,True
+1868,Burns Group,Non-Profit,41387.78,True
+1869,Smith-Hunter,Corporation,24761.9,True
+1870,Daniels-Bailey,Non-Profit,15847.54,True
+1871,Robles-Bell,Corporation,39469.75,True
+1872,Quinn-Alvarez,Corporation,48332.65,True
+1873,"Fuller, Richardson and Wilson",Individual,14312.9,True
+1874,"Stephens, Chase and Evans",Corporation,40442.98,True
+1875,Bush Group,Corporation,47287.37,True
+1876,Wilson Ltd,Individual,7603.69,True
+1877,"Lucas, Jenkins and Perez",Corporation,49805.08,True
+1878,Davidson and Sons,Non-Profit,1895.31,True
+1879,Salas-Howard,Individual,18638.79,True
+1880,Adkins-Orr,Corporation,13546.33,True
+1881,Huber Group,Corporation,2753.27,True
+1882,Leblanc Group,Non-Profit,34906.61,True
+1883,Roberts-Watson,Non-Profit,16714.73,True
+1884,Wright-Ferguson,Corporation,7477.09,True
+1885,Goodwin-Gill,Corporation,49674.72,True
+1886,"Young, Hood and Fischer",Individual,25039.96,True
+1887,"Jones, Ortiz and Hall",Corporation,46755.84,True
+1888,Ortiz PLC,Non-Profit,14185.25,True
+1889,Booth-Crawford,Corporation,36895.58,True
+1890,"Smith, Sanders and Gonzalez",Non-Profit,33786.09,True
+1891,"Hampton, Ross and Campbell",Corporation,20128.44,True
+1892,Wilson-Kerr,Non-Profit,21090.02,True
+1893,Morton and Sons,Individual,41575.7,True
+1894,Roy Group,Non-Profit,14302.87,True
+1895,Ferguson-Hawkins,Individual,1157.98,True
+1896,Stone Ltd,Corporation,2292.85,True
+1897,"Oliver, Kelly and Anderson",Non-Profit,45026.36,True
+1898,"Davis, Frye and Bryant",Individual,39237.0,True
+1899,"Jackson, Campbell and Goodwin",Non-Profit,23016.57,True
+1900,Miller-Combs,Corporation,46498.26,True
+1901,"Cole, Miller and Murray",Corporation,7406.31,True
+1902,Young-Moss,Non-Profit,35631.97,True
+1903,"Wright, Nelson and Brown",Individual,24265.33,True
+1904,Hale-Galloway,Non-Profit,17022.25,True
+1905,Best Ltd,Non-Profit,44155.92,True
+1906,Gibson-Koch,Corporation,3949.37,True
+1907,Garrett-Johnson,Non-Profit,28210.8,True
+1908,"Williams, Sellers and Johnson",Corporation,42233.29,True
+1909,"Guzman, Martin and Chase",Individual,37033.67,True
+1910,Williams Ltd,Non-Profit,49143.19,True
+1911,"Simmons, Fowler and Gonzales",Corporation,2119.69,True
+1912,"Merritt, Smith and Parker",Corporation,46331.13,True
+1913,Miller-Spears,Non-Profit,27475.0,True
+1914,Johnston-Lopez,Non-Profit,10182.62,True
+1915,"Carter, White and Ford",Corporation,22323.76,True
+1916,Miranda LLC,Corporation,13945.94,True
+1917,Hawkins-Booth,Individual,32429.82,True
+1918,"Price, Adams and Espinoza",Non-Profit,48158.37,True
+1919,Moore-Turner,Corporation,10630.75,True
+1920,Rodriguez and Sons,Corporation,3262.98,True
+1921,Nguyen PLC,Corporation,30554.7,True
+1922,"Benton, Jones and Moore",Corporation,40296.43,True
+1923,Smith Group,Corporation,18389.47,True
+1924,King Inc,Corporation,25290.79,True
+1925,Ross Group,Corporation,34357.4,True
+1926,Atkinson-Collins,Corporation,7838.76,True
+1927,Buckley-Conley,Corporation,6202.37,True
+1928,"Robles, Parker and Hernandez",Corporation,28648.31,True
+1929,"Chambers, Johnson and Hammond",Individual,29734.53,True
+1930,"Johnson, Dickerson and Stevens",Corporation,10459.19,True
+1931,Foster-Bird,Non-Profit,21988.02,True
+1932,Mata-Cantrell,Corporation,2063.64,True
+1933,"Roth, Hunter and Dennis",Non-Profit,24066.07,True
+1934,Dillon Group,Individual,17812.26,True
+1935,Higgins and Sons,Individual,17869.16,True
+1936,Baker-Thompson,Individual,20021.66,True
+1937,Tyler-Terry,Individual,18085.47,True
+1938,"Smith, Gibson and Powell",Non-Profit,24345.17,True
+1939,"Castaneda, Baxter and Gibson",Individual,24537.56,True
+1940,Miller PLC,Non-Profit,7954.27,True
+1941,Bryan-Carney,Individual,24434.19,True
+1942,Sexton Group,Individual,2035.6,True
+1943,Patterson Ltd,Individual,10637.15,True
+1944,Montgomery Group,Non-Profit,16085.82,True
+1945,Ellis-Henry,Non-Profit,29396.34,True
+1946,"Cobb, Smith and Mathews",Individual,11216.51,True
+1947,Bonilla Inc,Corporation,15682.93,True
+1948,"Berger, Lopez and Collins",Individual,41728.9,True
+1949,Tapia-Martinez,Corporation,29136.69,True
+1950,Dominguez-Jackson,Non-Profit,9603.93,True
+1951,"Valencia, Zimmerman and Jenkins",Corporation,31552.37,True
+1952,"Jordan, Marks and Phillips",Individual,28057.83,True
+1953,"Sanchez, Callahan and Freeman",Individual,35138.49,True
+1954,"Parker, Gomez and George",Non-Profit,29283.7,True
+1955,Meadows-Fletcher,Corporation,45473.7,True
+1956,Gonzalez and Sons,Non-Profit,6773.33,True
+1957,Tran-Morris,Non-Profit,35019.0,True
+1958,Hicks-Mclaughlin,Non-Profit,42505.45,True
+1959,Beard-Warren,Corporation,45154.48,True
+1960,"Lee, Miller and Thompson",Individual,13116.59,True
+1961,"Jones, Rollins and Williams",Individual,27577.58,True
+1962,Gordon LLC,Non-Profit,23645.23,True
+1963,"Allen, Montoya and Johnson",Non-Profit,45378.32,True
+1964,Garcia-Wolf,Corporation,22297.65,True
+1965,Roth Ltd,Corporation,29916.05,True
+1966,Carson and Sons,Individual,48886.95,True
+1967,Smith-Curtis,Non-Profit,8109.17,True
+1968,Lopez Ltd,Individual,41493.58,True
+1969,Taylor LLC,Non-Profit,40866.47,True
+1970,"White, Salazar and Cook",Non-Profit,49087.36,True
+1971,Briggs-Salinas,Corporation,30534.14,True
+1972,Ho LLC,Corporation,49209.32,True
+1973,Porter-Johnson,Non-Profit,22202.95,True
+1974,Norris-Collins,Non-Profit,13436.59,True
+1975,Ayala-Garcia,Individual,29123.95,True
+1976,Tucker-Harris,Corporation,41527.51,True
+1977,"Roth, Stephens and Warner",Non-Profit,34107.58,True
+1978,Gardner-Foster,Non-Profit,24601.89,True
+1979,"Higgins, Higgins and Scott",Non-Profit,37546.75,True
+1980,Perez-Diaz,Corporation,44444.13,True
+1981,"Jackson, Perez and French",Non-Profit,25544.54,True
+1982,Green and Sons,Corporation,12874.49,True
+1983,Rivera Ltd,Non-Profit,24487.7,True
+1984,Ingram Group,Corporation,31762.61,True
+1985,"Thompson, Parker and Watson",Non-Profit,39121.18,True
+1986,"Martin, Jackson and Ayala",Individual,37020.48,True
+1987,Davis LLC,Individual,40998.42,True
+1988,Coleman and Sons,Non-Profit,9786.22,True
+1989,Yoder Group,Corporation,24270.01,True
+1990,Brown and Sons,Individual,34505.44,True
+1991,"Rojas, Vang and Morgan",Individual,49776.73,True
+1992,"Parks, Marshall and Martinez",Non-Profit,11013.08,True
+1993,Shaffer Group,Individual,20650.53,True
+1994,Moore-Bennett,Corporation,3282.57,True
+1995,Daniels-Mcguire,Corporation,18272.52,True
+1996,Tucker-Conrad,Individual,21801.41,True
+1997,Blackwell-Daniel,Non-Profit,30709.9,True
+1998,Nelson PLC,Corporation,43233.84,True
+1999,Mccoy-Cabrera,Non-Profit,32050.69,True
+2000,Padilla-Richardson,Non-Profit,38927.24,True
