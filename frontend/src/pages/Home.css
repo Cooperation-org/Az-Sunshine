@@ -1,0 +1,424 @@
+/* Home Dashboard Styles */
+
+.home-container {
+  width: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: #F5F5F5;
+  min-height: 100vh;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.loading-text {
+  font-size: 18px;
+  color: #7C6BA6;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Top Row - Chart and Donut */
+.top-row {
+  display: grid;
+  grid-template-columns: 65% 35%;
+  gap: 24px;
+}
+
+.chart-card {
+  background: linear-gradient(180deg, #818CF8 0%, #6366F1 100%);
+  border-radius: 30px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 340px;
+}
+
+.chart-title {
+  color: white;
+  font-size: 21px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  margin: 0 0 4px 0;
+}
+
+.chart-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  margin: 0 0 24px 0;
+}
+
+.chart-placeholder {
+  height: 200px;
+  border-left: 2px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+  position: relative;
+}
+
+.chart-placeholder::after {
+  content: 'Chart visualization';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.3);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+}
+
+.donut-card {
+  background: white;
+  border-radius: 30px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  min-height: 340px;
+}
+
+.donut-title {
+  color: black;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  margin: 0 0 24px 0;
+  line-height: 1.4;
+}
+
+.donut-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.donut-svg {
+  width: 192px;
+  height: 192px;
+  max-width: 100%;
+}
+
+.donut-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin-top: auto;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-support {
+  background: #6366F1;
+}
+
+.legend-oppose {
+  background: #D1D5DB;
+}
+
+/* Stats Row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #9333EA 0%, #6366F1 100%);
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B7280;
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 30px;
+  font-weight: 700;
+  color: black;
+  font-family: 'Montserrat', sans-serif;
+  line-height: 1;
+}
+
+.stat-menu {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+.stat-menu:hover {
+  color: #6B7280;
+}
+
+/* Bottom Row - Table and Committees */
+.bottom-row {
+  display: grid;
+  grid-template-columns: 65% 35%;
+  gap: 24px;
+}
+
+.table-card {
+  background: white;
+  border-radius: 30px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: black;
+  font-family: 'Montserrat', sans-serif;
+  margin: 0 0 24px 0;
+}
+
+.expenditure-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.expenditure-table thead tr {
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.expenditure-table th {
+  text-align: left;
+  padding-bottom: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.expenditure-table tbody tr {
+  border-bottom: 1px solid #F3F4F6;
+  transition: background 0.2s;
+}
+
+.expenditure-table tbody tr:hover {
+  background: #F9FAFB;
+}
+
+.expenditure-table td {
+  padding: 16px 0;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+}
+
+.badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  display: inline-block;
+}
+
+.badge-support {
+  background: #BBF7D1;
+  color: #16A34A;
+}
+
+.badge-oppose {
+  background: #FECACA;
+  color: #DC2626;
+}
+
+.table-footer {
+  margin-top: 24px;
+  text-align: right;
+}
+
+.view-all-link {
+  color: #3B82F6;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Montserrat', sans-serif;
+  text-decoration: none;
+  border-bottom: 1px solid #3B82F6;
+}
+
+.view-all-link:hover {
+  color: #2563EB;
+  border-bottom-color: #2563EB;
+}
+
+.committee-card {
+  background: white;
+  border-radius: 30px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.committee-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: black;
+  font-family: 'Montserrat', sans-serif;
+  margin: 0 0 24px 0;
+}
+
+.committee-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.committee-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.committee-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #9333EA 0%, #6366F1 100%);
+  flex-shrink: 0;
+}
+
+.committee-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.committee-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: black;
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.committee-amount {
+  font-size: 12px;
+  color: #6B7280;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .top-row,
+  .bottom-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 16px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  .expenditure-table {
+    font-size: 12px;
+  }
+  
+  .expenditure-table th,
+  .expenditure-table td {
+    padding: 12px 8px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-container > * {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7C6BA6;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6B5B95;
+}

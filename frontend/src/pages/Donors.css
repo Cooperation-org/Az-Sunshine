@@ -1,0 +1,207 @@
+.donors-container {
+  max-width: 100%;
+}
+
+.loading-state {
+  background: white;
+  padding: 3rem;
+  border-radius: 16px;
+  text-align: center;
+  color: #6B7280;
+  font-size: 1rem;
+}
+
+.donors-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.donors-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.donors-table thead {
+  background: white;
+  border-bottom: 2px solid #F3F4F6;
+}
+
+.donors-table th {
+  padding: 20px 24px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #1F2937;
+  text-transform: uppercase;
+}
+
+.donors-table tbody tr {
+  border-bottom: 1px solid #F3F4F6;
+  transition: background-color 0.2s ease;
+}
+
+.donors-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.donors-table tbody tr:hover {
+  background: #F9FAFB;
+}
+
+.donors-table td {
+  padding: 20px 24px;
+  font-size: 15px;
+  color: #1F2937;
+}
+
+.donor-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.donor-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #7C6BA6 0%, #6B5B95 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.results-count {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.page-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: white;
+  color: #6B7280;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-btn:hover {
+  background: #F3F4F6;
+  color: #1F2937;
+}
+
+.page-btn.active {
+  background: #7C6BA6;
+  color: white;
+  box-shadow: 0 2px 8px rgba(124, 107, 166, 0.3);
+}
+
+.page-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .donors-card {
+    border-radius: 12px;
+  }
+
+  .donors-table th,
+  .donors-table td {
+    padding: 16px 12px;
+    font-size: 13px;
+  }
+
+  .donor-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .results-count {
+    font-size: 13px;
+  }
+
+  .page-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 16px;
+}
+
+.empty-state p {
+  font-size: 1.125rem;
+  color: #6B7280;
+  margin-bottom: 1.5rem;
+}
+
+.btn-primary {
+  background: #7C6BA6;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #6B5B95;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 107, 166, 0.3);
+}
+
