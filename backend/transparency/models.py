@@ -117,3 +117,23 @@ class ContactLog(models.Model):
 
     def __str__(self):
         return f"{self.candidate} - {self.status}"
+
+
+# 🆕 Added Model for SOI (Statements of Interest)
+class StatementOfInterest(models.Model):
+    """Stores candidate Statements of Interest (SOI) data scraped from AZ SOS."""
+
+    unique_id = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, blank=True, null=True)
+    office = models.CharField(max_length=255, blank=True, null=True)
+    party = models.CharField(max_length=100, blank=True, null=True)
+    county = models.CharField(max_length=100, blank=True, null=True)
+    date_filed = models.CharField(max_length=100, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    raw_data = models.JSONField(blank=True, null=True, help_text="Raw JSON data from the source")
+
+    def __str__(self):
+        return f"{self.name} ({self.office or 'No Office'})"
