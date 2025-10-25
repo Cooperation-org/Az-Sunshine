@@ -1,16 +1,69 @@
-# React + Vite
+# Arizona Sunshine - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React frontend built with Vite, matching the Figma design.
 
-Currently, two official plugins are available:
+## Design Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Purple Sidebar Navigation** - Elegant gradient sidebar with icon navigation
+- **Clean Header** - Search functionality and notifications
+- **Donor Entities Page** - Table with purple avatar icons, matching your Figma design
+- **Responsive Layout** - Works on desktop and mobile
 
-## React Compiler
+## Running the Frontend
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+cd frontend
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Frontend will be available at: **http://localhost:3000**
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Pages
+
+- **Dashboard** (`/`) - Home page with overview
+- **Donors** (`/donors`) - Donor entities with table view ✨ (Matches Figma!)
+- **Candidates** (`/candidates`) - Candidate listings
+- **Expenditures** (`/expenditures`) - Campaign expenditure data
+
+## Color Scheme
+
+- Primary Purple: `#7C6BA6`
+- Secondary Purple: `#6B5B95`
+- Background: `#F5F5F5`
+- Cards: `#FFFFFF`
+- Text: `#1F2937`
+
+## Backend Connection
+
+The frontend connects to the Django backend at `http://localhost:8000/api/`
+
+Make sure the backend is running:
+```bash
+cd backend
+python3 manage.py runserver 127.0.0.1:8000
+```
+
+## Dependencies
+
+- React 18
+- React Router DOM 6
+- Axios
+- Vite 6
+
+## Project Structure
+
+```
+frontend/
+├── src/
+│   ├── pages/
+│   │   ├── Home.jsx/css
+│   │   ├── Donors.jsx/css      ← Matches Figma design!
+│   │   ├── Candidates.jsx/css
+│   │   └── Expenditures.jsx/css
+│   ├── App.jsx
+│   ├── App.css
+│   └── main.jsx
+├── index.html
+└── package.json
+```
+
