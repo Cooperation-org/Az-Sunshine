@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-84n=xmpxl2i5c)^%=)umxuzbho8nvaf*3#^7y%q3xpne4m5aku
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "167.172.30.134", "*"]
 
 
 # Application definition
@@ -72,6 +72,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5179",
 ]
 
+# Allow all origins for development (comment out for production)
+CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
 
 
@@ -101,12 +104,8 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sunshine_db',
-        'USER': 'sunshine_user',
-        'PASSWORD': 'sunshine_pass',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
