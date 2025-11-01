@@ -28,3 +28,4 @@ Thumbs.db
 backend/chrome_profile/
 deploy.sh/
 deploy.sh
+*.mdb
