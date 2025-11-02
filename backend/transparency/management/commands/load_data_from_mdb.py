@@ -1,154 +1,234 @@
 import csv
 import subprocess
-from tqdm import tqdm
+import gc
+from decimal import Decimal
+from datetime import datetime
 from django.core.management.base import BaseCommand
-from transparency.models import (
-    Party,
-    Race,
-    Candidate,
-    IECommittee,
-    DonorEntity,
-    Expenditure,
-    Contribution,
-    ContactLog,
-    StatementOfInterest,
-)
+from django.db import connection
+from tqdm import tqdm
+from transparency.models import Party, IECommittee, Candidate, DonorEntity, Contribution
 
-MDB_FILE = "2025 1020 CFS_Export_PRR.mdb"
-BATCH_SIZE = 1000
-
-
-def count_rows(table_name):
-    """Quickly count total rows in a table for tqdm progress bar."""
-    result = subprocess.run(
-        ["mdb-tables", "-1", MDB_FILE],
-        stdout=subprocess.PIPE,
-        text=True,
-    )
-    tables = result.stdout.splitlines()
-    if table_name not in tables:
-        return 0
-
-    proc = subprocess.Popen(
-        ["mdb-export", MDB_FILE, table_name],
-        stdout=subprocess.PIPE,
-        text=True,
-    )
-    count = sum(1 for _ in proc.stdout) - 1  # subtract header
-    return max(count, 1)
-
-
-def export_table(table_name):
-    """Stream MDB table rows as dicts."""
-    process = subprocess.Popen(
-        ["mdb-export", MDB_FILE, table_name],
-        stdout=subprocess.PIPE,
-        text=True,
-    )
-    return csv.DictReader(process.stdout)
+MDB_PATH = "/opt/az_sunshine/backend/2025 1020 CFS_Export_PRR.mdb"
+BATCH_SIZE = 2000
 
 
 class Command(BaseCommand):
-    help = "Import all MDB tables into PostgreSQL with progress bars and batch insert."
+    help = "Load data from the Arizona CFS Access MDB file into Django models (aligned and batched)"
 
+    # --------------------------------------------------------------------------
+    # Entry point
+    # --------------------------------------------------------------------------
     def handle(self, *args, **options):
-        self.stdout.write("🚀 Starting MDB import with progress tracking...\n")
+        self.stdout.write("🚀 Starting MDB data import...\n")
 
-        # === PARTIES ===
-        self.load_table(
-            name="Parties",
-            model=Party,
-            build=lambda r: Party(name=(r.get("PartyName") or "").strip()),
+        self.load_parties()
+        self.load_committees()
+        self.load_candidates()
+        self.load_donors()
+        self.load_contributions()
+
+        self.stdout.write("🎉 All data imported successfully!\n")
+
+    # --------------------------------------------------------------------------
+    # Helper: stream MDB output line by line
+    # --------------------------------------------------------------------------
+    def run_mdb_export(self, table_name):
+        """Stream MDB table rows line by line."""
+        process = subprocess.Popen(
+            ["mdb-export", "-H", MDB_PATH, table_name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
         )
 
-        # === OFFICES / RACES ===
-        self.load_table(
-            name="Offices",
-            model=Race,
-            build=lambda r: Race(name=(r.get("OfficeName") or "").strip()),
-        )
+        for line in process.stdout:
+            yield line.strip()
 
-        # === NAMES / DONORS ===
-        self.load_table(
-            name="Names",
-            model=DonorEntity,
-            build=lambda r: DonorEntity(
-                name=(r.get("Name") or "").strip(),
-                entity_type=(r.get("EntityType") or "").strip() or None,
-            ),
-        )
+        process.stdout.close()
+        process.wait()
+        if process.returncode != 0:
+            err = process.stderr.read()
+            self.stderr.write(f"❌ Error reading {table_name}: {err}")
 
-        # === COMMITTEES ===
-        self.load_table(
-            name="Committees",
-            model=IECommittee,
-            build=lambda r: IECommittee(
-                name=f"Committee {(r.get('NameID') or '').strip() or 'Unknown'}",
-                committee_type="General",
-                ein=None,
-            ),
-        )
+    # --------------------------------------------------------------------------
+    # Load Parties
+    # --------------------------------------------------------------------------
+    def load_parties(self):
+        self.stdout.write("→ Loading Parties...")
+        reader = csv.reader(self.run_mdb_export("Parties"))
+        batch = []
+        total = 0
 
-        # === TRANSACTIONS → CONTRIBUTIONS / EXPENDITURES ===
-        self.stdout.write("\n→ Loading Transactions...")
-        total_tx = count_rows("Transactions")
-        contributions, expenditures = [], []
-
-        for row in tqdm(export_table("Transactions"), total=total_tx, desc="Transactions", ncols=100):
+        for row in tqdm(reader, desc="Parties", unit="rows"):
             try:
-                amount = float(row.get("Amount", "0") or 0)
-            except ValueError:
+                if len(row) < 2:
+                    continue
+                party_id = int(row[0])
+                name = row[1].strip()
+                if name:
+                    batch.append(Party(id=party_id, name=name))
+            except Exception as e:
+                self.stderr.write(f"⚠️ Skipped Party row {row}: {e}")
                 continue
 
-            date = (row.get("Date") or "").split(" ")[0].strip() or None
-            if amount > 0:
-                contributions.append(
-                    Contribution(amount=amount, date=date or None, raw=row)
-                )
-                if len(contributions) >= BATCH_SIZE:
-                    Contribution.objects.bulk_create(contributions, ignore_conflicts=True)
-                    contributions = []
-            elif amount < 0:
-                expenditures.append(
-                    Expenditure(
-                        amount=abs(amount),
-                        date=date or None,
-                        purpose=row.get("Description", ""),
-                        raw=row,
+        if batch:
+            Party.objects.bulk_create(batch, ignore_conflicts=True)
+            total = len(batch)
+
+        self.stdout.write(f"✅ Parties loaded successfully! ({total} total)\n")
+
+    # --------------------------------------------------------------------------
+    # Load Committees (Fixed column index for name)
+    # --------------------------------------------------------------------------
+    def load_committees(self):
+        self.stdout.write("→ Loading Committees...")
+        reader = csv.reader(self.run_mdb_export("Committees"))
+        batch, total = [], 0
+
+        for row in tqdm(reader, desc="Committees", unit="rows"):
+            try:
+                if len(row) < 19:
+                    continue
+                ext_id = int(row[0])
+                name = row[18].strip() if len(row) > 18 else ""
+                if name:
+                    batch.append(IECommittee(id=ext_id, name=name))
+            except Exception as e:
+                self.stderr.write(f"⚠️ Skipped Committee row {row}: {e}")
+                continue
+
+            if len(batch) >= BATCH_SIZE:
+                IECommittee.objects.bulk_create(batch, ignore_conflicts=True)
+                total += len(batch)
+                batch.clear()
+                connection.close()
+                gc.collect()
+
+        if batch:
+            IECommittee.objects.bulk_create(batch, ignore_conflicts=True)
+            total += len(batch)
+
+        self.stdout.write(f"✅ Committees loaded successfully! ({total} total)\n")
+
+    # --------------------------------------------------------------------------
+    # Load Candidates
+    # --------------------------------------------------------------------------
+    def load_candidates(self):
+        self.stdout.write("→ Loading Candidates...")
+        reader = csv.reader(self.run_mdb_export("Names"))
+        batch, total = [], 0
+
+        for row in tqdm(reader, desc="Candidates", unit="rows"):
+            try:
+                if len(row) < 4:
+                    continue
+                ext_id = row[0]
+                name = row[3].strip().title()
+                if name:
+                    batch.append(Candidate(external_id=ext_id, name=name))
+            except Exception as e:
+                self.stderr.write(f"⚠️ Skipped Candidate row {row}: {e}")
+                continue
+
+            if len(batch) >= BATCH_SIZE:
+                Candidate.objects.bulk_create(batch, ignore_conflicts=True)
+                total += len(batch)
+                batch.clear()
+                connection.close()
+                gc.collect()
+
+        if batch:
+            Candidate.objects.bulk_create(batch, ignore_conflicts=True)
+            total += len(batch)
+
+        self.stdout.write(f"✅ Candidates loaded successfully! ({total} total)\n")
+
+    # --------------------------------------------------------------------------
+    # Load Donors
+    # --------------------------------------------------------------------------
+    def load_donors(self):
+        self.stdout.write("→ Loading Donors...")
+        reader = csv.reader(self.run_mdb_export("Names"))
+        batch, total = [], 0
+
+        for row in tqdm(reader, desc="Donors", unit="rows"):
+            try:
+                if len(row) < 4:
+                    continue
+                name = row[3].strip().title()
+                if name:
+                    batch.append(DonorEntity(name=name))
+            except Exception as e:
+                self.stderr.write(f"⚠️ Skipped Donor row {row}: {e}")
+                continue
+
+            if len(batch) >= BATCH_SIZE:
+                DonorEntity.objects.bulk_create(batch, ignore_conflicts=True)
+                total += len(batch)
+                batch.clear()
+                connection.close()
+                gc.collect()
+
+        if batch:
+            DonorEntity.objects.bulk_create(batch, ignore_conflicts=True)
+            total += len(batch)
+
+        self.stdout.write(f"✅ Donors loaded successfully! ({total} total)\n")
+
+    # --------------------------------------------------------------------------
+    # Load Contributions
+    # --------------------------------------------------------------------------
+    def load_contributions(self):
+        self.stdout.write("→ Loading Contributions (Donor → Committee)...")
+        reader = csv.reader(self.run_mdb_export("Transactions"))
+        batch, total = [], 0
+
+        for row in tqdm(reader, desc="Contributions", unit="rows"):
+            try:
+                if len(row) < 6:
+                    continue
+
+                donor_id = int(row[1]) if row[1] else None
+                committee_id = int(row[2]) if row[2] else None
+                amount = Decimal(row[5].replace(",", "")) if row[5] else Decimal(0)
+                date_raw = row[4].replace('"', "").split(" ")[0] if row[4] else ""
+
+                date = None
+                for fmt in ("%m/%d/%y", "%m/%d/%Y"):
+                    try:
+                        if date_raw:
+                            date = datetime.strptime(date_raw, fmt).date()
+                            break
+                    except ValueError:
+                        continue
+
+                donor = DonorEntity.objects.filter(id=donor_id).first() if donor_id else None
+                committee = IECommittee.objects.filter(id=committee_id).first() if committee_id else None
+
+                batch.append(
+                    Contribution(
+                        donor=donor,
+                        committee=committee,
+                        amount=amount,
+                        date=date,
+                        year=date.year if date else None,
+                        raw={"source_row": row},
                     )
                 )
-                if len(expenditures) >= BATCH_SIZE:
-                    Expenditure.objects.bulk_create(expenditures, ignore_conflicts=True)
-                    expenditures = []
-
-        if contributions:
-            Contribution.objects.bulk_create(contributions, ignore_conflicts=True)
-        if expenditures:
-            Expenditure.objects.bulk_create(expenditures, ignore_conflicts=True)
-
-        # === SUMMARY ===
-        self.stdout.write("\n🎯 Import Summary")
-        self.stdout.write(f"  • Parties: {Party.objects.count()}")
-        self.stdout.write(f"  • Races: {Race.objects.count()}")
-        self.stdout.write(f"  • Donors: {DonorEntity.objects.count()}")
-        self.stdout.write(f"  • Committees: {IECommittee.objects.count()}")
-        self.stdout.write(f"  • Contributions: {Contribution.objects.count()}")
-        self.stdout.write(f"  • Expenditures: {Expenditure.objects.count()}")
-        self.stdout.write("\n✅ Import complete with progress tracking — all tables loaded safely.")
-
-    def load_table(self, name, model, build):
-        """Generic loader with tqdm progress bar."""
-        self.stdout.write(f"\n→ Loading {name}...")
-        total = count_rows(name)
-        items = []
-        for row in tqdm(export_table(name), total=total, desc=name, ncols=100):
-            instance = build(row)
-            if not instance or not getattr(instance, "name", "").strip():
+            except Exception as e:
+                self.stderr.write(f"⚠️ Skipped Transaction row {row}: {e}")
                 continue
-            items.append(instance)
-            if len(items) >= BATCH_SIZE:
-                model.objects.bulk_create(items, ignore_conflicts=True)
-                items = []
-        if items:
-            model.objects.bulk_create(items, ignore_conflicts=True)
-        self.stdout.write(f"✅ {name} loaded: {model.objects.count()}")
+
+            if len(batch) >= BATCH_SIZE:
+                Contribution.objects.bulk_create(batch, ignore_conflicts=True)
+                total += len(batch)
+                batch.clear()
+                connection.close()
+                gc.collect()
+
+        if batch:
+            Contribution.objects.bulk_create(batch, ignore_conflicts=True)
+            total += len(batch)
+
+        self.stdout.write(f"✅ Contributions loaded successfully! ({total} total)\n")
