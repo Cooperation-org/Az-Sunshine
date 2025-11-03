@@ -113,5 +113,16 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+# Email configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'mortydrake2@gmail.com'        # Your Gmail address
+EMAIL_HOST_PASSWORD = 'mokj cvuw ehkm hbny'      # Your Gmail App Password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
