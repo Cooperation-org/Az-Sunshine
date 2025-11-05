@@ -1,0 +1,183 @@
+{
+  "Committees": {
+    "headers": [
+      "CommitteeID",
+      "NameID",
+      "ChairpersonNameID",
+      "TreasurerNameID",
+      "CandidateNameID",
+      "DesigneeNameID",
+      "SponsorNameID",
+      "BallotMeasureID",
+      "PhysicalAddress1",
+      "PhysicalAddress2",
+      "PhysicalCity",
+      "PhysicalState",
+      "PhysicalZipCode",
+      "SponsorType",
+      "SponsorRelationship",
+      "OrganizationDate",
+      "TerminationDate",
+      "BenefitsBallotMeasure",
+      "FinancialInstitution1",
+      "FinancialInstitution2",
+      "FinancialInstitution3",
+      "CandidatePartyID",
+      "CandidateOfficeID",
+      "CandidateCountyID",
+      "CandidateIsIncumbent",
+      "CandidateCycleID",
+      "CandidateOtherPartyName"
+    ],
+    "analysis": "## 1. Category\nThis is **IE Committees** (and also candidate committees). The table stores both:\n- Independent expenditure committees (SponsorNameID populated)\n- Candidate committees (CandidateNameID populated)\n- Possibly PACs and ballot measure committees\n\n## 2. Key Django Model Fields\n\n```python\nclass Committee(models.Model):\n    committee_id = models.IntegerField(primary_key=True)\n    name = models.ForeignKey('Name', related_name='committee')\n    \n    # Key people (all ForeignKeys to Name/Entity)\n    chairperson = models.ForeignKey('Name')\n    treasurer = models.ForeignKey('Name')\n    candidate = models.ForeignKey('Name', null=True)  # For candidate committees\n    sponsor = models.ForeignKey('Name', null=True)    # For PACs/IEs\n    \n    # Committee type indicators\n    sponsor_type = models.CharField(max_length=50, blank=True)  # Corporation, Trade Org, etc.\n    sponsor_relationship = models.CharField(max_length=50, blank=True)\n    \n    # Candidate-specific (nullable for non-candidate committees)\n    candidate_party = models.ForeignKey('Party', null=True)\n    candidate_office = models.ForeignKey('Office', null=True)\n    candidate_is_incumbent = models.BooleanField(default=False)\n    \n    # Lifecycle\n    organization_date = models.DateTimeField()\n    termination_date = models.DateTimeField(null=True, blank=True)\n    \n    # Address\n    physical_address_1 = models.CharField(max_length=255)\n    physical_city = models.CharField(max_length=100)\n    physical_state = models.CharField(max_length=2)\n    physical_zip = models.CharField(max_length=10)\n```\n\n## 3. Data Quality Issues\n\n- **Date parsing**: `\"12/31/83 00:00:00\"` is clearly a placeholder (not real 1983 dates)\n- **Empty strings vs NULL**: Inconsistent use of `\"\"` for missing data\n- **NameID lookups**: All NameIDs require joins to a Names table - verify referential integrity\n- **Boolean fields**: `CandidateIsIncumbent` and `BenefitsBallotMeasure` are strings (\"0\") not booleans\n- **Address standardization**: Inconsistent formatting (periods, commas, abbreviations)\n- **Bank name variations**: \"JPMorgan Chase\" vs \"JP Morgan Chase\"\n\n## 4. Relation to AZ SOS Data\n\nThis **IS** Arizona Secretary of State campaign finance data. The CommitteeID is the SOS's identifier. You'll need to:\n- Join to **Names** table for committee/person names\n- Link to **Contributions** table (CommitteeID receives donations)\n- Link to **Expenditures** table (CommitteeID makes IEs for/against candidates)\n- Distinguish committee types by checking which fields are populated (CandidateNameID vs SponsorNameID)"
+  },
+  "Categories": {
+    "headers": [
+      "CategoryID",
+      "CategoryName"
+    ],
+    "analysis": "# Categories Table Analysis\n\n## 1. Category Context\nThis table categorizes **Expenses** (independent expenditures). The values (Advertising, TV, Radio, Mailings) are expense types required by Arizona campaign finance reporting.\n\n## 2. Django Model Mapping\n\n```python\nclass ExpenseCategory(models.Model):\n    category_id = models.IntegerField(primary_key=True)\n    category_name = models.CharField(max_length=100, unique=True)\n    \nclass Expense(models.Model):\n    category = models.ForeignKey(ExpenseCategory, on_delete=models.PROTECT)\n    # ... other fields (amount, date, committee, candidate, for/against)\n```\n\n**Key fields:**\n- `CategoryID` \u2192 primary key\n- `CategoryName` \u2192 indexed for lookups\n- Foreign key from Expenses table\n\n## 3. Data Quality Issues\n\n- **Overlapping categories**: \"Advertising\" is generic; TV/Radio/Newspapers are specific ad types\n- **Missing categories**: Digital ads, consulting, polling, canvassing\n- **Inconsistent naming**: Watch for variants like \"Television\" vs \"TV\", \"Print\" vs \"Newspapers\"\n- **NULL handling**: Ensure all expenses have valid category\n\n## 4. Arizona SOS Integration\n\nArizona Secretary of State requires expense categorization in:\n- **Form 202** (IE Committee Reports)\n- **Schedule E** (Independent Expenditures)\n\nMap these to SOS expense codes:\n- Media buys (TV/Radio/Print)\n- Direct mail\n- Digital advertising\n- Consulting fees\n\n**Action**: Cross-reference with official [Arizona Campaign Finance Reporting codes](https://azsos.gov/elections/campaign-finance) to ensure compliance."
+  },
+  "Cycles": {
+    "headers": [
+      "CycleID",
+      "CycleName",
+      "BeginDate",
+      "EndDate"
+    ],
+    "analysis": "## 1. Category\n**Reference/Lookup table** - It's a temporal dimension table that segments data into election cycles for analysis and reporting.\n\n## 2. Key Django Model Fields\n\n```python\nclass Cycle(models.Model):\n    cycle_id = models.IntegerField(primary_key=True)\n    cycle_name = models.CharField(max_length=4)  # Year\n    begin_date = models.DateTimeField()\n    end_date = models.DateTimeField()\n    \n    class Meta:\n        ordering = ['-begin_date']\n```\n\n**Foreign Key Usage:**\n- Add `cycle = models.ForeignKey(Cycle)` to: Contributions, Expenses, Candidates (for election year)\n\n## 3. Data Quality Issues\n\n- **Date format inconsistency**: \"01/01/93\" (2-digit year) - ensure proper century handling\n- **Gap detection**: Verify EndDate of cycle N = BeginDate of cycle N+1 minus 1 second\n- **Time precision**: Seconds matter (23:59:59) - don't truncate to dates\n- **Missing cycles**: Check for gaps between 2002 and present\n- **Overlaps**: Validate no transaction falls into multiple cycles\n\n## 4. Arizona SOS Relationship\n\nArizona SOS campaign finance reports are filed by election cycle. This table:\n- **Maps to reporting periods** mandated by AZ statute (typically day-after-election to day-of-next-election)\n- **Enables cycle-over-cycle comparisons** (e.g., \"2020 vs 2022 fundraising\")\n- **Links to SOS Committee IDs** via your IE Committees and Candidates tables\n- **Note**: AZ uses even-year cycles for statewide/legislative races; odd years for some municipal races (may need separate cycle type field)"
+  },
+  "WebsiteIncomeTransactionTypes": {
+    "headers": [
+      "TransactionTypeID"
+    ],
+    "analysis": "# WebsiteIncomeTransactionTypes Analysis\n\n## 1. Category\n**Contributions** - This is a lookup/reference table that categorizes types of income transactions (donations, loans, in-kind contributions, etc.)\n\n## 2. Key Fields for Django Model\n\n```python\nclass IncomeTransactionType(models.Model):\n    transaction_type_id = models.IntegerField(primary_key=True)\n    # MISSING - You'll need to add:\n    # name = models.CharField(max_length=100)  # e.g., \"Cash Donation\", \"In-Kind\"\n    # description = models.TextField(blank=True)\n    # is_active = models.BooleanField(default=True)\n```\n\n**Critical**: Your sample only shows IDs. You need the **type names/descriptions** from the actual table.\n\n## 3. Data Quality Issues\n\n- **Missing descriptive fields** - IDs alone are useless without labels\n- **No documentation** - What does ID \"1\" vs \"2\" mean?\n- **Check for**:\n  - Unused/orphaned type IDs\n  - Inconsistent naming conventions\n  - Duplicates with different IDs\n\n## 4. Arizona SOS Relationship\n\nArizona campaign finance reports use standardized transaction type codes:\n- **Map your IDs to AZ SOS codes** (e.g., \"Individual Contribution\", \"Candidate Loan\", \"In-Kind\")\n- AZ requires specific categorization for reporting\n- Your types should align with Schedule C1 (receipts) categories\n\n**Action**: Get the full table with type names, then create a crosswalk to official AZ SOS transaction codes."
+  },
+  "BallotMeasures": {
+    "headers": [
+      "BallotMeasureID",
+      "SOSIdentifier",
+      "MeasureNumber",
+      "ShortTitle",
+      "OfficialTitle"
+    ],
+    "analysis": "## 1. Category\n**BallotMeasures** belongs in the **Candidates/Races** category. Ballot measures are electoral items that committees spend money to support/oppose, similar to candidates.\n\n## 2. Key Django Model Fields\n\n```python\nclass BallotMeasure(models.Model):\n    ballot_measure_id = models.IntegerField(primary_key=True)\n    sos_identifier = models.CharField(max_length=20, unique=True)  # C-17-2008, I-14-2008\n    measure_number = models.CharField(max_length=10, blank=True)  # 101, 200, 201\n    short_title = models.CharField(max_length=255)\n    official_title = models.TextField(blank=True)\n    \n    # Add these:\n    election_year = models.IntegerField()  # Parse from SOSIdentifier\n    measure_type = models.CharField(max_length=1)  # 'C'=Constitutional, 'I'=Initiative\n    status = models.CharField(max_length=20)  # passed/failed/withdrawn\n```\n\n## 3. Data Quality Issues\n\n- **Missing MeasureNumbers**: BallotMeasureID 6, 35, 37 have empty MeasureNumber (likely withdrawn/didn't qualify)\n- **Inconsistent OfficialTitle**: Some blank, some have full legal text with `\\n` characters\n- **SOSIdentifier format**: Parse carefully - `{Type}-{Number}-{Year}` pattern\n- **Duplicate prevention**: Use SOSIdentifier as natural key, not BallotMeasureID\n\n## 4. Relationship to SOS Data\n\nArizona SOS campaign finance data includes:\n- **IE Expenditures** with `support_oppose_measure` fields linking to these measures\n- **Ballot Measure Committees** registered to support/oppose specific propositions\n- **Link pattern**: Expenditure records reference MeasureNumber (200, 201) or SOSIdentifier\n\n**Key relationship:**\n```python\nExpenditure.ballot_measure = ForeignKey(BallotMeasure)\nExpenditure.support_oppose = CharField(choices=['FOR', 'AGAINST'])\n```"
+  },
+  "WebsiteExpenseTransactionTypes": {
+    "headers": [
+      "TransactionTypeID"
+    ],
+    "analysis": "# WebsiteExpenseTransactionTypes Analysis\n\n## 1. Category\n**Expenses** - This is a lookup/reference table for categorizing independent expenditure transaction types (e.g., \"IE For\", \"IE Against\", \"Administrative\", \"Contribution\", etc.)\n\n## 2. Key Fields for Django Model\n\nYou're missing critical columns. A proper transaction types table should have:\n\n```python\nclass ExpenseTransactionType(models.Model):\n    transaction_type_id = models.IntegerField(primary_key=True)\n    code = models.CharField(max_length=10)  # e.g., \"IEF\", \"IEA\"\n    name = models.CharField(max_length=100)  # e.g., \"Independent Expenditure For\"\n    description = models.TextField(blank=True)\n    is_active = models.BooleanField(default=True)\n```\n\n**You need to find the table with the actual type names/codes** - this appears to be just IDs.\n\n## 3. Data Quality Issues\n\n- **Missing descriptive fields** - IDs alone are useless without labels\n- **Check for orphaned IDs** - Verify all IDs in Expenses table reference valid types\n- **Duplicates** - Ensure no duplicate codes/names\n- **Arizona-specific codes** - Confirm alignment with AZ SOS reporting categories\n\n## 4. Arizona SOS Relationship\n\nMaps to **Schedule C1/C2 expenditure types** in Arizona campaign finance reports:\n- Independent Expenditures (for/against candidates)\n- Operating expenses\n- Contributions to other committees\n\n**Action needed**: Cross-reference with AZ SOS [C1/C2 filing codes](https://azsos.gov/elections/campaign-finance) to ensure compliance with state classification requirements."
+  },
+  "EntityTypes": {
+    "headers": [
+      "EntityTypeID",
+      "EntityTypeName"
+    ],
+    "analysis": "## 1. Category\n**Entities** - This is a lookup/reference table that categorizes different types of entities (donors, committees, businesses, individuals) in your system.\n\n## 2. Key Django Model Fields\n\n```python\nclass EntityType(models.Model):\n    entity_type_id = models.IntegerField(primary_key=True)\n    entity_type_name = models.CharField(max_length=100, unique=True)\n    \n    class Meta:\n        db_table = 'EntityTypes'\n```\n\n**Map to Entity model:**\n```python\nclass Entity(models.Model):\n    entity_type = models.ForeignKey(EntityType, on_delete=models.PROTECT)\n    # other fields...\n```\n\n## 3. Data Quality Issues\n\n- **ID gaps** (1,2,3,4,6 - missing 5): Ensure your code doesn't assume sequential IDs\n- **Vague naming**: \"Legacy Names Claimed as Committees\" vs \"Names used by Committees\" - need clear definitions\n- **Missing types**: Watch for NULL/unmapped entity_type_id in Entities table\n- **Type 4 \"Qualifying\"**: Unclear meaning - likely candidates using public funding\n\n## 4. Arizona SOS Relationship\n\nThis maps to **AZ SOS Committee Types** and **Filer Types**:\n- Type 1 \u2192 Individual contributors\n- Type 2,6 \u2192 Political committees (PACs, candidate committees)\n- Type 3 \u2192 Corporate/business contributors\n- Type 4 \u2192 Candidates in Clean Elections (publicly funded)\n\n**Watch for:** AZ SOS uses different taxonomy - you'll need a crosswalk table to map their committee types to your EntityTypeID values."
+  },
+  "ReportTypes": {
+    "headers": [
+      "ReportTypeID",
+      "ReportTypeName"
+    ],
+    "analysis": "# ReportTypes Table Analysis\n\n## 1. Category\n**Contributions & Expenses** - This is a **metadata/reference table** that categorizes different types of campaign finance filing reports required by Arizona law.\n\n## 2. Key Django Model Fields\n\n```python\nclass ReportType(models.Model):\n    report_type_id = models.IntegerField(primary_key=True)\n    report_type_name = models.CharField(max_length=100)\n    is_deprecated = models.BooleanField(default=False)  # derived from name\n    is_ie_related = models.BooleanField(default=False)  # IE-specific reports\n```\n\n**Foreign Key Usage:**\n- Link to `Contribution` and `Expense` models via `report_type` field\n- Enables filtering by filing period/trigger type\n\n## 3. Data Quality Issues\n\n- **Negative IDs**: ReportTypeID=-1 for \"Special Cycle\" - validate handling\n- **Deprecated entries**: Flag \"(Deprecated)\" in names; exclude from active queries\n- **Inconsistent naming**: Mix of abbreviations (\"Rpt\", \"IE\", \"Pub\") vs full words\n- **Missing context**: No date ranges or filing deadlines associated with types\n\n## 4. Arizona SOS Relationship\n\nThis maps directly to **Arizona's campaign finance filing schedule**:\n- **Period Reports**: Regular quarterly/semi-annual filings\n- **IE Trigger Reports**: Required when IE spending crosses $1,000 threshold within 60 days of election\n- **Interim Reports**: Pre-election updates\n\n**Action Items:**\n- Cross-reference with AZ SOS report type codes\n- Map to filing deadlines (A.R.S. \u00a7 16-926)\n- Distinguish candidate vs IE committee report requirements"
+  },
+  "IncomeExpenseNeutral": {
+    "headers": [
+      "IncomeExpenseNeutralID",
+      "IncomeExpenseNeutral"
+    ],
+    "analysis": "## 1. Category\n**Contributions** - This is a lookup/reference table that classifies financial transactions as incoming funds (Income), outgoing funds (Expense), or neither (Neutral - likely corrections/adjustments).\n\n## 2. Key Django Model Fields\n\n```python\nclass IncomeExpenseNeutral(models.Model):\n    id = models.AutoField(primary_key=True)  # Maps to IncomeExpenseNeutralID\n    transaction_type = models.CharField(max_length=20)  # Maps to IncomeExpenseNeutral\n    \n    class Meta:\n        db_table = 'IncomeExpenseNeutral'\n```\n\n**Related model usage:**\n```python\nclass Transaction(models.Model):\n    income_expense_type = models.ForeignKey(\n        IncomeExpenseNeutral, \n        on_delete=models.PROTECT\n    )\n```\n\n## 3. Data Quality Issues\n\n- **Missing values**: All 3 types should always exist (IDs 1-3)\n- **Spelling variations**: Watch for \"Expenses\" vs \"Expense\", case sensitivity\n- **Orphaned records**: Transactions referencing non-existent type IDs\n- **Null handling**: Should never be null in transaction records\n\n## 4. Arizona SOS Relationship\n\nArizona SOS C-5 forms distinguish:\n- **Schedule A** = Income (contributions received)\n- **Schedule B** = Expenses (expenditures made)  \n- **Schedule C** = Loans/debts (often Neutral)\n\nThis table likely maps SOS transaction types to your normalized schema. The \"Neutral\" category probably handles in-kind contributions, inter-committee transfers, or accounting adjustments that aren't pure income/expense.\n\n**Validation tip**: Cross-reference against SOS `TransactionType` field in their data exports."
+  },
+  "TransactionTypes": {
+    "headers": [
+      "TransactionTypeID",
+      "TransactionTypeName",
+      "IncomeExpenseNeutralID"
+    ],
+    "analysis": "## 1. Category\n**Reference/Lookup table** - It's a supporting table that categorizes financial transactions across both **Contributions** and **Expenses** (IE spending).\n\n## 2. Key Django Model Fields\n\n```python\nclass TransactionType(models.Model):\n    transaction_type_id = models.IntegerField(primary_key=True)\n    name = models.CharField(max_length=200)\n    direction = models.CharField(max_length=1, choices=[\n        ('I', 'Income'),\n        ('E', 'Expense'), \n        ('N', 'Neutral')\n    ])\n    # Map IncomeExpenseNeutralID: 1=Income, 2=Expense, 3=Neutral\n```\n\nReference from:\n- `Contribution.transaction_type` (ForeignKey)\n- `Expense.transaction_type` (ForeignKey)\n\n## 3. Data Quality Issues\n\n- **Missing mappings**: IncomeExpenseNeutralID values need verification (likely 1=Income, 2=Expense, 3=Neutral/Transfer)\n- **Inconsistent naming**: Watch for duplicate/similar names (\"Contribution from Individual\" vs \"Individual Contribution\")\n- **Orphaned types**: Some transaction types may exist but never be used\n- **IE-specific types**: Ensure independent expenditure types (IE For/Against) are properly flagged as expenses\n\n## 4. Arizona SOS Relationship\n\nArizona SOS campaign finance exports include a **transaction type code** in their CSV files. This table:\n- Decodes those numeric codes to human-readable names\n- Distinguishes contributions (income) from expenditures (spending)\n- Enables proper categorization of IE committee spending vs candidate contributions\n\n**Key**: Map SOS transaction type codes to your TransactionTypeID for data imports."
+  },
+  "ReportNames": {
+    "headers": [
+      "ReportNameID",
+      "ReportName"
+    ],
+    "analysis": "## 1. Category\n**Metadata/Reference table** - It's a lookup table that categorizes different types of campaign finance reports filed with Arizona SOS.\n\n## 2. Key Django Model Fields\n\n```python\nclass ReportName(models.Model):\n    report_name_id = models.IntegerField(primary_key=True)\n    report_name = models.CharField(max_length=100)\n    \n    class Meta:\n        db_table = 'ReportNames'\n```\n\n**Foreign Key Usage:**\n- Link from `Contribution` and `Expense` models via `report_name_id`\n- This identifies which filing period/report type each transaction belongs to\n\n## 3. Data Quality Issues\n\n- **Negative IDs**: ReportNameID=-1 suggests special cases - document this logic\n- **Inconsistent naming**: Mix of date-based (\"January 31st\") vs event-based (\"Pre-Primary\") - maintain original but add normalized fields\n- **Missing data**: Check for null/missing ReportNames in actual reports\n- **Duplicates**: Watch for similar names with different IDs (e.g., \"Pre-Primary\" vs \"Pre Primary Election\")\n\n## 4. Arizona SOS Relationship\n\nThis maps to **Arizona's mandatory filing schedule**:\n- Quarterly reports (Jan 31, June 30, etc.)\n- Election-cycle reports (Pre-Primary, Pre-General)\n- Special/interim reports\n\n**Action item**: Cross-reference with [Arizona SOS Campaign Finance filing calendar](https://azsos.gov/elections/campaign-finance) to ensure all report types are captured and correctly categorized by election cycle."
+  },
+  "Reports": {
+    "headers": [
+      "ReportID",
+      "CommitteeID",
+      "CycleID",
+      "ReportTypeID",
+      "ReportNameID",
+      "ReportPeriodBeginDate",
+      "ReportPeriodEndDate",
+      "FilingPeriodBeginDate",
+      "FilingPeriodEndDate",
+      "OriginalReportID",
+      "FilingDateTime"
+    ],
+    "analysis": "## 1. Category\n**Reports** is a **metadata/filing table** that tracks when committees submitted their campaign finance reports. It's the container for Contributions and Expenses data.\n\n## 2. Key Django Model Fields\n\n```python\nclass Report(models.Model):\n    report_id = models.IntegerField(primary_key=True)\n    committee = models.ForeignKey('Committee')  # Links to IE Committees or candidate committees\n    cycle = models.ForeignKey('Cycle')  # Election cycle (e.g., 2024)\n    report_type = models.ForeignKey('ReportType')  # Regular, amendment, termination\n    report_name = models.ForeignKey('ReportName')  # Q1, Q2, Pre-Primary, etc.\n    \n    # Critical date fields\n    report_period_begin = models.DateTimeField()\n    report_period_end = models.DateTimeField()\n    filing_datetime = models.DateTimeField()  # When actually filed\n    \n    # Amendment tracking\n    original_report = models.ForeignKey('self', null=True)  # If this is an amendment\n```\n\n## 3. Data Quality Issues\n\n- **Date parsing**: Inconsistent format (\"11/29/94 00:00:00\") - normalize on import\n- **Late filings**: FilingDateTime often after FilingPeriodEndDate (see ReportID 3, 4, 5)\n- **Overlapping periods**: ReportID 5 & 6 both cover 10/1-10/16 - check for duplicates\n- **Empty OriginalReportID**: Use NULL not empty string for amendments\n- **Time precision**: Do you need time, or just dates?\n\n## 4. Arizona SOS Relationship\n\nThis IS Arizona SOS data. Reports are the **parent records** for:\n- **Contributions** (donations received during report period)\n- **Expenses** (IE spending during report period)\n\nQuery pattern: `Report \u2192 Expenses.filter(report=X) \u2192 get IE spending for/against candidates`\n\n**Critical**: Always join through Reports to get proper time periods and handle amendments correctly."
+  },
+  "Parties": {
+    "headers": [
+      "PartyID",
+      "PartyName"
+    ],
+    "analysis": "## 1. Category\n**Candidates** - It's a reference/lookup table for the Candidates module, linking candidates to their political party affiliation.\n\n## 2. Key Django Model Fields\n\n```python\nclass Party(models.Model):\n    party_id = models.IntegerField(primary_key=True)\n    party_name = models.CharField(max_length=100, unique=True)\n    \n    # Recommended additions:\n    abbreviation = models.CharField(max_length=10, blank=True)  # D, R, L, G\n    is_active = models.BooleanField(default=True)\n    display_order = models.IntegerField(default=999)\n```\n\nThen in your Candidate model:\n```python\nparty = models.ForeignKey(Party, on_delete=models.PROTECT, null=True)\n```\n\n## 3. Data Quality Issues\n\n- **Missing parties**: No \"None\" or \"Independent\" entry (very common in AZ)\n- **Inconsistent casing**: Watch for \"democratic\" vs \"Democratic\"\n- **Defunct parties**: Americans Elect hasn't been active since 2012 - add `is_active` flag\n- **Non-sequential IDs**: Gaps suggest deleted entries (8, 10, 15, 20, 30)\n\n## 4. Arizona SOS Relationship\n\nAZ SOS uses **standardized party codes**:\n- `DEM` = Democratic\n- `REP` = Republican  \n- `LBT` = Libertarian\n- `GRN` = Green\n- `OTH` = Other\n- `NOP` = No Party/Independent\n\n**Action needed**: Create a mapping table or add `sos_code` field to sync with official SOS candidate files and financial reports."
+  },
+  "Transactions": {
+    "headers": [
+      "TransactionID",
+      "ModifiesTransactionID",
+      "TransactionTypeID",
+      "CommitteeID",
+      "TransactionDate",
+      "Amount",
+      "NameID",
+      "IsForBenefit",
+      "SubjectCommitteeID",
+      "Memo",
+      "CategoryID",
+      "AccountType",
+      "Deleted"
+    ],
+    "analysis": "## 1. Category\n**Contributions** - This is a raw financial transaction table that likely feeds both contributions (donations) and expenses (expenditures). The `TransactionTypeID` distinguishes between contribution types, expenditure types, etc.\n\n## 2. Key Django Model Mappings\n\n```python\n# Core fields to map:\n- TransactionID \u2192 primary key\n- CommitteeID \u2192 ForeignKey to Committee model\n- NameID \u2192 ForeignKey to Entity/Donor model\n- TransactionTypeID \u2192 ForeignKey to TransactionType lookup table\n- Amount \u2192 DecimalField\n- TransactionDate \u2192 DateField\n- IsForBenefit \u2192 BooleanField (1=for, 0=against candidate)\n- SubjectCommitteeID \u2192 ForeignKey to Candidate Committee (for IEs)\n- ModifiesTransactionID \u2192 ForeignKey to self (for amendments/corrections)\n- Deleted \u2192 BooleanField (soft delete flag)\n```\n\n## 3. Data Quality Issues\n\n- **Soft deletes**: Filter `Deleted=0` in all queries\n- **Amendments**: `ModifiesTransactionID` may reference earlier versions; you'll need logic to show only latest\n- **Empty strings vs NULL**: Many fields use `\"\"` instead of NULL\n- **Date format inconsistency**: `MM/DD/YY` format needs parsing (watch for Y2K issues - \"03\" = 2003)\n- **Decimal precision**: `Amount` has 4 decimal places but likely only needs 2\n\n## 4. Arizona SOS Relation\n\nThis **is** Arizona SOS data - the structure matches their campaign finance database export format. The `CommitteeID` format (200######) is their standard committee identifier. You'll need their lookup tables for:\n- `TransactionTypeID` (contribution, expenditure, loan, etc.)\n- `CategoryID` (if populated - expense categories)\n- Committee and Name records to get human-readable details"
+  },
+  "Offices": {
+    "headers": [
+      "OfficeID",
+      "OfficeName"
+    ],
+    "analysis": "## 1. Category\n**Candidates** - This is a lookup/reference table for elected positions that candidates run for.\n\n## 2. Key Django Model Fields\n\n```python\nclass Office(models.Model):\n    office_id = models.IntegerField(primary_key=True)\n    office_name = models.CharField(max_length=100)\n    # Consider adding:\n    level = models.CharField()  # State/County/City/District\n    jurisdiction = models.CharField()  # e.g., \"Maricopa County\"\n    is_statewide = models.BooleanField()\n    display_order = models.IntegerField()\n```\n\n## 3. Data Quality Issues to Watch\n\n- **Inconsistent naming**: \"State Treasurer\" vs \"Treasurer\" vs \"AZ Treasurer\"\n- **Missing hierarchy**: No level indicator (state vs local offices)\n- **Duplicate entries**: Same office with slight variations\n- **Gaps in OfficeID sequence**: 2000\u21922010\u21922020 (indicates possible deleted records or reserved ranges)\n- **Generic \"Other\" category** (ID=1) - may hide important offices\n\n## 4. Arizona SOS Relationship\n\nArizona SOS campaign finance data includes:\n- **Committee registration** \u2192 links candidates to offices via OfficeID\n- **Candidate statements of interest** \u2192 declare which office they're seeking\n- **Financial reports** \u2192 filtered by office type for compliance thresholds\n\nYour `Offices` table should match SOS office codes exactly for proper data integration. Verify against their official lookup tables."
+  },
+  "Counties": {
+    "headers": [
+      "CountyID",
+      "CountyName"
+    ],
+    "analysis": "## 1. Category\n**Reference/Lookup Data** - Geographic dimension table for filtering and grouping campaign finance data by county.\n\n## 2. Key Django Model Fields\n\n```python\nclass County(models.Model):\n    county_id = models.IntegerField(primary_key=True)\n    county_name = models.CharField(max_length=50, unique=True)\n    \n    class Meta:\n        db_table = 'Counties'\n        verbose_name_plural = 'Counties'\n```\n\n**Foreign Key Relationships Needed:**\n- `Candidates.county` - candidate's district/location\n- `Contributions.county` - donor location\n- `IECommittees.county` - committee registration location\n- `Expenses.county` - expenditure targeting by geography\n\n## 3. Data Quality Issues\n\n- **Completeness**: Arizona has exactly **15 counties** - verify all present (Apache, Cochise, Coconino, Gila, Graham, Greenlee, La Paz, Maricopa, Mohave, Navajo, Pima, Pinal, Santa Cruz, Yavapai, Yuma)\n- **Standardization**: Watch for spelling variations, extra spaces, or case inconsistencies\n- **Missing data**: NULL/empty county references in related tables\n- **Invalid references**: CountyID values outside 1-15 range\n\n## 4. Arizona SOS Integration\n\n**Direct connections:**\n- SOS candidate filings include county for legislative districts (LD boundaries cross counties)\n- Contribution records may include donor county (address parsing required)\n- IE reports target specific geographic areas including counties\n- Ballot measure campaigns often report county-level expenditures\n\n**Implementation tip**: Use county as a filter dimension for Maricopa vs. rural spending patterns and compliance rates."
+  },
+  "Names": {
+    "headers": [
+      "NameID",
+      "NameGroupID",
+      "EntityTypeID",
+      "LastName",
+      "FirstName",
+      "MiddleName",
+      "Suffix",
+      "Address1",
+      "Address2",
+      "City",
+      "State",
+      "ZipCode",
+      "CountyID",
+      "Occupation",
+      "Employer"
+    ],
+    "analysis": "## 1. Category: **Entities** (Master/Lookup Table)\n\nThis is a central **entity registry** that stores all person/organization records. It feeds into Candidates, IE Committees, and individual Entities (donors, lobbyists, etc.).\n\n## 2. Key Django Model Fields\n\n```python\nclass Name(models.Model):\n    name_id = models.IntegerField(primary_key=True)\n    name_group_id = models.IntegerField(db_index=True)  # Links duplicates/related entities\n    entity_type_id = models.IntegerField(db_index=True)  # Critical classifier\n    \n    # Name fields\n    last_name = models.CharField(max_length=200)\n    first_name = models.CharField(max_length=100, blank=True)\n    \n    # Address (consider separate Address model)\n    address1 = models.CharField(max_length=200, blank=True)\n    city = models.CharField(max_length=100, blank=True)\n    state = models.CharField(max_length=2, default='AZ')\n    zip_code = models.CharField(max_length=10, blank=True)\n    \n    # Employment (for donor transparency)\n    occupation = models.CharField(max_length=200, blank=True)\n    employer = models.CharField(max_length=200, blank=True)\n```\n\n**Critical**: Create `EntityType` lookup table to decode `entity_type_id` (1=Contributors, 2=Committees, 3=Organizations, 44=Aggregated, etc.)\n\n## 3. Data Quality Issues\n\n- **Negative IDs**: System records (-7 to -1) for aggregations\u2014**exclude from real entity counts**\n- **Empty names**: \"Multiple Contributors/Vendors\" are placeholders for itemized->unitemized rollups\n- **Missing addresses**: Many blank address fields (especially for small donors)\n- **NameGroupID**: Track this\u2014indicates duplicate detection or entity merging\n- **Occupation/Employer**: Often blank; required only for donations >$50 in AZ\n\n## 4. Arizona SOS Relationship\n\nThis matches the **Arizona Secretary of State Campaign Finance API** structure. The negative NameIDs confirm this is official data. Cross-reference:\n\n- NameID -3 = SOS itself (filing recipient)\n- NameID -2 = Clean Elections Commission\n- EntityTypeID determines if entity appears in Candidates vs Contributions vs IE reports\n\n**Next step**: Pull the `EntityType` lookup table to properly categorize all 44+ entity types."
+  }
+}
