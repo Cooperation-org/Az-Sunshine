@@ -29,3 +29,11 @@ backend/chrome_profile/
 deploy.sh/
 deploy.sh
 *.mdb
+
+
+# Sensitive or large files
+transparency/utils/mdb_exports.tar.gz
+test_claude.py
+transparency_backup.dump
+transparency/utils/mdb_exports.tar.gz
+.github/
