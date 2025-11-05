@@ -123,6 +123,8 @@ EMAIL_HOST_USER = 'mortydrake2@gmail.com'        # Your Gmail address
 EMAIL_HOST_PASSWORD = 'mokj cvuw ehkm hbny'      # Your Gmail App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
+
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
