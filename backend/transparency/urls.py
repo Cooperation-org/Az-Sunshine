@@ -16,6 +16,11 @@ from .views import (
     race_top_donors,
     validate_phase1_data,
     dashboard_summary,
+    metrics,
+    donors_top,
+    donors_list,
+    expenditures_list,
+    candidates_list,
 )
 
 # App name for namespacing
@@ -82,8 +87,12 @@ urlpatterns = [
     path('dashboard/summary/', dashboard_summary, name='dashboard-summary'),
     path('validation/phase1/', validate_phase1_data, name='validate-phase1'),
     
-    
-]
+    # ==================== FRONTEND ADAPTER ENDPOINTS ====================
+    path('metrics/', metrics, name='metrics'),
+    path('donors/top/', donors_top, name='donors-top'),
+    path('donors/', donors_list, name='donors-list'),
+    path('expenditures/', expenditures_list, name='expenditures-list'),
+    path('candidates/', candidates_list, name='candidates-list'),
 
 """
 PHASE 1 API ENDPOINT DOCUMENTATION
