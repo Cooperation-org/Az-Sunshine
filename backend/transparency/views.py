@@ -657,12 +657,12 @@ def dashboard_summary(request):
     # Get current cycle (most recent)
     current_cycle = Cycle.objects.order_by('-begin_date').first()
     
-    # Candidate committees - show all for now to display test data
+    # Candidate committees count
     candidate_count = Committee.objects.filter(
         candidate__isnull=False
     ).count()
     
-    # Total IE spending - show all for now
+    # Total IE spending
     ie_spending = Transaction.objects.filter(
         subject_committee__isnull=False,
         deleted=False
