@@ -93,6 +93,7 @@ urlpatterns = [
     path('donors/', donors_list, name='donors-list'),
     path('expenditures/', expenditures_list, name='expenditures-list'),
     path('candidates/', candidates_list, name='candidates-list'),
+]
 
 """
 PHASE 1 API ENDPOINT DOCUMENTATION
