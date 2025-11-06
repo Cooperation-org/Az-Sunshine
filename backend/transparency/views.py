@@ -672,11 +672,8 @@ def dashboard_summary(request):
     candidates_over_threshold = 0
     threshold = Decimal('5000')
     
-    filter_kwargs = {'candidate__isnull': False}
-    if current_cycle:
-        filter_kwargs['election_cycle_id'] = current_cycle.cycle_id
-    
-    for committee in Committee.objects.filter(**filter_kwargs):
+    # Check all candidate committees for threshold
+    for committee in Committee.objects.filter(candidate__isnull=False):
         ie_for = committee.get_ie_for()
         ie_against = committee.get_ie_against()
         if ie_for > threshold or ie_against > threshold:
@@ -794,6 +791,150 @@ def donors_top(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+def candidates_list(request):
+    """
+    Adapter endpoint: /api/candidates/ -> maps to committees with candidates
+    Returns candidates with IE spending totals
+    """
+    from django.db.models import Sum, Q
+    
+    # Get candidate committees
+    queryset = Committee.objects.filter(
+        candidate__isnull=False
+    ).select_related(
+        'name', 'candidate', 'candidate_party', 'candidate_office',
+        'election_cycle'
+    )
+    
+    # Filter by office if provided
+    office_id = request.query_params.get('office', None)
+    if office_id:
+        queryset = queryset.filter(candidate_office_id=office_id)
+    
+    # Filter by party if provided
+    party_id = request.query_params.get('party', None)
+    if party_id:
+        queryset = queryset.filter(candidate_party_id=party_id)
+    
+    # Filter by cycle if provided
+    cycle_id = request.query_params.get('cycle', None)
+    if cycle_id:
+        queryset = queryset.filter(election_cycle_id=cycle_id)
+    
+    # Annotate with IE totals
+    queryset = queryset.annotate(
+        ie_total_for=Sum(
+            'subject_of_ies__amount',
+            filter=Q(subject_of_ies__is_for_benefit=True,
+                   subject_of_ies__deleted=False)
+        ),
+        ie_total_against=Sum(
+            'subject_of_ies__amount',
+            filter=Q(subject_of_ies__is_for_benefit=False,
+                     subject_of_ies__deleted=False)
+        )
+    )
+    
+    # Pagination
+    paginator = LargeResultsSetPagination()
+    page = paginator.paginate_queryset(queryset, request)
+    
+    # Transform to match frontend expectations
+    result_data = []
+    for committee in (page if page is not None else queryset):
+        # Get contact status from CandidateSOI if exists
+        try:
+            soi = CandidateStatementOfInterest.objects.filter(
+                entity=committee.candidate
+            ).order_by('-filing_date').first()
+            contacted = soi.contact_status == 'contacted' if soi else False
+            contacted_at = soi.contacted_at.isoformat() if soi and soi.contacted_at else None
+        except:
+            contacted = False
+            contacted_at = None
+        
+        result_data.append({
+            'id': committee.committee_id,
+            'name': committee.candidate.full_name if committee.candidate else committee.name.full_name,
+            'race': committee.candidate_office.name if committee.candidate_office else None,
+            'party': committee.candidate_party.name if committee.candidate_party else None,
+            'contacted': contacted,
+            'contacted_at': contacted_at,
+            'ie_total_for': float(committee.ie_total_for or 0),
+            'ie_total_against': float(committee.ie_total_against or 0),
+        })
+    
+    if page is not None:
+        return paginator.get_paginated_response(result_data)
+    
+    return Response({'results': result_data, 'count': len(result_data)})
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def donors_list(request):
+    """
+    Adapter endpoint: /api/donors/ -> maps to entities with contribution data
+    Returns donors with total contributions and linked committees count
+    """
+    from django.db.models import Sum, Count, Q
+    
+    # Get entities that have made contributions
+    queryset = Entity.objects.filter(
+        transactions__transaction_type__income_expense_neutral=1,
+        transactions__deleted=False
+    ).annotate(
+        total_contribution=Sum('transactions__amount'),
+        num_contributions=Count('transactions__transaction_id'),
+        linked_committees=Count('transactions__committee', distinct=True)
+    ).distinct().order_by('-total_contribution')
+    
+    # Filter by search term if provided
+    search = request.query_params.get('search', None)
+    if search:
+        queryset = queryset.filter(
+            Q(full_name__icontains=search) |
+            Q(last_name__icontains=search) |
+            Q(first_name__icontains=search)
+        )
+    
+    # Pagination
+    paginator = LargeResultsSetPagination()
+    page = paginator.paginate_queryset(queryset, request)
+    
+    # Transform to match frontend expectations
+    result_data = []
+    for entity in (page if page is not None else queryset):
+        # Calculate IE impact (total IE spending by committees this donor contributed to)
+        committees_donated_to = Committee.objects.filter(
+            transactions__entity=entity,
+            transactions__transaction_type__income_expense_neutral=1,
+            transactions__deleted=False
+        ).distinct()
+        
+        ie_impact = Transaction.objects.filter(
+            committee__in=committees_donated_to,
+            subject_committee__isnull=False,
+            deleted=False
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+        result_data.append({
+            'id': entity.name_id,
+            'name': entity.full_name,
+            'total_contribution': float(entity.total_contribution or 0),
+            'linked_committees': entity.linked_committees or 0,
+            'ie_impact': float(ie_impact),
+            'num_contributions': entity.num_contributions or 0,
+        })
+    
+    if page is not None:
+        return paginator.get_paginated_response(result_data)
+    
+    return Response({'results': result_data, 'count': len(result_data)})
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def expenditures_list(request):
     """
     Adapter endpoint: /api/expenditures/ -> maps to transactions with IE filter
@@ -819,12 +960,24 @@ def expenditures_list(request):
         result_data = []
         for item in serializer.data:
             subject_comm = item.get('subject_committee', {})
+            memo = item.get('memo', '').strip()
+            is_for_benefit = item.get('is_for_benefit')
+            candidate_name = subject_comm.get('candidate_name') if subject_comm else 'Candidate'
+            
+            # Build purpose: use memo if available, otherwise use Support/Oppose + candidate name
+            if memo:
+                purpose = memo
+            else:
+                support_type = 'Support' if is_for_benefit else 'Oppose'
+                purpose = f"{support_type} {candidate_name}"
+            
             result_data.append({
                 'date': item.get('transaction_date'),
                 'amount': item.get('amount'),
-                'support_oppose': 'Support' if item.get('is_for_benefit') else 'Oppose',
+                'support_oppose': 'Support' if is_for_benefit else 'Oppose',
                 'ie_committee': {'name': item.get('committee', {}).get('name', 'Unknown')},
-                'candidate_name': subject_comm.get('candidate_name') if subject_comm else 'N/A'
+                'candidate_name': candidate_name,
+                'purpose': purpose
             })
         return paginator.get_paginated_response(result_data)
     
@@ -837,6 +990,7 @@ def expenditures_list(request):
             'amount': item.get('amount'),
             'support_oppose': 'Support' if item.get('is_for_benefit') else 'Oppose',
             'ie_committee': {'name': item.get('committee', {}).get('name', 'Unknown')},
-            'candidate_name': subject_comm.get('candidate_name') if subject_comm else 'N/A'
+            'candidate_name': subject_comm.get('candidate_name') if subject_comm else 'N/A',
+            'purpose': item.get('memo') or (('Support' if item.get('is_for_benefit') else 'Oppose') + ' ' + (subject_comm.get('candidate_name') if subject_comm else 'Candidate'))
         })
     return Response({'results': result_data})
