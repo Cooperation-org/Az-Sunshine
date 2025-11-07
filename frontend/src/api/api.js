@@ -4,7 +4,7 @@ import axios from "axios";
 // Use environment variable if available, otherwise use localhost for development
 // Change to "http://167.172.30.134:8000/api/" when backend is running on remote server
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://167.172.30.134/api/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1/";
 
 
 const api = axios.create({
@@ -28,12 +28,15 @@ api.interceptors.response.use(
 
 // --- Candidates ---
 export async function getCandidates(params = {}) {
-  const res = await api.get("candidates/", { params });
+  // Use committees endpoint with candidates_only filter
+  const res = await api.get("committees/", { 
+    params: { ...params, candidates_only: 'true' } 
+  });
   return res.data;
 }
 
 export async function getCandidate(id) {
-  const res = await api.get(`candidates/${id}/`);
+  const res = await api.get(`committees/${id}/`);
   return res.data;
 }
 
@@ -61,7 +64,7 @@ export async function getTopCommittees() {
 
 // --- Donors ---
 export async function getDonors(params = {}) {
-  const res = await api.get("donors/", { params });
+  const res = await api.get("entities/", { params });
   return res.data;
 }
 
@@ -81,13 +84,23 @@ export async function getExpenditures(params = {}) {
   return res.data;
 }
 
-export async function getSupportOpposeByCandidate() {
+export async function getCandidateIESpending(id) {
   try {
-    const res = await api.get("expenditures/support_oppose_by_candidate/");
+    const res = await api.get(`committees/${id}/ie_spending_summary/`);
     return res.data;
   } catch (error) {
-    console.error("Error fetching support/oppose data:", error);
-    return [];
+    console.error("Error fetching IE spending summary:", error);
+    return null;
+  }
+}
+
+export async function getCandidateIEByCommittee(id) {
+  try {
+    const res = await api.get(`committees/${id}/ie_spending_by_committee/`);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching IE by committee:", error);
+    return null;
   }
 }
 
@@ -110,8 +123,15 @@ export async function getContributions(params = {}) {
 // --- Metrics (backend-provided) ---
 export async function getMetrics() {
   try {
-    const res = await api.get("metrics/");
-    return res.data;
+    // Use dashboard/summary endpoint as metrics endpoint has issues
+    const res = await api.get("dashboard/summary/");
+    const data = res.data;
+    return {
+      total_expenditures: parseFloat(data.total_ie_spending || 0),
+      num_candidates: data.candidate_committees || 0,
+      num_expenditures: 0, // Will be populated from expenditures endpoint
+      candidates: []
+    };
   } catch (error) {
     console.error("Error fetching metrics:", error);
     return {
