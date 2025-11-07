@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Bell, Search, ChevronRight } from "lucide-react";
-import { getCandidates, getExpenditures } from "../api/api";
+import { getCandidates } from "../api/api";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 
@@ -18,52 +18,25 @@ export default function Candidates() {
   async function loadCandidates(page) {
     setLoading(true);
     try {
-      const [candidatesData, expendituresData] = await Promise.all([
-        getCandidates({ page, page_size: 10 }),
-        getExpenditures({ page_size: 1000 })
-      ]);
+      const candidatesData = await getCandidates({ page, page_size: 10 });
       
       const candidatesList = candidatesData.results || [];
-      const expenditures = expendituresData.results || [];
       
-      // Calculate IE totals for each candidate
-      const candidatesWithTotals = candidatesList.map(candidate => {
-        const candidateExpenditures = expenditures.filter(
-          exp => exp.candidate?.id === candidate.id || exp.candidate_name === candidate.name
-        );
-        
-        const forTotal = candidateExpenditures
-          .filter(exp => exp.support_oppose === "Support")
-          .reduce((sum, exp) => sum + Number(exp.amount || 0), 0);
-        
-        const againstTotal = candidateExpenditures
-          .filter(exp => exp.support_oppose === "Oppose")
-          .reduce((sum, exp) => sum + Number(exp.amount || 0), 0);
-        
-        return {
-          ...candidate,
-          ie_total_for: forTotal,
-          ie_total_against: againstTotal
-        };
-      });
-      
-      setCandidates(candidatesWithTotals);
+      setCandidates(candidatesList);
       setTotalCount(candidatesData.count || 0);
       setTotalPages(Math.ceil((candidatesData.count || 0) / 10));
     } catch (err) {
       console.error("Error loading candidates:", err);
+      setCandidates([]);
     } finally {
       setLoading(false);
     }
   }
 
   const getContactedStatus = (candidate) => {
-    if (candidate.contacted) {
-      return { label: "Contacted", color: "bg-green-100 text-green-700" };
-    } else if (candidate.contacted_at) {
-      return { label: "Attempted", color: "bg-yellow-100 text-yellow-700" };
-    }
-    return { label: "Not Contacted", color: "bg-red-100 text-red-700" };
+    // Since we're using committees, we don't have SOI contact status
+    // Return a default status
+    return { label: "Active", color: "bg-green-100 text-green-700" };
   };
 
   return (
@@ -120,51 +93,66 @@ export default function Candidates() {
                         Contacted Status
                       </th>
                       <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                        IE Total For
+                        Election Cycle
                       </th>
                       <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                        IE Total Against
+                        Status
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {candidates.map((candidate, idx) => {
-                      const status = getContactedStatus(candidate);
-                      return (
-                        <tr key={candidate.id || idx} className="hover:bg-gray-50 transition">
-                          <td className="py-5 px-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600  flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
-                                {candidate.name?.charAt(0)?.toUpperCase() || "?"}
+                    {candidates.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="py-12 text-center text-gray-500">
+                          No candidates found.
+                        </td>
+                      </tr>
+                    ) : (
+                      candidates.map((candidate, idx) => {
+                        const status = getContactedStatus(candidate);
+                        const candidateName = candidate.candidate?.full_name || candidate.name?.full_name || "Unknown";
+                        return (
+                          <tr key={candidate.committee_id || idx} className="hover:bg-gray-50 transition">
+                            <td className="py-5 px-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600  flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
+                                  {candidateName.charAt(0).toUpperCase()}
+                                </div>
+                                <Link 
+                                  to={`/candidate/${candidate.committee_id}`}
+                                  className="text-gray-900 font-medium hover:text-purple-600 transition"
+                                >
+                                  {candidateName}
+                                </Link>
                               </div>
-                              <Link 
-                                to={`/candidate/${candidate.id}`}
-                                className="text-gray-900 font-medium hover:text-purple-600 transition"
-                              >
-                                {candidate.name || "Unknown"}
-                              </Link>
-                            </div>
-                          </td>
-                          <td className="py-5 px-6 text-gray-700">
-                            {candidate.race?.name || candidate.race || "N/A"}
-                          </td>
-                          <td className="py-5 px-6 text-gray-700">
-                            {candidate.party?.name || "N/A"}
-                          </td>
-                          <td className="py-5 px-6">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
-                              {status.label}
-                            </span>
-                          </td>
-                          <td className="py-5 px-6 text-green-600 font-semibold">
-                            ${Number(candidate.ie_total_for || 0).toLocaleString()}
-                          </td>
-                          <td className="py-5 px-6 text-red-600 font-semibold">
-                            ${Number(candidate.ie_total_against || 0).toLocaleString()}
-                          </td>
-                        </tr>
-                      );
-                    })}
+                            </td>
+                            <td className="py-5 px-6 text-gray-700">
+                              {candidate.candidate_office?.name || "N/A"}
+                            </td>
+                            <td className="py-5 px-6 text-gray-700">
+                              {candidate.candidate_party?.name || "N/A"}
+                            </td>
+                            <td className="py-5 px-6">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
+                                {status.label}
+                              </span>
+                            </td>
+                            <td className="py-5 px-6 text-gray-700">
+                              {candidate.election_cycle?.name || "N/A"}
+                            </td>
+                            <td className="py-5 px-6 text-gray-700">
+                              {candidate.is_incumbent ? (
+                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                  Incumbent
+                                </span>
+                              ) : (
+                                <span className="text-gray-500">Challenger</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
