@@ -23,6 +23,17 @@ from .views import (
     candidates_list,
 )
 
+
+from .views_claude import (
+    claude_dashboard,
+    claude_chat,
+    claude_tasks,
+    claude_patterns,
+    chat_api,
+    analyze_transaction_view  # Changed from analyze_contribution_view
+)
+
+
 # App name for namespacing
 app_name = 'transparency'
 
@@ -87,12 +98,18 @@ urlpatterns = [
     path('dashboard/summary/', dashboard_summary, name='dashboard-summary'),
     path('validation/phase1/', validate_phase1_data, name='validate-phase1'),
     
-    # ==================== FRONTEND ADAPTER ENDPOINTS ====================
-    path('metrics/', metrics, name='metrics'),
-    path('donors/top/', donors_top, name='donors-top'),
-    path('donors/', donors_list, name='donors-list'),
-    path('expenditures/', expenditures_list, name='expenditures-list'),
-    path('candidates/', candidates_list, name='candidates-list'),
+    # ==================== CLAUDE AI INTEGRATION ====================
+    # Claude AI pages
+    path('claude/', claude_dashboard, name='claude_dashboard'),
+    path('claude/chat/', claude_chat, name='claude_chat'),
+    path('claude/tasks/', claude_tasks, name='claude_tasks'),
+    path('claude/patterns/', claude_patterns, name='claude_patterns'),
+    path('claude/analyze/<int:transaction_id>/', analyze_transaction_view, name='analyze_transaction'),
+    
+    # Claude API
+    path('api/claude/chat/', chat_api, name='chat_api'),
+    
+    
 ]
 
 """

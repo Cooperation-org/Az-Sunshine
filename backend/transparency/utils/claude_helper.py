@@ -1,20 +1,39 @@
-import anthropic
 import os
+from anthropic import Anthropic
 from django.conf import settings
 
-def get_claude_client():
-    """Initialize Claude client"""
-    api_key = settings.ANTHROPIC_API_KEY or os.environ.get('ANTHROPIC_API_KEY')
-    if not api_key:
-        raise ValueError("ANTHROPIC_API_KEY not found in settings or environment")
-    return anthropic.Anthropic(api_key=api_key)
+class ClaudeHelper:
+    """Helper class for Claude API interactions"""
+    
+    def __init__(self):
+        api_key = os.environ.get('ANTHROPIC_API_KEY') or settings.ANTHROPIC_API_KEY
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY not found")
+        self.client = Anthropic(api_key=api_key)
+        self.model = "claude-sonnet-4-20250514"
+    
+    def chat(self, messages, max_tokens=2048):
+        """Send messages to Claude and get response"""
+        try:
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                messages=messages
+            )
+            return response.content[0].text
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    def analyze_text(self, text, prompt):
+        """Analyze text with a prompt"""
+        full_prompt = f"{prompt}\n\n{text}" if text else prompt
+        return self.chat([{"role": "user", "content": full_prompt}])
 
-def ask_claude(prompt, max_tokens=4096):
-    """Simple helper to ask Claude a question"""
-    client = get_claude_client()
-    message = client.messages.create(
-        model="claude-sonnet-4-5-20250929",
-        max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return message.content[0].text
+# Singleton instance
+_instance = None
+
+def get_claude():
+    global _instance
+    if _instance is None:
+        _instance = ClaudeHelper()
+    return _instance
