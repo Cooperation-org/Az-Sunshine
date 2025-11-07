@@ -46,7 +46,12 @@ export default function Dashboard() {
         setMetrics(metricData || {});
         setTopCommittees(committees.results || committees || []);
         setTopDonors(donors.results || donors || []);
-        setExpenditures(exp.results || exp || []);
+        // Update num_expenditures from expenditures count
+        const expData = exp.results || exp || [];
+        setExpenditures(expData);
+        if (expData.length > 0) {
+          setMetrics(prev => ({ ...prev, num_expenditures: expData.length }));
+        }
       } catch (err) {
         console.error("❌ Dashboard load error:", err);
         console.error("Error details:", err.response?.data || err.message);

@@ -4,7 +4,8 @@ import { useParams, Link } from "react-router-dom";
 import {
   getCandidate,
   getExpenditures,
-  getSupportOpposeByCandidate,
+  getCandidateIESpending,
+  getCandidateIEByCommittee,
 } from "../api/api";
 import { Bar, Pie } from "react-chartjs-2";
 import {
@@ -16,6 +17,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import Sidebar from "../components/Sidebar";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -23,154 +25,257 @@ export default function CandidateDetail() {
   const { id } = useParams();
   const [candidate, setCandidate] = useState(null);
   const [expenditures, setExpenditures] = useState([]);
-  const [supportOppose, setSupportOppose] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [ieSpending, setIESpending] = useState(null);
+  const [ieByCommittee, setIEByCommittee] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadCandidate() {
       setLoading(true);
       try {
-        const [candData, expData, soData] = await Promise.all([
+        const [candData, expData, ieData, ieCommData] = await Promise.all([
           getCandidate(id),
-          getExpenditures({ candidate_id: id }),
-          getSupportOpposeByCandidate({ candidate_id: id }),
+          getExpenditures({ page_size: 100 }),
+          getCandidateIESpending(id),
+          getCandidateIEByCommittee(id),
         ]);
 
         setCandidate(candData);
-        setExpenditures(expData.results || expData || []);
-        setSupportOppose(soData || []);
+        
+        // Filter expenditures for this candidate
+        const candidateExpenditures = (expData.results || expData || []).filter(
+          exp => exp.candidate_name === (candData.candidate?.full_name || candData.name?.full_name)
+        );
+        setExpenditures(candidateExpenditures);
+        
+        setIESpending(ieData);
+        setIEByCommittee(ieCommData);
       } catch (err) {
         console.error("Error loading candidate detail:", err);
       } finally {
         setLoading(false);
       }
     }
-    loadCandidate();
+    if (id) {
+      loadCandidate();
+    }
   }, [id]);
 
-  if (!candidate) return <div className="container"><p>Loading candidate data...</p></div>;
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <main className="ml-20 flex-1 p-8">
+          <div className="flex items-center justify-center h-64 text-gray-500">
+            Loading candidate data...
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!candidate) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <main className="ml-20 flex-1 p-8">
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Candidate Not Found</h2>
+            <p className="text-gray-600 mb-4">The candidate you're looking for doesn't exist.</p>
+            <Link to="/candidates" className="text-purple-600 hover:text-purple-700">
+              ← Back to Candidates
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const candidateName = candidate.candidate?.full_name || candidate.name?.full_name || "Unknown Candidate";
 
   // --- prepare chart data ---
-  const spendByCommittee = expenditures.reduce((acc, e) => {
-    const committeeName = e.committee?.name || e.ie_committee?.name || "Unknown Committee";
-    acc[committeeName] = (acc[committeeName] || 0) + Number(e.amount || 0);
-    return acc;
-  }, {});
+  const spendByCommittee = {};
+  if (ieByCommittee?.ie_committees) {
+    ieByCommittee.ie_committees.forEach(comm => {
+      const committeeName = comm.committee__name__last_name || "Unknown Committee";
+      spendByCommittee[committeeName] = (spendByCommittee[committeeName] || 0) + Number(comm.total || 0);
+    });
+  }
 
   const committeeLabels = Object.keys(spendByCommittee);
   const committeeTotals = Object.values(spendByCommittee);
 
   const barData = {
-    labels: committeeLabels,
+    labels: committeeLabels.length > 0 ? committeeLabels : ["No Data"],
     datasets: [
       {
         label: "Total IE Spending by Committee (USD)",
-        data: committeeTotals,
+        data: committeeTotals.length > 0 ? committeeTotals : [0],
+        backgroundColor: "rgba(124, 107, 166, 0.6)",
+        borderColor: "rgba(124, 107, 166, 1)",
+        borderWidth: 1,
       },
     ],
   };
 
-  const totalsByType = supportOppose.reduce((acc, row) => {
-    const key = row.support_oppose || "Unknown";
-    acc[key] = (acc[key] || 0) + Number(row.total || 0);
-    return acc;
-  }, {});
-
+  // Support vs Oppose data from IE spending summary
   const pieData = {
-    labels: Object.keys(totalsByType),
-    datasets: [{ data: Object.values(totalsByType) }],
+    labels: ["Support", "Oppose"],
+    datasets: [{
+      data: [
+        ieSpending?.ie_spending?.for?.total || 0,
+        ieSpending?.ie_spending?.against?.total || 0,
+      ],
+      backgroundColor: [
+        "rgba(34, 197, 94, 0.6)", // green for support
+        "rgba(239, 68, 68, 0.6)", // red for oppose
+      ],
+      borderColor: [
+        "rgba(34, 197, 94, 1)",
+        "rgba(239, 68, 68, 1)",
+      ],
+      borderWidth: 1,
+    }],
   };
 
   // --- candidate details for header ---
   const infoPairs = [
-    ["Race", candidate.race?.name || "—"],
-    ["Office", candidate.race?.office || "—"],
-    ["Party", candidate.party || "—"],
-    ["Contacted", candidate.contact_status || "—"],
-    ["Filing Date", candidate.filing_date || "—"],
-    ["External ID", candidate.external_id || "—"],
-    ["Email", candidate.email || "—"],
+    ["Name", candidateName],
+    ["Office", candidate.candidate_office?.name || "N/A"],
+    ["Party", candidate.candidate_party?.name || "N/A"],
+    ["Election Cycle", candidate.election_cycle?.name || "N/A"],
+    ["Status", candidate.is_incumbent ? "Incumbent" : "Challenger"],
+    ["IE For", `$${Number(ieSpending?.ie_spending?.for?.total || 0).toLocaleString()}`],
+    ["IE Against", `$${Number(ieSpending?.ie_spending?.against?.total || 0).toLocaleString()}`],
+    ["Net IE", `$${Number(ieSpending?.ie_spending?.net || 0).toLocaleString()}`],
   ];
 
   return (
-    <div className="container">
-      <header className="header card">
-        <h1>{candidate.name}</h1>
-        <p className="lead">Candidate details and Independent Expenditure overview</p>
-      </header>
-
-      <div className="card">
-        <h3>Candidate Information</h3>
-        <table className="info-table">
-          <tbody>
-            {infoPairs.map(([label, val]) => (
-              <tr key={label}>
-                <td className="label">{label}</td>
-                <td>{val}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="grid two-col">
-        <div className="card">
-          <h3>IE Spending by Committee</h3>
-          {committeeLabels.length > 0 ? (
-            <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false }} />
-          ) : (
-            <p>No IE spending data for this candidate.</p>
-          )}
-        </div>
-
-        <div className="card">
-          <h3>Support vs Oppose</h3>
-          {Object.keys(totalsByType).length > 0 ? (
-            <div style={{ height: 260 }}>
-              <Pie data={pieData} />
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
+      <main className="ml-20 flex-1">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200 px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{candidateName}</h1>
+              <p className="text-sm text-gray-500 mt-1">Candidate details and Independent Expenditure overview</p>
             </div>
-          ) : (
-            <p>No support/oppose data.</p>
-          )}
-        </div>
-      </div>
+            <Link 
+              to="/candidates" 
+              className="text-purple-600 hover:text-purple-700 font-medium"
+            >
+              ← Back to Candidates
+            </Link>
+          </div>
+        </header>
 
-      <div className="card">
-        <h3>Independent Expenditures for {candidate.name}</h3>
-        <div className="table-wrap">
-          <table className="recent-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Committee</th>
-                <th>Donor</th>
-                <th>Amount</th>
-                <th>Purpose</th>
-                <th>Support/Oppose</th>
-              </tr>
-            </thead>
-            <tbody>
-              {expenditures.length === 0 && (
-                <tr><td colSpan="6">No expenditures recorded.</td></tr>
-              )}
-              {expenditures.map(e => (
-                <tr key={e.id}>
-                  <td>{e.date || "—"}</td>
-                  <td>{e.committee?.name || e.ie_committee?.name || "—"}</td>
-                  <td>{e.donor?.name || "—"}</td>
-                  <td>${Number(e.amount || 0).toLocaleString()}</td>
-                  <td>{e.purpose || "—"}</td>
-                  <td>{e.support_oppose || "—"}</td>
-                </tr>
+        <div className="p-8">
+          {/* Candidate Information */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Candidate Information</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {infoPairs.map(([label, val]) => (
+                <div key={label} className="border-b border-gray-100 pb-2">
+                  <span className="text-sm font-semibold text-gray-600">{label}:</span>
+                  <span className="ml-2 text-gray-900">{val}</span>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </div>
+          </div>
 
-      <footer className="footer card">
-        <Link to="/">← Back to Dashboard</Link>
-      </footer>
+          {/* Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">IE Spending by Committee</h3>
+              {committeeLabels.length > 0 ? (
+                <div style={{ height: 300 }}>
+                  <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false }} />
+                </div>
+              ) : (
+                <p className="text-gray-500">No IE spending data for this candidate.</p>
+              )}
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Support vs Oppose</h3>
+              {(ieSpending?.ie_spending?.for?.total > 0 || ieSpending?.ie_spending?.against?.total > 0) ? (
+                <div style={{ height: 300 }}>
+                  <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false }} />
+                </div>
+              ) : (
+                <p className="text-gray-500">No support/oppose data.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Expenditures Table */}
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900">
+                Independent Expenditures for {candidateName}
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Date</th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Committee</th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Amount</th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Purpose</th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Support/Oppose</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {expenditures.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="py-12 text-center text-gray-500">
+                        No expenditures recorded.
+                      </td>
+                    </tr>
+                  ) : (
+                    expenditures.map((e, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="py-4 px-6 text-gray-700">
+                          {e.date ? new Date(e.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          }) : "N/A"}
+                        </td>
+                        <td className="py-4 px-6 text-gray-700">
+                          {e.ie_committee?.name || "Unknown"}
+                        </td>
+                        <td className="py-4 px-6 text-gray-900 font-semibold">
+                          ${Number(e.amount || 0).toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </td>
+                        <td className="py-4 px-6 text-gray-700">
+                          {e.purpose || "N/A"}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            e.support_oppose === "Support"
+                              ? "bg-green-100 text-green-700"
+                              : e.support_oppose === "Oppose"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700"
+                          }`}>
+                            {e.support_oppose || "Unknown"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
