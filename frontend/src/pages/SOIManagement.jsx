@@ -400,9 +400,9 @@ export default function SOIManagement() {
         <div className="p-4 sm:p-6 md:p-8">
           {/* Header */}
           <div className="mb-6 md:mb-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 leading-tight tracking-tight">
+            <h3 className="text-2xl font-bold text-gray-900">
               Statement of Interest Tracking
-            </h1>
+            </h3>
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
               Monitor and manage candidate SOI filings and pledge commitments
             </p>
