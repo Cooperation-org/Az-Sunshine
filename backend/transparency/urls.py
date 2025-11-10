@@ -19,6 +19,9 @@ router.register(r'offices', OfficeViewSet, basename='office')
 router.register(r'cycles', CycleViewSet, basename='cycle')
 
 urlpatterns = [
+    # Root endpoint: /api/v1/ returns SOI candidates as array (not paginated)
+    path('', soi_candidates_list, name='api-root'),
+    
     path('', include(router.urls)),
 
     # === Existing API endpoints ===

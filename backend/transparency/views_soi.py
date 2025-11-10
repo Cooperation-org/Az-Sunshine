@@ -217,6 +217,7 @@ def soi_dashboard_stats(request):
 def soi_candidates_list(request):
     """
     FIXED: Return list of SOI candidates with proper serialization
+    Returns array of candidates (not paginated) for /api/v1/ endpoint
     """
     try:
         # Get filter parameters
@@ -236,27 +237,50 @@ def soi_candidates_list(request):
         if search:
             queryset = queryset.filter(candidate_name__icontains=search)
         
-        # Serialize data
+        # Serialize data with comprehensive field mapping
         candidates = []
         for soi in queryset.order_by('-filing_date'):
-            candidates.append({
+            # Get phone field safely (it was added in migration 0006)
+            phone_value = ''
+            try:
+                if hasattr(soi, 'phone'):
+                    phone_value = soi.phone or ''
+            except AttributeError:
+                phone_value = ''
+            
+            candidate_data = {
                 'id': soi.id,
-                'name': soi.candidate_name,
-                'office': soi.office.name if soi.office else 'Unknown',
+                'name': soi.candidate_name or '',
+                'office': soi.office.name if soi.office and soi.office.name else 'Unknown',
                 'party': '',  # SOI doesn't have party yet
                 'email': soi.email or '',
-                'phone': getattr(soi, 'phone', ''),  # In case phone field doesn't exist
+                'phone': phone_value,
                 'contacted': soi.contact_status != 'uncontacted',
                 'contacted_at': soi.contact_date.isoformat() if soi.contact_date else None,
-                'pledge_received': soi.pledge_received,
+                'pledge_received': bool(soi.pledge_received),
                 'filing_date': soi.filing_date.isoformat() if soi.filing_date else None,
                 'notes': soi.notes or '',
-            })
+                'contact_status': soi.contact_status or 'uncontacted',  # Include raw status for debugging
+            }
+            
+            # Log missing fields for debugging
+            missing_fields = [k for k, v in candidate_data.items() if v is None or v == '']
+            if missing_fields:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.debug(f"SOI {soi.id} has empty fields: {missing_fields}")
+            
+            candidates.append(candidate_data)
         
-        return Response({
-            'results': candidates,
-            'count': len(candidates)
-        })
+        # Log response summary
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Returning {len(candidates)} SOI candidates")
+        if candidates:
+            logger.debug(f"Sample candidate fields: {list(candidates[0].keys())}")
+        
+        # Return as array directly (not paginated) for /api/v1/ endpoint
+        return Response(candidates)
         
     except Exception as e:
         import traceback
