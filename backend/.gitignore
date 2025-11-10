@@ -12,6 +12,7 @@ transparency/management/commands/discover_and_scrape_soi.py
 transparency/management/commands/scrape_soi.py
 transparency/management/commands/scrape_soi_selenium.py
 transparency/views_claude.py
+transparency/management/commands/process_soi_csv.py
 
 # Ignore templates directory
 transparency/templates/

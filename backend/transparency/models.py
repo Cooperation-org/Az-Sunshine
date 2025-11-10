@@ -693,6 +693,7 @@ class CandidateStatementOfInterest(models.Model):
     candidate_name = models.CharField(max_length=255, db_index=True)
     office = models.ForeignKey(Office, on_delete=models.CASCADE, db_index=True)
     email = models.EmailField(blank=True, db_index=True)
+    phone = models.CharField(max_length=20, blank=True, db_index=True)  # NEW FIELD
     filing_date = models.DateField(db_index=True)
     
     # Manual tracking via Django admin
@@ -715,7 +716,7 @@ class CandidateStatementOfInterest(models.Model):
     notes = models.TextField(blank=True)
     
     # Link to Entity if they become a candidate committee
-    entity = models.ForeignKey(Entity, null=True, blank=True, 
+    entity = models.ForeignKey('Entity', null=True, blank=True, 
                               related_name='soi_filings',
                               on_delete=models.SET_NULL, db_index=True)
     
@@ -743,12 +744,13 @@ class CandidateStatementOfInterest(models.Model):
             # Combined queries
             models.Index(fields=['office', 'contact_status'], name='idx_soi_office_status'),
             models.Index(fields=['contact_status', 'pledge_received'], name='idx_soi_status_pledge'),
+            
+            # Phone search
+            models.Index(fields=['phone'], name='idx_soi_phone'),
         ]
     
     def __str__(self):
         return f"{self.candidate_name} - {self.office.name}"
-
-
 # ==================== PHASE 1 AGGREGATION MANAGER ====================
 
 class RaceAggregationManager:
