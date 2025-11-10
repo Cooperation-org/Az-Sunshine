@@ -13,7 +13,7 @@ import {
   getExpenditures,
   getTopCommittees,
   getTopDonors,
-  getMetrics,
+  getDashboardSummary,
 } from "../api/api";
 import { Link } from "react-router-dom";
 import { Bell, Search } from "lucide-react";
@@ -21,66 +21,117 @@ import Sidebar from "../components/Sidebar";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
+// Skeleton components
+const ChartSkeleton = () => (
+  <div className="h-full w-full bg-gray-200 animate-pulse rounded-xl"></div>
+);
+
+const MetricCardSkeleton = () => (
+  <div className="bg-white rounded-2xl p-6 shadow-lg">
+    <div className="h-4 bg-gray-200 rounded w-2/3 mb-3 animate-pulse"></div>
+    <div className="h-8 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+  </div>
+);
+
+const TableRowSkeleton = () => (
+  <tr className="border-b border-gray-100">
+    {[1, 2, 3, 4, 5].map((i) => (
+      <td key={i} className="py-4 px-2">
+        <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+      </td>
+    ))}
+  </tr>
+);
+
+const CommitteeItemSkeleton = () => (
+  <div className="flex items-center gap-3">
+    <div className="w-10 h-10 rounded-lg bg-gray-200 animate-pulse flex-shrink-0"></div>
+    <div className="flex-1">
+      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 animate-pulse"></div>
+      <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+    </div>
+  </div>
+);
+
 export default function Dashboard() {
   const [metrics, setMetrics] = useState({});
   const [topCommittees, setTopCommittees] = useState([]);
   const [topDonors, setTopDonors] = useState([]);
   const [expenditures, setExpenditures] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState({
+    summary: true,
+    committees: true,
+    donors: true,
+    expenditures: true,
+  });
 
   useEffect(() => {
     async function loadData() {
       try {
         console.log("🔄 Loading dashboard data from backend...");
-        const [metricData, committees, donors, exp] = await Promise.all([
-          getMetrics(),
+        
+        // Load summary first (critical data)
+        getDashboardSummary()
+          .then((summaryData) => {
+            console.log("✅ Summary:", summaryData);
+            setMetrics({
+              total_expenditures: parseFloat(summaryData.total_ie_spending || 0),
+              num_candidates: summaryData.candidate_committees || 0,
+              num_expenditures: 0, // Will update when expenditures load
+              soi_stats: summaryData.soi_tracking || {}
+            });
+            setLoading(prev => ({ ...prev, summary: false }));
+          })
+          .catch(err => {
+            console.error("❌ Summary load error:", err);
+            setLoading(prev => ({ ...prev, summary: false }));
+          });
+
+        // Load secondary data in parallel (non-blocking)
+        Promise.all([
           getTopCommittees(),
           getTopDonors(),
-          getExpenditures(),
-        ]);
-        console.log("✅ Metrics:", metricData);
-        console.log("✅ Top Committees:", committees);
-        console.log("✅ Top Donors:", donors);
-        console.log("✅ Expenditures:", exp);
+          getExpenditures({ page_size: 100 }),
+        ]).then(([committees, donors, exp]) => {
+          console.log("✅ Top Committees:", committees);
+          console.log("✅ Top Donors:", donors);
+          console.log("✅ Expenditures:", exp);
+          
+          setTopCommittees(Array.isArray(committees) ? committees : committees.results || []);
+          setLoading(prev => ({ ...prev, committees: false }));
+          
+          setTopDonors(Array.isArray(donors) ? donors : donors.results || []);
+          setLoading(prev => ({ ...prev, donors: false }));
+          
+          const expData = exp.results || exp || [];
+          setExpenditures(expData);
+          setMetrics(prev => ({ ...prev, num_expenditures: exp.count || 0 }));
+          setLoading(prev => ({ ...prev, expenditures: false }));
+        }).catch(err => {
+          console.error("❌ Secondary data load error:", err);
+          setLoading({ summary: false, committees: false, donors: false, expenditures: false });
+        });
         
-        setMetrics(metricData || {});
-        setTopCommittees(committees.results || committees || []);
-        setTopDonors(donors.results || donors || []);
-        // Update num_expenditures from expenditures count
-        const expData = exp.results || exp || [];
-        setExpenditures(expData);
-        if (expData.length > 0) {
-          setMetrics(prev => ({ ...prev, num_expenditures: expData.length }));
-        }
       } catch (err) {
         console.error("❌ Dashboard load error:", err);
         console.error("Error details:", err.response?.data || err.message);
-      } finally {
-        setLoading(false);
+        setLoading({ summary: false, committees: false, donors: false, expenditures: false });
       }
     }
     loadData();
   }, []);
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 text-gray-500">
-        Loading dashboard...
-      </div>
-    );
-
-  // === Prepare chart data ===
   const committeesToShow = topCommittees.slice(0, 10);
   const donorsToShow = topDonors.slice(0, 10);
 
   const donorData = {
-    labels: donorsToShow.map((d) => d.name || "Unknown"),
+    labels: donorsToShow.map((d) => d.name || d.full_name || "Unknown"),
     datasets: [
       {
         label: "Total Contributions (USD)",
-        data: donorsToShow.map((d) => d.total_contribution || 0),
-        backgroundColor: "rgba(255, 255, 255, 0.3)",
-        borderColor: "rgba(255, 255, 255, 0.5)",
+        data: donorsToShow.map((d) => parseFloat(d.total_contribution || d.total_contributed || 0)),
+        backgroundColor: "rgba(124, 107, 166, 0.6)",
+        borderColor: "rgba(124, 107, 166, 1)",
         borderWidth: 1,
         borderRadius: 6,
         barThickness: 30,
@@ -88,7 +139,6 @@ export default function Dashboard() {
     ],
   };
 
-  // Calculate support vs oppose
   const totalsByType = expenditures.reduce((acc, e) => {
     const key = e.support_oppose || "Unknown";
     acc[key] = (acc[key] || 0) + Number(e.amount || 0);
@@ -113,21 +163,17 @@ export default function Dashboard() {
     ],
   };
 
-  // Latest expenditures for table
   const latestExpenditures = expenditures.slice(0, 4);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* === Sidebar === */}
       <Sidebar />
 
-      {/* === Main Content === */}
       <main className="ml-20 flex-1">
-        {/* === Header === */}
         <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Arizona Sunshine</h1>
-            <p className="text-sm text-gray-500">Dashboard</p>
+            <p className="text-sm text-gray-500">Dashboard - Phase 1 Overview</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -144,125 +190,150 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* === Dashboard Content === */}
         <div className="p-8">
+          {/* Charts Section */}
           <div className="grid grid-cols-3 gap-6 mb-6">
-            {/* === Top 10 Donors Chart (2 cols) === */}
             <div className="col-span-2 bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] rounded-3xl p-8 shadow-lg">
               <h2 className="text-white text-xl font-bold mb-1">Top 10 Donors</h2>
               <p className="text-white/70 text-sm mb-6">Total Contribution</p>
               <div className="h-[240px] bg-white/5 rounded-xl p-4">
-                <Bar 
-                  data={donorData} 
-                  options={{ 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { display: false },
-                      tooltip: {
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        titleColor: '#1F2937',
-                        bodyColor: '#1F2937',
-                        borderColor: '#E5E7EB',
-                        borderWidth: 1,
-                        padding: 12,
-                        displayColors: false,
-                        callbacks: {
-                          label: (context) => `$${context.parsed.y.toLocaleString()}`
-                        }
-                      }
-                    },
-                    scales: {
-                      x: {
-                        display: false,
-                        grid: { display: false }
-                      },
-                      y: {
-                        display: false,
-                        grid: { display: false }
-                      }
-                    }
-                  }} 
-                />
-              </div>
-            </div>
-
-            {/* === Support vs Oppose Chart === */}
-            <div className="bg-white rounded-3xl p-8 shadow-lg">
-              <h2 className="text-gray-900 text-xl font-bold mb-1">Support vs Oppose</h2>
-              <p className="text-gray-500 text-sm mb-6">Spending</p>
-              <div className="flex justify-center items-center h-[240px]">
-                <div className="relative w-52 h-52">
-                  <Doughnut 
-                    data={pieData} 
+                {loading.donors ? (
+                  <ChartSkeleton />
+                ) : donorsToShow.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-white/50">
+                    No donor data available
+                  </div>
+                ) : (
+                  <Bar 
+                    data={donorData} 
                     options={{ 
-                      responsive: true,
+                      responsive: true, 
                       maintainAspectRatio: false,
-                      cutout: '75%',
                       plugins: {
                         legend: { display: false },
-                        tooltip: { 
-                          enabled: true,
+                        tooltip: {
                           backgroundColor: 'rgba(255, 255, 255, 0.95)',
                           titleColor: '#1F2937',
                           bodyColor: '#1F2937',
                           borderColor: '#E5E7EB',
                           borderWidth: 1,
                           padding: 12,
-                          displayColors: true,
+                          displayColors: false,
                           callbacks: {
-                            label: (context) => `${context.label}: $${context.parsed.toLocaleString()}`
+                            label: (context) => `$${context.parsed.y.toLocaleString()}`
                           }
                         }
+                      },
+                      scales: {
+                        x: { display: false, grid: { display: false } },
+                        y: { display: false, grid: { display: false } }
                       }
                     }} 
                   />
-                </div>
+                )}
               </div>
-              <div className="flex justify-center gap-6 mt-6 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#5B4A7D]"></div>
-                  <span className="text-gray-700 font-medium">{supportPercent}% Support</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#E5E7EB]"></div>
-                  <span className="text-gray-700 font-medium">{opposePercent}% Oppose</span>
-                </div>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 shadow-lg">
+              <h2 className="text-gray-900 text-xl font-bold mb-1">Support vs Oppose</h2>
+              <p className="text-gray-500 text-sm mb-6">Spending</p>
+              <div className="flex justify-center items-center h-[240px]">
+                {loading.expenditures ? (
+                  <div className="w-52 h-52">
+                    <ChartSkeleton />
+                  </div>
+                ) : expenditures.length === 0 ? (
+                  <div className="text-gray-400">No expenditure data</div>
+                ) : (
+                  <div className="relative w-52 h-52">
+                    <Doughnut 
+                      data={pieData} 
+                      options={{ 
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { 
+                            enabled: true,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#1F2937',
+                            bodyColor: '#1F2937',
+                            borderColor: '#E5E7EB',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: true,
+                            callbacks: {
+                              label: (context) => `${context.label}: $${context.parsed.toLocaleString()}`
+                            }
+                          }
+                        }
+                      }} 
+                    />
+                  </div>
+                )}
               </div>
+              {!loading.expenditures && expenditures.length > 0 && (
+                <div className="flex justify-center gap-6 mt-6 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#5B4A7D]"></div>
+                    <span className="text-gray-700 font-medium">{supportPercent}% Support</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#E5E7EB]"></div>
+                    <span className="text-gray-700 font-medium">{opposePercent}% Oppose</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* === Metric Cards === */}
-          <div className="grid grid-cols-3 gap-6 mb-6">
-            <div className="bg-white  rounded-2xl p-6 shadow-lg text-black relative overflow-hidden ">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-bl-full"></div>
-              <p className="text-black/90 text-sm mb-1">Total IE Spending</p>
-              <p className="text-3xl font-bold">$ {Number(metrics.total_expenditures || 0).toLocaleString()}</p>
-              <button className="absolute top-6 right-6 text-white/80 hover:text-white">
-                <span className="text-xl">•••</span>
-              </button>
-            </div>
-            
-            <div className="bg-white  rounded-2xl p-6 shadow-lg text-black relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-bl-full"></div>
-              <p className="text-black/90 text-sm mb-1">Total Candidates</p>
-              <p className="text-3xl font-bold">{Number(metrics.num_candidates || 0).toLocaleString()}</p>
-              <button className="absolute top-6 right-6 text-white/80 hover:text-white">
-                <span className="text-xl">•••</span>
-              </button>
-            </div>
-            
-            <div className="bg-white  rounded-2xl p-6 shadow-lg text-black relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-bl-full"></div>
-                <p className="text-black/90 text-sm mb-1">Total Expenditures Count</p>
-              <p className="text-3xl font-bold">{Number(metrics.num_expenditures || 0).toLocaleString()}</p>
-              <button className="absolute top-6 right-6 text-white/80 hover:text-white">
-                <span className="text-xl">•••</span>
-              </button>
-            </div>
+          {/* Metrics Cards */}
+          <div className="grid grid-cols-4 gap-6 mb-6">
+            {loading.summary ? (
+              <>
+                <MetricCardSkeleton />
+                <MetricCardSkeleton />
+                <MetricCardSkeleton />
+                <MetricCardSkeleton />
+              </>
+            ) : (
+              <>
+                <div className="bg-white rounded-2xl p-6 shadow-lg text-black relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full"></div>
+                  <p className="text-black/90 text-sm mb-1">Total IE Spending</p>
+                  <p className="text-3xl font-bold">${Number(metrics.total_expenditures || 0).toLocaleString()}</p>
+                </div>
+                
+                <div className="bg-white rounded-2xl p-6 shadow-lg text-black relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full"></div>
+                  <p className="text-black/90 text-sm mb-1">Total Candidates</p>
+                  <p className="text-3xl font-bold">{Number(metrics.num_candidates || 0).toLocaleString()}</p>
+                </div>
+                
+                <div className="bg-white rounded-2xl p-6 shadow-lg text-black relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full"></div>
+                  <p className="text-black/90 text-sm mb-1">IE Transactions</p>
+                  <p className="text-3xl font-bold">
+                    {loading.expenditures ? (
+                      <span className="text-gray-400">...</span>
+                    ) : (
+                      Number(metrics.num_expenditures || 0).toLocaleString()
+                    )}
+                  </p>
+                </div>
+
+                <Link to="/soi" className="bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] rounded-2xl p-6 shadow-lg text-white relative overflow-hidden hover:shadow-xl transition">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-bl-full"></div>
+                  <p className="text-white/90 text-sm mb-1">SOI Uncontacted</p>
+                  <p className="text-3xl font-bold">{metrics.soi_stats?.uncontacted || 0}</p>
+                  <p className="text-xs text-white/70 mt-2">Click to manage →</p>
+                </Link>
+              </>
+            )}
           </div>
 
-          {/* === Latest Expenditures Table & Top Committees === */}
+          {/* Bottom Section */}
           <div className="grid grid-cols-3 gap-6">
             <div className="col-span-2 bg-white rounded-2xl p-6 shadow-lg">
               <h2 className="text-gray-900 text-lg font-semibold mb-4">Latest Independent Expenditure</h2>
@@ -277,47 +348,75 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {latestExpenditures.map((exp, idx) => (
-                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-2 text-sm text-gray-700">
-                        {exp.date ? new Date(exp.date).toLocaleDateString() : "N/A"}
-                      </td>
-                      <td className="py-4 px-2 text-sm text-gray-700">{exp.ie_committee?.name || "Unknown"}</td>
-                      <td className="py-4 px-2 text-sm text-gray-700">{exp.candidate_name || "N/A"}</td>
-                      <td className="py-4 px-2 text-sm text-gray-700">${Number(exp.amount || 0).toLocaleString()}</td>
-                      <td className="py-4 px-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          exp.support_oppose === "Support" 
-                            ? "bg-green-100 text-green-700" 
-                            : "bg-red-100 text-red-700"
-                        }`}>
-                          {exp.support_oppose || "Unknown"}
-                        </span>
+                  {loading.expenditures ? (
+                    <>
+                      <TableRowSkeleton />
+                      <TableRowSkeleton />
+                      <TableRowSkeleton />
+                      <TableRowSkeleton />
+                    </>
+                  ) : latestExpenditures.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="py-8 text-center text-gray-400">
+                        No expenditure data available
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    latestExpenditures.map((exp, idx) => (
+                      <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-4 px-2 text-sm text-gray-700">
+                          {exp.date ? new Date(exp.date).toLocaleDateString() : "N/A"}
+                        </td>
+                        <td className="py-4 px-2 text-sm text-gray-700">{exp.ie_committee?.name || "Unknown"}</td>
+                        <td className="py-4 px-2 text-sm text-gray-700">{exp.candidate_name || "N/A"}</td>
+                        <td className="py-4 px-2 text-sm text-gray-700">${Number(exp.amount || 0).toLocaleString()}</td>
+                        <td className="py-4 px-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            exp.support_oppose === "Support" 
+                              ? "bg-green-100 text-green-700" 
+                              : "bg-red-100 text-red-700"
+                          }`}>
+                            {exp.support_oppose || "Unknown"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
-              <Link to="/" className="inline-block mt-4 text-purple-600 hover:text-purple-700 text-sm font-medium">
-                View All Independent Expenditure →
+              <Link to="/expenditures" className="inline-block mt-4 text-purple-600 hover:text-purple-700 text-sm font-medium">
+                View All Expenditures →
               </Link>
             </div>
 
-            {/* === Top 10 IE Committees === */}
             <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h2 className="text-gray-900 text-lg font-semibold mb-4">Top 10 IE Committees by Spending</h2>
+              <h2 className="text-gray-900 text-lg font-semibold mb-4">Top 10 IE Committees</h2>
               <div className="space-y-3">
-                {committeesToShow.map((committee, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white  flex items-center justify-center text-white font-semibold flex-shrink-0">
-                      {committee.name?.charAt(0) || "?"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{committee.name || "Unknown"}</p>
-                      <p className="text-xs text-gray-500">$ {Number(committee.total || 0).toLocaleString()}</p>
-                    </div>
+                {loading.committees ? (
+                  <>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                      <CommitteeItemSkeleton key={i} />
+                    ))}
+                  </>
+                ) : committeesToShow.length === 0 ? (
+                  <div className="text-center text-gray-400 py-8">
+                    No committee data available
                   </div>
-                ))}
+                ) : (
+                  committeesToShow.map((committee, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] flex items-center justify-center text-white font-semibold flex-shrink-0">
+                        {(committee.name?.full_name || committee.name || "?").charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {committee.name?.full_name || committee.name || "Unknown"}
+                        </p>
+                        <p className="text-xs text-gray-500">${Number(committee.total || 0).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
