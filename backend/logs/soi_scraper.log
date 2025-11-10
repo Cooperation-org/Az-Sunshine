@@ -1,0 +1,2458 @@
+
+[2025-11-10T11:23:11.989735] 
+
+--- New Scrape Run Started ---
+
+[2025-11-10T11:23:11.989810] Scrape ID: scrape_20251110_112311
+
+[2025-11-10T11:23:11.989971] Running: python3 manage.py soi_scraper
+
+[2025-11-10T11:23:12.202966] Scraper return code: 1
+
+[2025-11-10T11:23:12.203000] STDOUT:
+
+
+[2025-11-10T11:23:12.203013] STDERR:
+Traceback (most recent call last):
+  File "/home/mg/Deploy/az_sunshine/backend/manage.py", line 22, in <module>
+    main()
+  File "/home/mg/Deploy/az_sunshine/backend/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 436, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 275, in fetch_command
+    klass = load_command_class(app_name, subcommand)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 49, in load_command_class
+    return module.Command()
+           ^^^^^^^^^^^^^^
+AttributeError: module 'transparency.management.commands.soi_scraper' has no attribute 'Command'
+
+
+[2025-11-10T11:23:12.203143] CSV file not found at expected path.
+
+[2025-11-10T11:23:12.210176] ✅ Scraping process completed successfully.
+
+[2025-11-10T11:23:12.210200] Total candidates: 0
+
+[2025-11-10T12:07:23.748480] 
+
+--- New Scrape Run Started ---
+
+[2025-11-10T12:07:23.748531] Scrape ID: scrape_20251110_120723
+
+[2025-11-10T12:07:23.748615] Running: python3 manage.py soi_scraper
+
+[2025-11-10T12:07:23.966235] Scraper return code: 1
+
+[2025-11-10T12:07:23.966271] STDOUT:
+
+
+[2025-11-10T12:07:23.966284] STDERR:
+Traceback (most recent call last):
+  File "/home/mg/Deploy/az_sunshine/backend/manage.py", line 22, in <module>
+    main()
+  File "/home/mg/Deploy/az_sunshine/backend/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 436, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 275, in fetch_command
+    klass = load_command_class(app_name, subcommand)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 49, in load_command_class
+    return module.Command()
+           ^^^^^^^^^^^^^^
+AttributeError: module 'transparency.management.commands.soi_scraper' has no attribute 'Command'
+
+
+[2025-11-10T12:07:23.966401] CSV file not found at expected path.
+
+[2025-11-10T12:07:23.974487] ✅ Scraping process completed successfully.
+
+[2025-11-10T12:07:23.974512] Total candidates: 0
+
+[2025-11-10T12:25:46.823489] 
+
+--- New Scrape Run Started ---
+
+[2025-11-10T12:25:46.823607] Scrape ID: scrape_20251110_122546
+
+[2025-11-10T12:25:46.823862] Running: python3 manage.py soi_scraper
+
+[2025-11-10T12:27:10.100180] Scraper return code: 0
+
+[2025-11-10T12:27:10.100261] STDOUT:
+============================================================
+Arizona SOI Scraper + Database Loader
+============================================================
+Step 1: Scraping SOI pages...
+✓ Scraped 411 candidates
+
+Step 2: Loading candidates into database...
+  Error on row 1: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Alegria, Samuel, STATE).
+  Error on row 2: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Alexander, David, STATE).
+  Error on row 3: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Alvarez, Fernando, STATE).
+  Error on row 4: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ansari, Yassamin, STATE).
+  Error on row 5: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Archer, Delia, STATE).
+  Error on row 6: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Aversa, Alan, STATE).
+  Error on row 7: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bah, Iman, STATE).
+  Error on row 8: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Barraza, Andres, STATE).
+  Error on row 9: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Becerra, Andrew, STATE).
+  Error on row 10: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Becerra, Andrew, STATE).
+  Error on row 11: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bellows, David "Doc", STATE).
+  Error on row 12: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bies, David "Bees", STATE).
+  Error on row 13: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bracht, Blake, STATE).
+  Error on row 14: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Buma, Johnathan, STATE).
+  Error on row 15: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Butierez Sr., Daniel Francis, STATE).
+  Error on row 16: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Cano-Bravo, Sandy, STATE).
+  Error on row 17: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Chirravuri, Bhargav, STATE).
+  Error on row 18: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ciscomani, Juan, STATE).
+  Error on row 19: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Crane, Eli, STATE).
+  Error on row 20: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Del Vecchio, Brian, STATE).
+  Error on row 21: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Dill, Dean, STATE).
+  Error on row 22: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Donat, Chris, STATE).
+  Error on row 23: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Donnelly, Brandon, STATE).
+  Error on row 24: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Duey, Jason, STATE).
+  Error on row 25: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Feely IV, Thomas "Jay", STATE).
+  Error on row 26: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Fisher, Mark, STATE).
+  Error on row 27: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Flores, Maria "Mimi", STATE).
+  Error on row 28: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Galán-Woods, Marlene, STATE).
+  Error on row 29: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ghulam Habib, Abdul hadi, STATE).
+  Error on row 30: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Glenn, Nicholas N, STATE).
+  Error on row 31: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Goldman, Mo, STATE).
+  Error on row 32: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gordon, Mark Robert, STATE).
+  Error on row 33: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gosar, Paul, STATE).
+  Error on row 34: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Grantham, Travis, STATE).
+  Error on row 35: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Grayson, Richard, STATE).
+  Error on row 36: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Greene-Placentia, Bernadette, STATE).
+  Error on row 37: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hamadeh, Abraham "Abe", STATE).
+  Error on row 38: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hinz, Christian, STATE).
+  Error on row 39: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hualde, Brian, STATE).
+  Error on row 40: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, James, Chris, STATE).
+  Error on row 41: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Jasser, Zuhdi, STATE).
+  Error on row 42: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Johnson Jr., Dr. Gary, STATE).
+  Error on row 43: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Jovicic, Dusko, STATE).
+  Error on row 44: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kalis, Robert, STATE).
+  Error on row 45: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kay, Herbert "Herby", STATE).
+  Error on row 46: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Keenan, Daniel, STATE).
+  Error on row 47: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lamb, Mark, STATE).
+  Error on row 48: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lara, Keith, STATE).
+  Error on row 49: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Larsen, Wiley, STATE).
+  Error on row 50: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lee, Chris, STATE).
+  Error on row 51: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lee, Elizabeth, STATE).
+  Error on row 52: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lucio, Daniel, STATE).
+  Error on row 53: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lynch, Blake, STATE).
+  Error on row 54: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Martines, Jessie, STATE).
+  Error on row 55: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Maupin Jr., Reverend Jarrett, STATE).
+  Error on row 56: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, McCartney, Rick, STATE).
+  Error on row 57: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Mcdermott, Will, STATE).
+  Error on row 58: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Medlin, Tammi, STATE).
+  Error on row 59: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Mendoza, JoAnna, STATE).
+  Error on row 60: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Montoya, Angie, STATE).
+  Error on row 61: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Neufer, Jaime, STATE).
+  Error on row 62: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Nez, Jonathan, STATE).
+  Error on row 63: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ojeda, Rossci, STATE).
+  Error on row 64: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Olson, Evan, STATE).
+  Error on row 65: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Poff, Justin, STATE).
+  Error on row 66: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Purrington, Kaitlin, STATE).
+  Error on row 67: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ramsey, Joseph, STATE).
+  Error on row 68: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Redkey, David, STATE).
+  Error on row 69: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Reevs, Paul, STATE).
+  Error on row 70: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Reid, Lori, STATE).
+  Error on row 71: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Riley, Jeremy, STATE).
+  Error on row 72: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rivas, Jorge, STATE).
+  Error on row 73: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rodriguez, Jimmy, STATE).
+  Error on row 74: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rook, Tre, STATE).
+  Error on row 75: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Russell, Joseph "Joe", STATE).
+  Error on row 76: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Russell, Scott "Scotty", STATE).
+  Error on row 77: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, SanMarco Jr., Eddie, STATE).
+  Error on row 78: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Schaefer, Lisa, STATE).
+  Error on row 79: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Schaefer, Lisa, STATE).
+  Error on row 80: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Scharer, Gene "“Gps”", STATE).
+  Error on row 81: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Sears, Alejandro, STATE).
+  Error on row 82: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Severson, Samantha, STATE).
+  Error on row 83: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Shah, Amish, STATE).
+  Error on row 84: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Smothers, Alexander, STATE).
+  Error on row 85: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Sowers, Brandon, STATE).
+  Error on row 86: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Sproles, Brandon, STATE).
+  Error on row 87: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Stanhibel, Jason, STATE).
+  Error on row 88: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Stanton, Greg, STATE).
+  Error on row 89: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Sterbinsky, Danielle "Dani", STATE).
+  Error on row 90: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Stovall, Alex, STATE).
+  Error on row 91: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Stovall, Alex, STATE).
+  Error on row 92: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Swing, Gary, STATE).
+  Error on row 93: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Swoboda, Gina, STATE).
+  Error on row 94: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Treble, Jonathan, STATE).
+  Error on row 95: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Unruh Sr., Austin, STATE).
+  Error on row 96: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Valenti, Adrienne, STATE).
+  Error on row 97: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Vega, Manuel, STATE).
+  Error on row 98: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Verdugo, Raul, STATE).
+  Error on row 99: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ward, Camelia, STATE).
+  Error on row 100: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Weintraub, Victor, STATE).
+  Error on row 101: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ames, Christopher, STATE).
+  Error on row 102: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Biggs, Andy, STATE).
+  Error on row 103: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Castillo, Lisa, STATE).
+  Error on row 104: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, De Silva, Nirosh, STATE).
+  Error on row 105: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Farrer, Joshua, STATE).
+  Error on row 106: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gallegos, Isiah, STATE).
+  Error on row 107: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Grey, Christian "Maverick", STATE).
+  Error on row 108: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hess, Barry, STATE).
+  Error on row 109: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hobbs, Katie, STATE).
+  Error on row 110: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hourihan, Teri, STATE).
+  Error on row 111: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kakou, Saint Omer "Captain", STATE).
+  Error on row 112: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lazzaro Jr., John, STATE).
+  Error on row 113: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lombardo, Risa, STATE).
+  Error on row 114: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, McVeigh, Robert, STATE).
+  Error on row 115: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Melendez, Carlos, STATE).
+  Error on row 116: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Miceli, Ken, STATE).
+  Error on row 117: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Miller, Bryce, STATE).
+  Error on row 118: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Neely, Scott, STATE).
+  Error on row 119: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Nicholson, George, STATE).
+  Error on row 120: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Peter Christian Hessing, Peter Christian Hessing "Peter Christia..., STATE).
+  Error on row 121: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Pounds IV, William, STATE).
+  Error on row 122: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Schweikert, David, STATE).
+  Error on row 123: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Taylor Robson, Karrin, STATE).
+  Error on row 124: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, White, Alan, STATE).
+  Error on row 125: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Archunde, Alvin, STATE).
+  Error on row 126: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bowman, David, STATE).
+  Error on row 127: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Butts, Dr. Michael, STATE).
+  Error on row 128: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Cease, Mike, STATE).
+  Error on row 129: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Collier, Duwayne, STATE).
+  Error on row 130: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Espadas, Derrick, STATE).
+  Error on row 131: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Fontes, Adrian, STATE).
+  Error on row 132: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Glassman, Rodney, STATE).
+  Error on row 133: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Glassman, Rodney, STATE).
+  Error on row 134: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Heap, Ralph, STATE).
+  Error on row 135: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hill, Jonathon, STATE).
+  Error on row 136: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Horne, Tom, STATE).
+  Error on row 137: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Horne, Tom, STATE).
+  Error on row 138: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Huang, Sam, STATE).
+  Error on row 139: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kolodin, Alexander, STATE).
+  Error on row 140: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Levinski, Joshua "Josh", STATE).
+  Error on row 141: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Mansour, Nick, STATE).
+  Error on row 142: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Marshall Sr., David, STATE).
+  Error on row 143: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Matlock, Brian, STATE).
+  Error on row 144: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Mayes, Kris, STATE).
+  Error on row 145: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Myers, Nicholas "Nick", STATE).
+  Error on row 146: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Neal Jr., Dr. Stephen, STATE).
+  Error on row 147: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Newby, Brett, STATE).
+  Error on row 148: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Norton, Elijah, STATE).
+  Error on row 149: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Paperman, Jennie, STATE).
+  Error on row 150: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Petersen, Warren, STATE).
+  Error on row 151: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Pratte, Clara, STATE).
+  Error on row 152: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Presmyk, Walter "Les", STATE).
+  Error on row 153: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ruiz, Teresa, STATE).
+  Error on row 154: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Salazar, Vincent, STATE).
+  Error on row 155: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Thompson, Kevin, STATE).
+  Error on row 156: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Yee, Kimberly, STATE).
+  Error on row 157: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Zepeda, Michael, STATE).
+  Error on row 158: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Aguilar, Cesar, STATE).
+  Error on row 159: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Aldrete, Elaine, STATE).
+  Error on row 160: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Aleman, Cesar, STATE).
+  Error on row 161: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Altherr, Michelle, STATE).
+  Error on row 162: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Anderson, Jackie, STATE).
+  Error on row 163: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Andrews, Krista, STATE).
+  Error on row 164: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Andrews, Rob, STATE).
+  Error on row 165: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Angius, Hildy, STATE).
+  Error on row 166: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Arabyan, Vartan, STATE).
+  Error on row 167: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Arescurenaga, Lisbeth, STATE).
+  Error on row 168: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Armstrong, Racquel "Rockee", STATE).
+  Error on row 169: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Arreola, Luisa 'La Maestra', STATE).
+  Error on row 170: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Austin, Lorena, STATE).
+  Error on row 171: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ayala, Joshua, STATE).
+  Error on row 172: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bejarano-Malone, Veronica, STATE).
+  Error on row 173: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bettencourt, Bradley, STATE).
+  Error on row 174: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Biasiucci, Leo, STATE).
+  Error on row 175: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Biggs, Mylie, STATE).
+  Error on row 176: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bishop, Jim, STATE).
+  Error on row 177: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bishop, Michael, STATE).
+  Error on row 178: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Blackman, Walter "Walt", STATE).
+  Error on row 179: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Blattman, Seth, STATE).
+  Error on row 180: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bliss, Selina, STATE).
+  Error on row 181: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Block, Avery, STATE).
+  Error on row 182: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bolick, Shawnna, STATE).
+  Error on row 183: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bradshaw, Ari Daniel, STATE).
+  Error on row 184: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Braun, Michael, STATE).
+  Error on row 185: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bravo, Flavio, STATE).
+  Error on row 186: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Brickman, Linda "HatLady", STATE).
+  Error on row 187: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Carbone, Michael, STATE).
+  Error on row 188: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Carroll, Frank, STATE).
+  Error on row 189: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Carter, Neal, STATE).
+  Error on row 190: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Carter, Pamela, STATE).
+  Error on row 191: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Caswell, Cheryl, STATE).
+  Error on row 192: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Cavero, Junelle, STATE).
+  Error on row 193: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Chaplik, Joseph, STATE).
+  Error on row 194: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Christensen, Sandra, STATE).
+  Error on row 195: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Coelho, Matthew, STATE).
+  Error on row 196: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Connolly, Janeen, STATE).
+  Error on row 197: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Contreras, Patricia "Patty", STATE).
+  Error on row 198: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Cook Sr., David, STATE).
+  Error on row 199: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Cooper, Keith, STATE).
+  Error on row 200: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Cortez, Emilia, STATE).
+  Error on row 201: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Costanzo, Andrew, STATE).
+  Error on row 202: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Crews, Quantá, STATE).
+  Error on row 203: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Dailey, Joseph, STATE).
+  Error on row 204: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Dargon, Christine, STATE).
+  Error on row 205: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, De Los Santos, Oscar, STATE).
+  Error on row 206: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, DeSanti, Neil, STATE).
+  Error on row 207: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Diaz, Eva, STATE).
+  Error on row 208: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Diaz, Lupe, STATE).
+  Error on row 209: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Dill, Dean, STATE).
+  Error on row 210: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Dohse, Bob, STATE).
+  Error on row 211: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Dougal, Gavin, STATE).
+  Error on row 212: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Dunham, Anthony, STATE).
+  Error on row 213: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Dunn, Timothy "Tim", STATE).
+  Error on row 214: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ehlers, Jacob, STATE).
+  Error on row 215: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Epstein, Denise "Mitzi", STATE).
+  Error on row 216: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Everett, Douglas, STATE).
+  Error on row 217: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Farnsworth, David, STATE).
+  Error on row 218: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Fernandez, Brian, STATE).
+  Error on row 219: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ferrara, Timothy, STATE).
+  Error on row 220: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Fiehler, Kirk, STATE).
+  Error on row 221: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Finchem, Mark, STATE).
+  Error on row 222: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Fink, Lisa, STATE).
+  Error on row 223: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Fitzgibbons, Bridget, STATE).
+  Error on row 224: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Flores, Esteban, STATE).
+  Error on row 225: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Fortney, Jeffrey, STATE).
+  Error on row 226: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gabaldón, Rosanna, STATE).
+  Error on row 227: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Garcia Snyder, Gary, STATE).
+  Error on row 228: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Garcia, Brian, STATE).
+  Error on row 229: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gaxiola, Olivia, STATE).
+  Error on row 230: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gowan, David, STATE).
+  Error on row 231: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Graham, Marc, STATE).
+  Error on row 232: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Granado, Joe, STATE).
+  Error on row 233: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gresham, Karen, STATE).
+  Error on row 234: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gress, Matt, STATE).
+  Error on row 235: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Griffin Sr., Blaine "Bj", STATE).
+  Error on row 236: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Griffin, Gail, STATE).
+  Error on row 237: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Guerrero, Juan Manuel, STATE).
+  Error on row 238: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gutier, Alberto, STATE).
+  Error on row 239: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gutierrez, Nancy, STATE).
+  Error on row 240: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hartke, Kevin, STATE).
+  Error on row 241: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hatathlie, Theresa, STATE).
+  Error on row 242: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hecht, Grace, STATE).
+  Error on row 243: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hendrix, Laurin, STATE).
+  Error on row 244: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hernandez, Alma, STATE).
+  Error on row 245: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hernandez, Consuelo, STATE).
+  Error on row 246: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hernandez, Lydia, STATE).
+  Error on row 247: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hester, Michael, STATE).
+  Error on row 248: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Higuera, Maritza, STATE).
+  Error on row 249: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hinz, Christian, STATE).
+  Error on row 250: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hoffman, Jake, STATE).
+  Error on row 251: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Holmes, James "Jimmy", STATE).
+  Error on row 252: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Holt, Hunter, STATE).
+  Error on row 253: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Howard, Deborah, STATE).
+  Error on row 254: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Huber, Laura, STATE).
+  Error on row 255: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hunter, Helen, STATE).
+  Error on row 256: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ingle, Barby, STATE).
+  Error on row 257: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Johnson, Lloyd "Santa", STATE).
+  Error on row 258: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Jones, Diana, STATE).
+  Error on row 259: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kanton, Peter "Peter", STATE).
+  Error on row 260: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kavanagh, John, STATE).
+  Error on row 261: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kern, Anthony, STATE).
+  Error on row 262: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Keshel, Rachel "Jones", STATE).
+  Error on row 263: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kibbey, Christopher, STATE).
+  Error on row 264: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, King, Christopher, STATE).
+  Error on row 265: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kline, Claudia, STATE).
+  Error on row 266: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Koehler, Ben, STATE).
+  Error on row 267: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kuby, Lauren, STATE).
+  Error on row 268: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kupper, Nickolas "Nick", STATE).
+  Error on row 269: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lara, Keith, STATE).
+  Error on row 270: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Leach, Venden "Vince", STATE).
+  Error on row 271: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lieberman, Aaron, STATE).
+  Error on row 272: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Liguori, Sarah, STATE).
+  Error on row 273: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Livingston, David, STATE).
+  Error on row 274: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lopez, Chris, STATE).
+  Error on row 275: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Lopez-Rajaniemi, Catherine, STATE).
+  Error on row 276: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Luna-Nájera, Elda, STATE).
+  Error on row 277: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Marsh, Christine, STATE).
+  Error on row 278: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Martin, Samuel "Sam", STATE).
+  Error on row 279: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Martinez, Jacob, STATE).
+  Error on row 280: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Martinez, Teresa, STATE).
+  Error on row 281: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Mathis, Chris, STATE).
+  Error on row 282: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, McDonald Jr., Robert "Robbie", STATE).
+  Error on row 283: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, McKenna, Jonathan, STATE).
+  Error on row 284: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, McMahan, Brian, STATE).
+  Error on row 285: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Mink, Nick, STATE).
+  Error on row 286: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Miranda, Catherine, STATE).
+  Error on row 287: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Mohamud, Abdi, STATE).
+  Error on row 288: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Montenegro, Steve, STATE).
+  Error on row 289: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Montero, Armando, STATE).
+  Error on row 290: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Montiel, Michiel "Mike", STATE).
+  Error on row 291: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Morin Jr., Aten, STATE).
+  Error on row 292: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Morris, Kim, STATE).
+  Error on row 293: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Márquez, Aaron, STATE).
+  Error on row 294: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Nardozzi, Deborah, STATE).
+  Error on row 295: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Nelson, Jeffrey, STATE).
+  Error on row 296: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Nguyen, Quang, STATE).
+  Error on row 297: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, O'Brien, Kristie, STATE).
+  Error on row 298: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ortiz, Analise, STATE).
+  Error on row 299: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Padilla, Travis, STATE).
+  Error on row 300: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Paredes, Jorge, STATE).
+  Error on row 301: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Parrish, Trevor, STATE).
+  Error on row 302: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Payne, Kevin, STATE).
+  Error on row 303: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Peshlakai, Jamescita, STATE).
+  Error on row 304: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Peshlakai, Mae, STATE).
+  Error on row 305: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Petru, Carmen, STATE).
+  Error on row 306: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Peña, Michele, STATE).
+  Error on row 307: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Pingerelli, Beverly, STATE).
+  Error on row 308: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Pitts, Joe, STATE).
+  Error on row 309: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Powell, Khyl, STATE).
+  Error on row 310: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Reese, Brandy, STATE).
+  Error on row 311: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Reim, Cody, STATE).
+  Error on row 312: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rivero, Tony, STATE).
+  Error on row 313: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Roberts, Frank, STATE).
+  Error on row 314: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rogers, James, STATE).
+  Error on row 315: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rogers, Wendy, STATE).
+  Error on row 316: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rooks, Heather, STATE).
+  Error on row 317: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rose, David, STATE).
+  Error on row 318: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rose, Mary, STATE).
+  Error on row 319: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Routhier, Trevre, STATE).
+  Error on row 320: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Salcido, Patrick "Nicholas", STATE).
+  Error on row 321: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Sandoval, Mariana, STATE).
+  Error on row 322: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Schinke, Debra, STATE).
+  Error on row 323: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Schlum, Jay, STATE).
+  Error on row 324: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Scianna, Christine, STATE).
+  Error on row 325: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Scott, Deydrek "Dey", STATE).
+  Error on row 326: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Sears, Kiana, STATE).
+  Error on row 327: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Shamp, Janae, STATE).
+  Error on row 328: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Shope, Thomas "T.J.", STATE).
+  Error on row 329: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Simacek, Stephanie, STATE).
+  Error on row 330: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Skranak, Danielle, STATE).
+  Error on row 331: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Slater, Carl, STATE).
+  Error on row 332: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Slawson, Ryan, STATE).
+  Error on row 333: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Spargo, Richard "Rick", STATE).
+  Error on row 334: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Stafford, Eric, STATE).
+  Error on row 335: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Stahl Hamilton, Stephanie, STATE).
+  Error on row 336: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Strecker, Caroline, STATE).
+  Error on row 337: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Sundareshan, Priya, STATE).
+  Error on row 338: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Swallow, Aiden, STATE).
+  Error on row 339: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Taylor, James, STATE).
+  Error on row 340: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Teller, Ian, STATE).
+  Error on row 341: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Tiller, Chris, STATE).
+  Error on row 342: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Tinsley, Jon "Crow", STATE).
+  Error on row 343: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Toporek, Daniel, STATE).
+  Error on row 344: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Travers, Stacey, STATE).
+  Error on row 345: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Tsosie, Myron, STATE).
+  Error on row 346: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Tucciarone, Matthew, STATE).
+  Error on row 347: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Villegas, Betty, STATE).
+  Error on row 348: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Volk, Kevin, STATE).
+  Error on row 349: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Wallace, Robert, STATE).
+  Error on row 350: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Walsh II, Thomas, STATE).
+  Error on row 351: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Walsh, Stephanie, STATE).
+  Error on row 352: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Walton, Logan, STATE).
+  Error on row 353: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Way, Michael, STATE).
+  Error on row 354: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Weasel, Katherine, STATE).
+  Error on row 355: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Weninger, Janet, STATE).
+  Error on row 356: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Werner, Carine, STATE).
+  Error on row 357: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Westbrook, Brianna, STATE).
+  Error on row 358: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Wildman, Shawn Dell, STATE).
+  Error on row 359: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Willoughby, Julie, STATE).
+  Error on row 360: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Wilmeth, Justin, STATE).
+  Error on row 361: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Winchester, John, STATE).
+  Error on row 362: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Young, Rob, STATE).
+  Error on row 363: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Young, Travis, STATE).
+  Error on row 364: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Zalecki, Sandy, STATE).
+  Error on row 365: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Zanon, Kimberly, STATE).
+  Error on row 366: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ajluni, Christopher, STATE).
+  Error on row 367: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Buma, Johnathan, STATE).
+  Error on row 368: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Crum, Andromeda "Andy", STATE).
+  Error on row 369: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Gonzales, Nicholas, STATE).
+  Error on row 370: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Irmler, Paul, STATE).
+  Error on row 371: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Kelly IV, Walter, STATE).
+  Error on row 372: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, McNinch, Sabrina, STATE).
+  Error on row 373: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Stack, MPH, BCES, Charles, STATE).
+  Error on row 374: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Avila Jr., Carlos, STATE).
+  Error on row 375: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Chehade, Alexander, STATE).
+  Error on row 376: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Draper, Tyson, STATE).
+  Error on row 377: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Herzog, Charles, STATE).
+  Error on row 378: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Licari, Thomas, STATE).
+  Error on row 379: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Mucheck, Donald, STATE).
+  Error on row 380: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Ray, Ashim, STATE).
+  Error on row 381: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Stafford, Vanessa, STATE).
+  Error on row 382: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Walker, Kimberly, STATE).
+  Error on row 383: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Avila Jr., Carlos, STATE).
+  Error on row 384: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Fierro, Nick, STATE).
+  Error on row 385: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Henry, Blase, STATE).
+  Error on row 386: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, LaForest, Jason, STATE).
+  Error on row 387: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Luna, Dominic, STATE).
+  Error on row 388: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Mayberry, Andrew "Andy", STATE).
+  Error on row 389: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Aguilar, Jose, STATE).
+  Error on row 390: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Aversa, Alan, STATE).
+  Error on row 391: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bauer, Nyles, STATE).
+  Error on row 392: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Bies, David "Bees", STATE).
+  Error on row 393: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Butierez Sr., Daniel Francis, STATE).
+  Error on row 394: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, di Genova, Trista ""Trista"", STATE).
+  Error on row 395: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Foxx, Deja, STATE).
+  Error on row 396: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Grayson, Richard, STATE).
+  Error on row 397: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Grijalva, Adelita, STATE).
+  Error on row 398: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Harris Sr., Patrick, STATE).
+  Error on row 399: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Hernandez, Daniel, STATE).
+  Error on row 400: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Longoria, Victor, STATE).
+  Error on row 401: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Malvido Jr., Jose "Malvido", STATE).
+  Error on row 402: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Myers, Matthew "Matt", STATE).
+  Error on row 403: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Norris, Carolyn, STATE).
+  Error on row 404: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rivas, Jorge, STATE).
+  Error on row 405: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Rodriguez, Jimmy, STATE).
+  Error on row 406: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Severson, Samantha, STATE).
+  Error on row 407: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Tapia, Gabriel, STATE).
+  Error on row 408: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Verdugo, Raul, STATE).
+  Error on row 409: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Welch, Stefawna, STATE).
+  Error on row 410: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Wells, Joe, STATE).
+  Error on row 411: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, Willhite, Steven, STATE).
+
+============================================================
+SCRAPING & LOADING COMPLETE!
+============================================================
+Total candidates scraped: 411
+Created in DB: 0
+Updated in DB: 0
+Skipped: 0
+Errors: 411
+
+============================================================
+NEXT STEPS (per Phase 1 requirements):
+============================================================
+1. Review uncontacted candidates in Django admin
+2. Manually send info packets to candidate emails
+3. Update contact_status to "contacted" after sending
+4. Monitor for pledge receipts and update accordingly
+============================================================
+
+
+[2025-11-10T12:27:10.100549] STDERR:
+2025-11-10 12:25:47,666 - INFO - Using Chrome from: /usr/bin/google-chrome
+2025-11-10 12:25:47,666 - INFO - Using profile from: /home/mg/.config/chrome-scraper-profile
+2025-11-10 12:25:48,449 - INFO - Scraping https://apps.arizona.vote/electioninfo/SOI/68
+2025-11-10 12:25:50,017 - INFO - Checking for Cloudflare challenge...
+2025-11-10 12:26:04,394 - INFO - No Cloudflare challenge detected
+2025-11-10 12:26:30,933 - INFO - Extracted 365 candidates from https://apps.arizona.vote/electioninfo/SOI/68
+2025-11-10 12:26:30,933 - INFO - Sample: {
+  "name": "U.S. Representative in Congress - District No. 7",
+  "office": "Alegria, Samuel",
+  "email": "AlegriaforCongress@gmail.com",
+  "raw_text": "U.S. Representative in Congress - District No. 7\tAlegria, Samuel\tDemocratic\tAlegriaforCongress@gmail.com\t4/14/2025 8:14:51 AM\tStatement of Interest",
+  "source_url": "https://apps.arizona.vote/electioninfo/SOI/68",
+  "row_index": 0
+}
+2025-11-10 12:26:38,312 - INFO - Scraping https://apps.arizona.vote/electioninfo/SOI/69
+2025-11-10 12:26:41,203 - INFO - Checking for Cloudflare challenge...
+2025-11-10 12:26:41,848 - INFO - No Cloudflare challenge detected
+2025-11-10 12:26:46,585 - INFO - Extracted 23 candidates from https://apps.arizona.vote/electioninfo/SOI/69
+2025-11-10 12:26:46,586 - INFO - Sample: {
+  "name": "U.S. Representative in Congress - District No. 1",
+  "office": "Ajluni, Christopher",
+  "email": "christopher.ajluni@gmail.com",
+  "raw_text": "U.S. Representative in Congress - District No. 1\tAjluni, Christopher\tOther IND\tchristopher.ajluni@gmail.com\t3/21/2025 7:49:08 AM\tStatement of Interest",
+  "source_url": "https://apps.arizona.vote/electioninfo/SOI/69",
+  "row_index": 0
+}
+2025-11-10 12:26:54,504 - INFO - Scraping https://apps.arizona.vote/electioninfo/SOI/71
+2025-11-10 12:26:55,516 - INFO - Checking for Cloudflare challenge...
+2025-11-10 12:26:56,143 - INFO - No Cloudflare challenge detected
+2025-11-10 12:27:02,335 - INFO - Extracted 23 candidates from https://apps.arizona.vote/electioninfo/SOI/71
+2025-11-10 12:27:02,336 - INFO - Sample: {
+  "name": "U.S. Representative in Congress - District No. 7",
+  "office": "Aguilar, Jose",
+  "email": "jose4congress@gmail.com",
+  "raw_text": "U.S. Representative in Congress - District No. 7\tAguilar, Jose\tDemocratic\t520-261-4146\njose4congress@gmail.com\t3/28/2025 9:23:54 AM\tStatement of Interest",
+  "source_url": "https://apps.arizona.vote/electioninfo/SOI/71",
+  "row_index": 0
+}
+2025-11-10 12:27:09,513 - INFO - CSV saved to data/soi_candidates.csv
+
+
+[2025-11-10T12:27:10.100873] Processing CSV at data/soi_candidates.csv
+
+[2025-11-10T12:27:10.396900] CSV process return code: 1
+
+[2025-11-10T12:27:10.396958] STDOUT:
+
+
+[2025-11-10T12:27:10.396993] STDERR:
+Traceback (most recent call last):
+  File "/home/mg/Deploy/az_sunshine/backend/manage.py", line 22, in <module>
+    main()
+  File "/home/mg/Deploy/az_sunshine/backend/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 436, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 275, in fetch_command
+    klass = load_command_class(app_name, subcommand)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 48, in load_command_class
+    module = import_module("%s.management.commands.%s" % (app_name, name))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/mg/Deploy/az_sunshine/backend/transparency/management/commands/process_soi_csv.py", line 10, in <module>
+    from transparency.models import SOICandidate, Office, Party
+ImportError: cannot import name 'SOICandidate' from 'transparency.models' (/home/mg/Deploy/az_sunshine/backend/transparency/models.py)
+
+
+[2025-11-10T12:27:10.410123] ✅ Scraping process completed successfully.
+
+[2025-11-10T12:27:10.410167] Total candidates: 0
+
+[2025-11-10T13:04:33.532102] 
+
+--- New Scrape Run Started ---
+
+[2025-11-10T13:04:33.532240] Scrape ID: scrape_20251110_130433
+
+[2025-11-10T13:04:33.532496] Running: python3 manage.py soi_scraper
+
+[2025-11-10T13:05:44.386856] Scraper return code: 0
+
+[2025-11-10T13:05:44.387002] STDOUT:
+======================================================================
+🗳️  Arizona SOI Scraper + Database Loader
+======================================================================
+
+
+Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+🌐 Using Chrome from: /usr/bin/google-chrome
+
+Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+🔍 Checking for Cloudflare challenge...
+
+✅ No Cloudflare challenge detected
+
+Scraping: [███░░░░░░░░░░░░░░░░░░░░░░░░░░░] 10% Loading page...
+Scraping: [████░░░░░░░░░░░░░░░░░░░░░░░░░░] 15% Extracting data...
+Scraping: [██████░░░░░░░░░░░░░░░░░░░░░░░░] 20% Found 365 candidates
+Scraping: [██████░░░░░░░░░░░░░░░░░░░░░░░░] 20% Page 2/3
+🔍 Checking for Cloudflare challenge...
+
+✅ No Cloudflare challenge detected
+
+Scraping: [█████████░░░░░░░░░░░░░░░░░░░░░] 30% Loading page...
+Scraping: [██████████░░░░░░░░░░░░░░░░░░░░] 35% Extracting data...
+Scraping: [████████████░░░░░░░░░░░░░░░░░░] 40% Found 23 candidates
+Scraping: [████████████░░░░░░░░░░░░░░░░░░] 40% Page 3/3
+🔍 Checking for Cloudflare challenge...
+
+✅ No Cloudflare challenge detected
+
+Scraping: [███████████████░░░░░░░░░░░░░░░] 50% Loading page...
+Scraping: [████████████████░░░░░░░░░░░░░░] 55% Extracting data...
+Scraping: [██████████████████░░░░░░░░░░░░] 60% Found 23 candidates
+Scraping: [██████████████████░░░░░░░░░░░░] 60% Complete
+Scraping: [██████████████████░░░░░░░░░░░░] 60% ✅ Found 411 candidates
+Saving: [███████████████████░░░░░░░░░░░] 65% Writing CSV backup...
+Saving: [█████████████████████░░░░░░░░░] 70% ✅ CSV saved
+Loading: [█████████████████████░░░░░░░░░] 70% Processing candidates...
+⚠️  Error on row 1: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 2: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 2, STATE).
+
+
+⚠️  Error on row 3: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 4: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 3, STATE).
+
+
+⚠️  Error on row 5: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 6: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 3, STATE).
+
+
+⚠️  Error on row 7: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 8: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 9: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 10: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 11: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 12: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 13: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 14: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 15: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 16: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 3, STATE).
+
+
+⚠️  Error on row 17: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 18: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 19: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 2, STATE).
+
+
+⚠️  Error on row 20: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 21: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 22: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 23: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 24: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 25: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 26: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 27: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 28: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 29: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 30: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 3, STATE).
+
+
+⚠️  Error on row 31: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 32: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 33: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 9, STATE).
+
+
+⚠️  Error on row 34: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 35: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 36: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 37: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 38: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 39: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 40: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 41: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 42: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 43: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 44: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 45: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 46: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 47: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 48: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 9, STATE).
+
+
+⚠️  Error on row 49: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 50: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 51: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 52: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 53: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 54: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 55: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 3, STATE).
+
+
+⚠️  Error on row 56: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 57: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 58: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 59: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 60: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 61: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 3, STATE).
+
+
+⚠️  Error on row 62: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 2, STATE).
+
+
+⚠️  Error on row 63: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 64: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 65: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 66: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 67: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 68: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 69: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 70: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 71: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 72: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 73: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 74: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 75: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 76: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 3, STATE).
+
+
+⚠️  Error on row 77: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 78: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 9, STATE).
+
+
+⚠️  Error on row 79: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 80: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 9, STATE).
+
+
+⚠️  Error on row 81: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 82: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 83: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 84: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 85: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 86: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 87: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 88: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 89: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 9, STATE).
+
+
+⚠️  Error on row 90: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 91: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 92: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 93: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 94: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 95: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 96: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 8, STATE).
+
+
+⚠️  Error on row 97: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 98: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 99: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 9, STATE).
+
+
+⚠️  Error on row 100: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+Loading: [██████████████████████░░░░░░░░] 76% Processed 101/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 102/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 103/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 104/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 105/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 106/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 107/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 108/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 109/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 110/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 111/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 112/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 113/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 114/411 candidates
+Loading: [██████████████████████░░░░░░░░] 76% Processed 115/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 116/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 117/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 118/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 119/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 120/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 121/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 122/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 123/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 124/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 125/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 126/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 127/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 128/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 129/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 130/411 candidates
+Loading: [███████████████████████░░░░░░░] 77% Processed 131/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 132/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 133/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 134/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 135/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 136/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 137/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 138/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 139/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 140/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 141/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 142/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 143/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 144/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 145/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 146/411 candidates
+Loading: [███████████████████████░░░░░░░] 78% Processed 147/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 148/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 149/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 150/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 151/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 152/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 153/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 154/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 155/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 156/411 candidates
+Loading: [███████████████████████░░░░░░░] 79% Processed 157/411 candidates
+⚠️  Error on row 158: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 26, STATE).
+
+
+Loading: [███████████████████████░░░░░░░] 79% Processed 159/411 candidates
+⚠️  Error on row 160: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 11, STATE).
+
+
+Loading: [███████████████████████░░░░░░░] 79% Processed 161/411 candidates
+⚠️  Error on row 162: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 19, STATE).
+
+
+Loading: [███████████████████████░░░░░░░] 79% Processed 163/411 candidates
+⚠️  Error on row 164: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 15, STATE).
+
+
+⚠️  Error on row 165: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 30, STATE).
+
+
+⚠️  Error on row 166: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 3, STATE).
+
+
+⚠️  Error on row 167: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 24, STATE).
+
+
+⚠️  Error on row 168: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 13, STATE).
+
+
+⚠️  Error on row 169: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 23, STATE).
+
+
+⚠️  Error on row 170: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 9, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 80% Processed 171/411 candidates
+⚠️  Error on row 172: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 22, STATE).
+
+
+⚠️  Error on row 173: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 9, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 80% Processed 174/411 candidates
+Loading: [████████████████████████░░░░░░] 80% Processed 175/411 candidates
+Loading: [████████████████████████░░░░░░] 80% Processed 176/411 candidates
+Loading: [████████████████████████░░░░░░] 80% Processed 177/411 candidates
+⚠️  Error on row 178: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 7, STATE).
+
+
+⚠️  Error on row 179: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 9, STATE).
+
+
+⚠️  Error on row 180: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 1, STATE).
+
+
+⚠️  Error on row 181: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 17, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 81% Processed 182/411 candidates
+⚠️  Error on row 183: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 2, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 81% Processed 184/411 candidates
+Loading: [████████████████████████░░░░░░] 81% Processed 185/411 candidates
+⚠️  Error on row 186: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 2, STATE).
+
+
+⚠️  Error on row 187: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 25, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 81% Processed 188/411 candidates
+⚠️  Error on row 189: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 15, STATE).
+
+
+⚠️  Error on row 190: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 4, STATE).
+
+
+⚠️  Error on row 191: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 19, STATE).
+
+
+⚠️  Error on row 192: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 11, STATE).
+
+
+⚠️  Error on row 193: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 3, STATE).
+
+
+⚠️  Error on row 194: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 4, STATE).
+
+
+⚠️  Error on row 195: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 17, STATE).
+
+
+⚠️  Error on row 196: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 8, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 81% Processed 197/411 candidates
+⚠️  Error on row 198: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 7, STATE).
+
+
+⚠️  Error on row 199: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 26, STATE).
+
+
+⚠️  Error on row 200: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 23, STATE).
+
+
+⚠️  Error on row 201: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 7, STATE).
+
+
+⚠️  Error on row 202: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 26, STATE).
+
+
+⚠️  Error on row 203: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 11, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 82% Processed 204/411 candidates
+⚠️  Error on row 205: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 11, STATE).
+
+
+⚠️  Error on row 206: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 2, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 82% Processed 207/411 candidates
+⚠️  Error on row 208: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 19, STATE).
+
+
+⚠️  Error on row 209: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 16, STATE).
+
+
+⚠️  Error on row 210: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 18, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 82% Processed 211/411 candidates
+Loading: [████████████████████████░░░░░░] 82% Processed 212/411 candidates
+Loading: [████████████████████████░░░░░░] 82% Processed 213/411 candidates
+⚠️  Error on row 214: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 12, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 83% Processed 215/411 candidates
+Loading: [████████████████████████░░░░░░] 83% Processed 216/411 candidates
+Loading: [████████████████████████░░░░░░] 83% Processed 217/411 candidates
+Loading: [████████████████████████░░░░░░] 83% Processed 218/411 candidates
+Loading: [████████████████████████░░░░░░] 83% Processed 219/411 candidates
+⚠️  Error on row 220: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 17, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 83% Processed 221/411 candidates
+⚠️  Error on row 222: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 27, STATE).
+
+
+Loading: [████████████████████████░░░░░░] 83% Processed 223/411 candidates
+Loading: [████████████████████████░░░░░░] 83% Processed 224/411 candidates
+Loading: [████████████████████████░░░░░░] 83% Processed 225/411 candidates
+Loading: [████████████████████████░░░░░░] 83% Processed 226/411 candidates
+⚠️  Error on row 227: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 23, STATE).
+
+
+⚠️  Error on row 228: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 8, STATE).
+
+
+⚠️  Error on row 229: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 18, STATE).
+
+
+⚠️  Error on row 230: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 19, STATE).
+
+
+⚠️  Error on row 231: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 28, STATE).
+
+
+⚠️  Error on row 232: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 13, STATE).
+
+
+⚠️  Error on row 233: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 4, STATE).
+
+
+⚠️  Error on row 234: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 4, STATE).
+
+
+⚠️  Error on row 235: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 22, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 84% Processed 236/411 candidates
+⚠️  Error on row 237: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 23, STATE).
+
+
+⚠️  Error on row 238: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 5, STATE).
+
+
+⚠️  Error on row 239: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 18, STATE).
+
+
+⚠️  Error on row 240: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 13, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 84% Processed 241/411 candidates
+⚠️  Error on row 242: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 30, STATE).
+
+
+⚠️  Error on row 243: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 14, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 84% Processed 244/411 candidates
+⚠️  Error on row 245: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 21, STATE).
+
+
+⚠️  Error on row 246: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 24, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 85% Processed 247/411 candidates
+⚠️  Error on row 248: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 21, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 85% Processed 249/411 candidates
+Loading: [█████████████████████████░░░░░] 85% Processed 250/411 candidates
+⚠️  Error on row 251: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 23, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 85% Processed 252/411 candidates
+⚠️  Error on row 253: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 27, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 85% Processed 254/411 candidates
+⚠️  Error on row 255: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 10, STATE).
+
+
+⚠️  Error on row 256: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 7, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 85% Processed 257/411 candidates
+⚠️  Error on row 258: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 22, STATE).
+
+
+⚠️  Error on row 259: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 3, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 85% Processed 260/411 candidates
+Loading: [█████████████████████████░░░░░] 85% Processed 261/411 candidates
+⚠️  Error on row 262: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 17, STATE).
+
+
+⚠️  Error on row 263: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 21, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 86% Processed 264/411 candidates
+⚠️  Error on row 265: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 8, STATE).
+
+
+⚠️  Error on row 266: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 20, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 86% Processed 267/411 candidates
+⚠️  Error on row 268: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 25, STATE).
+
+
+⚠️  Error on row 269: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 25, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 86% Processed 270/411 candidates
+Loading: [█████████████████████████░░░░░] 86% Processed 271/411 candidates
+⚠️  Error on row 272: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 5, STATE).
+
+
+⚠️  Error on row 273: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 28, STATE).
+
+
+⚠️  Error on row 274: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 16, STATE).
+
+
+⚠️  Error on row 275: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 30, STATE).
+
+
+⚠️  Error on row 276: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 22, STATE).
+
+
+Loading: [█████████████████████████░░░░░] 86% Processed 277/411 candidates
+⚠️  Error on row 278: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 7, STATE).
+
+
+⚠️  Error on row 279: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 9, STATE).
+
+
+⚠️  Error on row 280: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 16, STATE).
+
+
+⚠️  Error on row 281: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 18, STATE).
+
+
+⚠️  Error on row 282: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 10, STATE).
+
+
+⚠️  Error on row 283: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 26, STATE).
+
+
+Loading: [██████████████████████████░░░░] 87% Processed 284/411 candidates
+⚠️  Error on row 285: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 8, STATE).
+
+
+Loading: [██████████████████████████░░░░] 87% Processed 286/411 candidates
+⚠️  Error on row 287: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 11, STATE).
+
+
+⚠️  Error on row 288: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 29, STATE).
+
+
+⚠️  Error on row 289: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 12, STATE).
+
+
+Loading: [██████████████████████████░░░░] 87% Processed 290/411 candidates
+⚠️  Error on row 291: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 5, STATE).
+
+
+⚠️  Error on row 292: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 16, STATE).
+
+
+⚠️  Error on row 293: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 5, STATE).
+
+
+Loading: [██████████████████████████░░░░] 87% Processed 294/411 candidates
+⚠️  Error on row 295: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 4, STATE).
+
+
+⚠️  Error on row 296: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 1, STATE).
+
+
+Loading: [██████████████████████████░░░░] 88% Processed 297/411 candidates
+Loading: [██████████████████████████░░░░] 88% Processed 298/411 candidates
+Loading: [██████████████████████████░░░░] 88% Processed 299/411 candidates
+⚠️  Error on row 300: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 20, STATE).
+
+
+⚠️  Error on row 301: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 20, STATE).
+
+
+Loading: [██████████████████████████░░░░] 88% Processed 302/411 candidates
+⚠️  Error on row 303: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 6, STATE).
+
+
+⚠️  Error on row 304: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 6, STATE).
+
+
+⚠️  Error on row 305: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 3, STATE).
+
+
+⚠️  Error on row 306: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 23, STATE).
+
+
+⚠️  Error on row 307: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 28, STATE).
+
+
+⚠️  Error on row 308: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 3, STATE).
+
+
+⚠️  Error on row 309: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 14, STATE).
+
+
+⚠️  Error on row 310: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 13, STATE).
+
+
+⚠️  Error on row 311: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 3, STATE).
+
+
+⚠️  Error on row 312: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 27, STATE).
+
+
+⚠️  Error on row 313: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 26, STATE).
+
+
+⚠️  Error on row 314: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 10, STATE).
+
+
+Loading: [██████████████████████████░░░░] 89% Processed 315/411 candidates
+⚠️  Error on row 316: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 28, STATE).
+
+
+⚠️  Error on row 317: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 30, STATE).
+
+
+⚠️  Error on row 318: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 14, STATE).
+
+
+⚠️  Error on row 319: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 7, STATE).
+
+
+⚠️  Error on row 320: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 22, STATE).
+
+
+⚠️  Error on row 321: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 23, STATE).
+
+
+⚠️  Error on row 322: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 13, STATE).
+
+
+⚠️  Error on row 323: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 3, STATE).
+
+
+⚠️  Error on row 324: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 29, STATE).
+
+
+⚠️  Error on row 325: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 6, STATE).
+
+
+Loading: [██████████████████████████░░░░] 89% Processed 326/411 candidates
+Loading: [██████████████████████████░░░░] 89% Processed 327/411 candidates
+Loading: [██████████████████████████░░░░] 89% Processed 328/411 candidates
+⚠️  Error on row 329: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 2, STATE).
+
+
+⚠️  Error on row 330: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 2, STATE).
+
+
+⚠️  Error on row 331: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 6, STATE).
+
+
+Loading: [███████████████████████████░░░] 90% Processed 332/411 candidates
+⚠️  Error on row 333: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 3, STATE).
+
+
+Loading: [███████████████████████████░░░] 90% Processed 334/411 candidates
+⚠️  Error on row 335: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 21, STATE).
+
+
+⚠️  Error on row 336: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 30, STATE).
+
+
+Loading: [███████████████████████████░░░] 90% Processed 337/411 candidates
+⚠️  Error on row 338: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 19, STATE).
+
+
+⚠️  Error on row 339: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 29, STATE).
+
+
+⚠️  Error on row 340: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 6, STATE).
+
+
+⚠️  Error on row 341: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 13, STATE).
+
+
+Loading: [███████████████████████████░░░] 90% Processed 342/411 candidates
+Loading: [███████████████████████████░░░] 90% Processed 343/411 candidates
+⚠️  Error on row 344: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 12, STATE).
+
+
+Loading: [███████████████████████████░░░] 90% Processed 345/411 candidates
+⚠️  Error on row 346: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 1, STATE).
+
+
+⚠️  Error on row 347: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 20, STATE).
+
+
+⚠️  Error on row 348: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 17, STATE).
+
+
+Loading: [███████████████████████████░░░] 91% Processed 349/411 candidates
+⚠️  Error on row 350: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 3, STATE).
+
+
+Loading: [███████████████████████████░░░] 91% Processed 351/411 candidates
+Loading: [███████████████████████████░░░] 91% Processed 352/411 candidates
+⚠️  Error on row 353: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 15, STATE).
+
+
+⚠️  Error on row 354: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 20, STATE).
+
+
+⚠️  Error on row 355: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 13, STATE).
+
+
+Loading: [███████████████████████████░░░] 91% Processed 356/411 candidates
+⚠️  Error on row 357: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 5, STATE).
+
+
+⚠️  Error on row 358: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 1, STATE).
+
+
+Loading: [███████████████████████████░░░] 91% Processed 359/411 candidates
+⚠️  Error on row 360: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 2, STATE).
+
+
+⚠️  Error on row 361: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 17, STATE).
+
+
+⚠️  Error on row 362: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 20, STATE).
+
+
+Loading: [███████████████████████████░░░] 92% Processed 363/411 candidates
+⚠️  Error on row 364: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 1, STATE).
+
+
+⚠️  Error on row 365: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 30, STATE).
+
+
+⚠️  Error on row 366: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 1, STATE).
+
+
+⚠️  Error on row 367: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 6, STATE).
+
+
+⚠️  Error on row 368: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 369: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 370: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 371: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 5, STATE).
+
+
+⚠️  Error on row 372: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 4, STATE).
+
+
+⚠️  Error on row 373: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+Loading: [███████████████████████████░░░] 92% Processed 374/411 candidates
+Loading: [███████████████████████████░░░] 92% Processed 375/411 candidates
+Loading: [███████████████████████████░░░] 92% Processed 376/411 candidates
+Loading: [███████████████████████████░░░] 92% Processed 377/411 candidates
+Loading: [███████████████████████████░░░] 92% Processed 378/411 candidates
+Loading: [███████████████████████████░░░] 93% Processed 379/411 candidates
+Loading: [███████████████████████████░░░] 93% Processed 380/411 candidates
+Loading: [███████████████████████████░░░] 93% Processed 381/411 candidates
+Loading: [███████████████████████████░░░] 93% Processed 382/411 candidates
+Loading: [███████████████████████████░░░] 93% Processed 383/411 candidates
+Loading: [███████████████████████████░░░] 93% Processed 384/411 candidates
+⚠️  Error on row 385: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 17, STATE).
+
+
+Loading: [███████████████████████████░░░] 93% Processed 386/411 candidates
+⚠️  Error on row 387: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 28, STATE).
+
+
+⚠️  Error on row 388: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, State Representative - District No. 28, STATE).
+
+
+⚠️  Error on row 389: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 390: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 391: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 392: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 393: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 394: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 395: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 396: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 397: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 398: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 399: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 400: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 401: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 402: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 403: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 404: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 405: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 406: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 407: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 408: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 409: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 410: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+⚠️  Error on row 411: null value in column "office_id" of relation "Offices" violates not-null constraint
+DETAIL:  Failing row contains (null, U.S. Representative in Congress - District No. 7, STATE).
+
+
+Complete: [██████████████████████████████] 100% ✅ Done!
+
+======================================================================
+✅ SCRAPING & LOADING COMPLETE!
+======================================================================
+📊 Total candidates scraped: 411
+✨ Created in DB: 135
+🔄 Updated in DB: 2
+⏭️  Skipped: 0
+❌ Errors: 274
+
+======================================================================
+📋 NEXT STEPS (Phase 1 Workflow):
+======================================================================
+1️⃣  Review uncontacted candidates at /admin/
+2️⃣  Send info packets to candidate emails
+3️⃣  Mark as "contacted" after sending
+4️⃣  Monitor pledge receipts
+======================================================================
+
+
+[2025-11-10T13:05:44.387439] STDERR:
+2025-11-10 13:05:16,649 - INFO - Sample from page 1: {
+  "name": "Alegria, Samuel",
+  "office": "U.S. Representative in Congress - District No. 7",
+  "party": "Democratic",
+  "phone": "AlegriaforCongress@gmail.com",
+  "email": "AlegriaforCongress@gmail.com",
+  "raw_text": "U.S. Representative in Congress - District No. 7\tAlegria, Samuel\tDemocratic\tAlegriaforCongress@gmail.com\t4/14/2025 8:14:51 AM\tStatement of Interest",
+  "source_url": "https://apps.arizona.vote/electioninfo/SOI/68",
+  "row_index": 0
+}
+2025-11-10 13:05:29,023 - INFO - Sample from page 2: {
+  "name": "Ajluni, Christopher",
+  "office": "U.S. Representative in Congress - District No. 1",
+  "party": "Other IND",
+  "phone": "christopher.ajluni@gmail.com",
+  "email": "christopher.ajluni@gmail.com",
+  "raw_text": "U.S. Representative in Congress - District No. 1\tAjluni, Christopher\tOther IND\tchristopher.ajluni@gmail.com\t3/21/2025 7:49:08 AM\tStatement of Interest",
+  "source_url": "https://apps.arizona.vote/electioninfo/SOI/69",
+  "row_index": 0
+}
+2025-11-10 13:05:43,555 - INFO - Sample from page 3: {
+  "name": "Aguilar, Jose",
+  "office": "U.S. Representative in Congress - District No. 7",
+  "party": "Democratic",
+  "phone": "520-261-4146\njose4congress@gmail.com",
+  "email": "jose4congress@gmail.com",
+  "raw_text": "U.S. Representative in Congress - District No. 7\tAguilar, Jose\tDemocratic\t520-261-4146\njose4congress@gmail.com\t3/28/2025 9:23:54 AM\tStatement of Interest",
+  "source_url": "https://apps.arizona.vote/electioninfo/SOI/71",
+  "row_index": 0
+}
+2025-11-10 13:05:43,689 - INFO - CSV saved to data/soi_candidates.csv
+
+
+[2025-11-10T13:05:44.387935] Processing CSV at data/soi_candidates.csv
+
+[2025-11-10T13:05:44.690351] CSV process return code: 1
+
+[2025-11-10T13:05:44.690428] STDOUT:
+
+
+[2025-11-10T13:05:44.690469] STDERR:
+Traceback (most recent call last):
+  File "/home/mg/Deploy/az_sunshine/backend/manage.py", line 22, in <module>
+    main()
+  File "/home/mg/Deploy/az_sunshine/backend/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 436, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 275, in fetch_command
+    klass = load_command_class(app_name, subcommand)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mg/Deploy/az_sunshine/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 48, in load_command_class
+    module = import_module("%s.management.commands.%s" % (app_name, name))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/mg/Deploy/az_sunshine/backend/transparency/management/commands/process_soi_csv.py", line 10, in <module>
+    from transparency.models import SOICandidate, Office, Party
+ImportError: cannot import name 'SOICandidate' from 'transparency.models' (/home/mg/Deploy/az_sunshine/backend/transparency/models.py)
+
+
+[2025-11-10T13:05:44.707238] ✅ Scraping process completed successfully.
+
+[2025-11-10T13:05:44.707328] Total candidates: 135
+[13:31:07] 
+--- New Scrape Run Started ---
+[13:31:07] Scrape ID: scrape_20251110_133107
+[13:31:07] Running: python manage.py soi_scraper
+[13:32:17] Scraper return code: 0
+[13:32:17] Scraper output:
+[13:32:17]   ======================================================================
+[13:32:17]   🗳️  Arizona SOI Scraper + Database Loader
+[13:32:17]   ======================================================================
+[13:32:17]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[13:32:17]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[13:32:17]   🌐 Using Chrome from: /usr/bin/google-chrome
+[13:32:17]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[13:32:17] Database check: 135 total candidates found
+[13:32:17]   - Uncontacted: 135
+[13:32:17]   - Contacted: 0
+[13:32:17]   - Pledged: 0
+[13:32:17] ✅ Scraping completed successfully
+[13:32:17] Total candidates in database: 135
+[13:36:06] 
+--- New Scrape Run Started ---
+[13:36:06] Scrape ID: scrape_20251110_133606
+[13:36:06] Running: python manage.py soi_scraper
+[13:37:21] Scraper return code: 0
+[13:37:21] Scraper output:
+[13:37:21]   ======================================================================
+[13:37:21]   🗳️  Arizona SOI Scraper + Database Loader
+[13:37:21]   ======================================================================
+[13:37:21]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[13:37:21]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[13:37:21]   🌐 Using Chrome from: /usr/bin/google-chrome
+[13:37:21]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[13:37:21] Database check: 135 total candidates found
+[13:37:21]   - Uncontacted: 135
+[13:37:21]   - Contacted: 0
+[13:37:21]   - Pledged: 0
+[13:37:21] ✅ Scraping completed successfully
+[13:37:21] Total candidates in database: 135
+[13:40:49] 
+--- New Scrape Run Started ---
+[13:40:49] Scrape ID: scrape_20251110_134049
+[13:40:49] Running: python manage.py soi_scraper
+[13:42:03] Scraper return code: 0
+[13:42:03] Scraper output:
+[13:42:03]   ======================================================================
+[13:42:03]   🗳️  Arizona SOI Scraper + Database Loader
+[13:42:03]   ======================================================================
+[13:42:03]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[13:42:03]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[13:42:03]   🌐 Using Chrome from: /usr/bin/google-chrome
+[13:42:03]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[13:42:03] Database check: 135 total candidates found
+[13:42:03]   - Uncontacted: 135
+[13:42:03]   - Contacted: 0
+[13:42:03]   - Pledged: 0
+[13:42:03] ✅ Scraping completed successfully
+[13:42:03] Total candidates in database: 135

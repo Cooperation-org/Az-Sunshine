@@ -5,15 +5,19 @@ import CandidateDetail from "./pages/CandidateDetail";
 import Donors from "./pages/Donors";
 import Candidates from "./pages/Candidates";
 import Expenditures from "./pages/Expenditures";
+import SOIManagement from "./pages/SOIManagement";
+import RaceAnalysis from "./pages/RaceAnalysis";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
-      <Route path="/donors" element={<Donors />} />
+      <Route path="/soi" element={<SOIManagement />} />
       <Route path="/candidates" element={<Candidates />} />
-      <Route path="/expenditures" element={<Expenditures />} />
       <Route path="/candidate/:id" element={<CandidateDetail />} />
+      <Route path="/races" element={<RaceAnalysis />} />
+      <Route path="/donors" element={<Donors />} />
+      <Route path="/expenditures" element={<Expenditures />} />
     </Routes>
   );
 }
