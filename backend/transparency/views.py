@@ -756,9 +756,7 @@ def metrics(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def donors_top(request):
-    """
-    Adapter endpoint: /api/donors/top/ -> maps to entities/top_donors/
-    """
+    """Adapter endpoint: /api/donors/top/ -> maps to entities/top_donors/"""
     limit = int(request.query_params.get('limit', 50))
     cycle_id = request.query_params.get('cycle', None)
     
@@ -777,7 +775,6 @@ def donors_top(request):
         num_contributions=Count('transactions__transaction_id')
     ).order_by('-total_contributed')[:limit]
     
-    # Format response to match frontend expectations
     result = []
     for donor in top_donors:
         result.append({
@@ -994,3 +991,37 @@ def expenditures_list(request):
             'purpose': item.get('memo') or (('Support' if item.get('is_for_benefit') else 'Oppose') + ' ' + (subject_comm.get('candidate_name') if subject_comm else 'Candidate'))
         })
     return Response({'results': result_data})
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def committees_top(request):
+    """Top committees by IE spending"""
+    limit = int(request.query_params.get('limit', 10))
+    
+    committees = Committee.objects.filter(
+        candidate__isnull=False
+    ).annotate(
+        total_ie_for=Sum(
+            'subject_of_ies__amount',
+            filter=Q(subject_of_ies__is_for_benefit=True,
+                    subject_of_ies__deleted=False)
+        ),
+        total_ie_against=Sum(
+            'subject_of_ies__amount',
+            filter=Q(subject_of_ies__is_for_benefit=False,
+                    subject_of_ies__deleted=False)
+        )
+    )
+    
+    result = []
+    for committee in committees:
+        total = (committee.total_ie_for or Decimal('0')) + (committee.total_ie_against or Decimal('0'))
+        result.append({
+            'committee_id': committee.committee_id,
+            'name': committee.name.full_name if committee.name else 'Unknown',
+            'total': float(total)
+        })
+    
+    result.sort(key=lambda x: x['total'], reverse=True)
+    return Response(result[:limit])

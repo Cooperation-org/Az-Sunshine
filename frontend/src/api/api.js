@@ -1,15 +1,10 @@
-// frontend/src/api/api.js
 import axios from "axios";
 
-// Use environment variable if available, otherwise use localhost for development
-// Change to "http://167.172.30.134:8000/api/" when backend is running on remote server
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1/";
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/v1/";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 80000,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -17,7 +12,6 @@ const api = axios.create({
 
 console.log('🔗 API Base URL:', API_BASE_URL);
 
-// Add response interceptor for better error handling
 api.interceptors.response.use(
   response => response,
   error => {
@@ -26,9 +20,67 @@ api.interceptors.response.use(
   }
 );
 
-// --- Candidates ---
+//
+// ==================== PHASE 1: SOI TRACKING ====================
+//
+
+// Scraping endpoints
+export async function triggerScraping() {
+  const res = await api.post("soi/scrape/trigger/");
+  return res.data;
+}
+
+export async function getScrapingStatus() {
+  const res = await api.get("soi/scrape/status/");
+  return res.data;
+}
+
+export async function getScrapingHistory() {
+  const res = await api.get("soi/scrape/history/");
+  return res.data;
+}
+
+export async function getSOIDashboardStats() {
+  const res = await api.get("soi/dashboard-stats/");
+  return res.data;
+}
+
+// Candidate SOI endpoints
+export async function getSOICandidates(params = {}) {
+  const res = await api.get("candidate-soi/", { params });
+  return res.data;
+}
+
+export async function getUncontactedCandidates() {
+  const res = await api.get("candidate-soi/uncontacted/");
+  return res.data;
+}
+
+export async function getPendingPledges() {
+  const res = await api.get("candidate-soi/pending_pledges/");
+  return res.data;
+}
+
+export async function getSOISummaryStats() {
+  const res = await api.get("candidate-soi/summary_stats/");
+  return res.data;
+}
+
+export async function markCandidateContacted(id, contactedBy) {
+  const res = await api.post(`candidate-soi/${id}/mark_contacted/`, { contacted_by: contactedBy });
+  return res.data;
+}
+
+export async function markPledgeReceived(id, notes = "") {
+  const res = await api.post(`candidate-soi/${id}/mark_pledge_received/`, { notes });
+  return res.data;
+}
+
+//
+// ==================== CANDIDATES (COMMITTEES) ====================
+//
+
 export async function getCandidates(params = {}) {
-  // Use committees endpoint with candidates_only filter
   const res = await api.get("committees/", { 
     params: { ...params, candidates_only: 'true' } 
   });
@@ -40,107 +92,106 @@ export async function getCandidate(id) {
   return res.data;
 }
 
-// --- Races ---
-export async function getRaces(params = {}) {
-  const res = await api.get("races/", { params });
+export async function getCandidateIESpending(id) {
+  const res = await api.get(`committees/${id}/ie_spending_summary/`);
   return res.data;
 }
 
-// --- Committees ---
-export async function getCommittees(params = {}) {
-  const res = await api.get("committees/", { params });
+export async function getCandidateIEByCommittee(id) {
+  const res = await api.get(`committees/${id}/ie_spending_by_committee/`);
   return res.data;
 }
 
-export async function getTopCommittees() {
-  try {
-    const res = await api.get("committees/top/");
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching top committees:", error);
-    return [];
-  }
+export async function getCandidateIEDonors(id) {
+  const res = await api.get(`committees/${id}/ie_donors/`);
+  return res.data;
 }
 
-// --- Donors ---
+export async function getCandidateGrassrootsComparison(id, threshold = 5000) {
+  const res = await api.get(`committees/${id}/grassroots_threshold/`, { params: { threshold } });
+  return res.data;
+}
+
+//
+// ==================== RACES ====================
+//
+
+export async function getRaceIESpending(officeId, cycleId, partyId = null) {
+  const params = { office: officeId, cycle: cycleId };
+  if (partyId) params.party = partyId;
+  const res = await api.get("races/ie-spending/", { params });
+  return res.data;
+}
+
+export async function getRaceTopDonors(officeId, cycleId, limit = 20) {
+  const res = await api.get("races/top-donors/", { 
+    params: { office: officeId, cycle: cycleId, limit } 
+  });
+  return res.data;
+}
+
+//
+// ==================== OFFICES & CYCLES ====================
+//
+
+export async function getOffices() {
+  const res = await api.get("offices/");
+  return res.data;
+}
+
+export async function getCycles() {
+  const res = await api.get("cycles/");
+  return res.data;
+}
+
+//
+// ==================== DASHBOARD ====================
+//
+
+export async function getDashboardSummary() {
+  const res = await api.get("dashboard/summary/");
+  return res.data;
+}
+
+//
+// ==================== VALIDATION ====================
+//
+
+export async function validatePhase1Data() {
+  const res = await api.get("validation/phase1/");
+  return res.data;
+}
+
+//
+// ==================== DONORS ====================
+//
+
 export async function getDonors(params = {}) {
   const res = await api.get("entities/", { params });
   return res.data;
 }
 
-export async function getTopDonors() {
-  try {
-    const res = await api.get("donors/top/");
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching top donors:", error);
-    return [];
-  }
+export async function getTopDonors(limit = 50) {
+  const res = await api.get("donors/top/", { params: { limit } });
+  return res.data;
 }
 
-// --- Expenditures ---
+//
+// ==================== EXPENDITURES ====================
+//
+
 export async function getExpenditures(params = {}) {
   const res = await api.get("expenditures/", { params });
   return res.data;
 }
 
-export async function getCandidateIESpending(id) {
-  try {
-    const res = await api.get(`committees/${id}/ie_spending_summary/`);
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching IE spending summary:", error);
-    return null;
-  }
-}
-
-export async function getCandidateIEByCommittee(id) {
-  try {
-    const res = await api.get(`committees/${id}/ie_spending_by_committee/`);
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching IE by committee:", error);
-    return null;
-  }
-}
-
-export async function getExpendituresByCandidate() {
-  try {
-    const res = await api.get("expenditures/summary_by_candidate/");
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching expenditures by candidate:", error);
-    return [];
-  }
-}
-
-// --- Contributions ---
-export async function getContributions(params = {}) {
-  const res = await api.get("contributions/", { params });
+export async function getTopCommittees(limit = 10) {
+  const res = await api.get("committees/top/", { params: { limit } });
   return res.data;
 }
 
-// --- Metrics (backend-provided) ---
-export async function getMetrics() {
-  try {
-    // Use dashboard/summary endpoint as metrics endpoint has issues
-    const res = await api.get("dashboard/summary/");
-    const data = res.data;
-    return {
-      total_expenditures: parseFloat(data.total_ie_spending || 0),
-      num_candidates: data.candidate_committees || 0,
-      num_expenditures: 0, // Will be populated from expenditures endpoint
-      candidates: []
-    };
-  } catch (error) {
-    console.error("Error fetching metrics:", error);
-    return {
-      total_expenditures: 0,
-      num_candidates: 0,
-      num_expenditures: 0,
-      candidates: []
-    };
-  }
-}
+//
+// ==================== DEFAULT EXPORT ====================
+//
 
 export default api;
