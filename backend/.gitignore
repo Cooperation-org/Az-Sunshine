@@ -3,7 +3,7 @@ transparency/utils/mdb_exports.tar.gz
 
 
 # Ignore documentation and data files
-BACKEND_DOCUMENTATION.md
+
 soi_urls.json
 
 # Ignore specific Python scripts
