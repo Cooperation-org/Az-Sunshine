@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/v1/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://167.172.30.134/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -47,8 +47,31 @@ export async function getSOIDashboardStats() {
 
 // Candidate SOI endpoints
 export async function getSOICandidates(params = {}) {
-  const res = await api.get("candidate-soi/", { params });
-  return res.data;
+  try {
+    // Use the root endpoint /api/v1/ which returns array directly (not paginated)
+    console.log("📡 Fetching SOI candidates from:", api.defaults.baseURL);
+    const res = await api.get("", { params });
+    
+    // Debug: Log the raw response
+    console.log("📥 API Response:", res);
+    console.log("📥 Response data:", res.data);
+    console.log("📥 Response data type:", Array.isArray(res.data) ? "Array" : typeof res.data);
+    
+    // Handle both array response and paginated response for backward compatibility
+    if (Array.isArray(res.data)) {
+      console.log("✅ Received array response with", res.data.length, "candidates");
+      return res.data;
+    }
+    
+    // Fallback to paginated response format
+    const data = res.data.results || res.data;
+    console.log("✅ Received paginated/object response");
+    return data;
+  } catch (error) {
+    console.error("❌ API Error in getSOICandidates:", error);
+    console.error("Error response:", error.response?.data);
+    throw error;
+  }
 }
 
 export async function getUncontactedCandidates() {
