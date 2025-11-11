@@ -422,7 +422,7 @@ export default function SOIManagement() {
               </div>
               <button
                 onClick={() => setShowScrapingModal(true)}
-                className="bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:bg-purple-50 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 sm:gap-3 whitespace-nowrap"
+                className="bg-white text-purple-700 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:bg-purple-50 hover:text-purple-800 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 sm:gap-3 whitespace-nowrap border-2 border-purple-200"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
                 <Play className="w-4 h-4 sm:w-5 sm:h-5" />
