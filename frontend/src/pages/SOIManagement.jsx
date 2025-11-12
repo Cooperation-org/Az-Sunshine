@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Play,
   CheckCircle,
@@ -9,80 +9,103 @@ import {
   Phone,
   X,
   Loader,
-  Download,
   RefreshCw,
   Users,
   Target,
   Award,
-  TrendingUp
+  Bell,
+  ChevronRight
 } from "lucide-react";
-import SideBar from "../components/Sidebar";
-import LoadingSpinner, { InlineLoader, TableSkeleton } from "../components/LoadingSpinner";
 
+// ✅ REAL API IMPORTS - Connected to your Django backend
 import {
-  triggerScraping,
-  getScrapingStatus,
+  triggerWebhookScraping,
+  getWebhookScrapingStatus,
   getSOICandidates,
   getSOIDashboardStats,
   markCandidateContacted,
   markPledgeReceived,
 } from "../api/api";
 
-// Scraping Modal Component
+import Sidebar from "../components/Sidebar";
+
+// Scraping Modal with Real-Time Webhook Updates
 function ScrapingModal({ isOpen, onClose }) {
   const [status, setStatus] = useState(null);
   const [isPolling, setIsPolling] = useState(false);
-  const [isScraping, setIsScraping] = useState(false);
+  const pollIntervalRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && !isPolling) {
       startScraping();
     }
+    
+    // Cleanup on unmount
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
   }, [isOpen]);
 
   const startScraping = async () => {
     try {
       setIsPolling(true);
-      setIsScraping(true);
-      const result = await triggerScraping();
-      setStatus(result);
       
-      // Start polling for status
-      const pollInterval = setInterval(async () => {
+      // ✅ Trigger scraping on home machine via Django VPS
+      console.log("🚀 Triggering webhook scraping...");
+      const result = await triggerWebhookScraping();
+      
+      setStatus({
+        status: 'triggered',
+        progress: 0,
+        current_step: 'Triggering home scraper...',
+        logs: ['✅ Scraping triggered successfully', 'Waiting for home machine response...']
+      });
+      
+      // ✅ Start polling for real-time updates every 2 seconds
+      pollIntervalRef.current = setInterval(async () => {
         try {
-          const currentStatus = await getScrapingStatus();
+          console.log("📊 Polling for status update...");
+          const currentStatus = await getWebhookScrapingStatus();
+          
+          console.log("Status update:", currentStatus);
           setStatus(currentStatus);
           
-          if (currentStatus.status !== 'running') {
-            clearInterval(pollInterval);
+          // Stop polling if completed or error
+          if (currentStatus.status === 'completed' || currentStatus.status === 'error') {
+            console.log("✅ Scraping finished, stopping poll");
+            clearInterval(pollIntervalRef.current);
             setIsPolling(false);
-            setIsScraping(false);
           }
         } catch (error) {
           console.error('Polling error:', error);
-          clearInterval(pollInterval);
-          setIsPolling(false);
-          setIsScraping(false);
+          // Don't stop polling on network errors, just log them
         }
       }, 2000);
       
     } catch (error) {
+      console.error("❌ Failed to trigger scraping:", error);
       setStatus({
         status: 'error',
-        error: error.message,
-        logs: [`Error: ${error.message}`]
+        error: error.response?.data?.error || error.message || 'Failed to trigger scraping',
+        logs: [`❌ Error: ${error.response?.data?.error || error.message}`]
       });
       setIsPolling(false);
-      setIsScraping(false);
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'running': return 'bg-gradient-to-r from-purple-500 to-purple-600';
-      case 'completed': return 'bg-gradient-to-r from-green-500 to-green-600';
-      case 'error': return 'bg-gradient-to-r from-red-500 to-red-600';
-      default: return 'bg-gray-500';
+      case 'running':
+      case 'triggered':
+        return 'bg-gradient-to-r from-purple-500 to-purple-600';
+      case 'completed':
+        return 'bg-gradient-to-r from-green-500 to-green-600';
+      case 'error':
+        return 'bg-gradient-to-r from-red-500 to-red-600';
+      default:
+        return 'bg-gray-500';
     }
   };
 
@@ -95,7 +118,7 @@ function ScrapingModal({ isOpen, onClose }) {
         <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 p-6 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {status?.status === 'running' || isScraping ? (
+              {status?.status === 'running' || status?.status === 'triggered' || isPolling ? (
                 <Loader className="w-6 h-6 animate-spin" />
               ) : status?.status === 'completed' ? (
                 <CheckCircle className="w-6 h-6" />
@@ -104,12 +127,12 @@ function ScrapingModal({ isOpen, onClose }) {
               ) : (
                 <RefreshCw className="w-6 h-6" />
               )}
-              <h2 className="text-xl sm:text-2xl font-bold leading-tight" style={{ fontFamily: "'Inter', sans-serif" }}>SOI Data Scraping</h2>
+              <h2 className="text-xl sm:text-2xl font-bold">SOI Data Scraping</h2>
             </div>
             <button
               onClick={onClose}
               className="hover:bg-white/20 p-2 rounded-lg transition"
-              disabled={status?.status === 'running'}
+              disabled={status?.status === 'running' || status?.status === 'triggered'}
             >
               <X className="w-5 h-5" />
             </button>
@@ -117,30 +140,17 @@ function ScrapingModal({ isOpen, onClose }) {
         </div>
 
         {/* Progress */}
-        {(status || isScraping) && (
+        {status && (
           <div className="p-6">
-            {/* Show loading message when scraping starts but status not yet available */}
-            {isScraping && !status && (
-              <div className="mb-6 text-center">
-                <LoadingSpinner 
-                  size="lg" 
-                  message="Fetching SOI data... please wait." 
-                  fullScreen={false}
-                />
+            <div className="mb-4">
+              <div className="flex justify-between mb-2">
+                <span className="text-sm font-semibold text-gray-700">
+                  {status.current_step || 'Initializing...'}
+                </span>
+                <span className="text-sm font-semibold text-gray-700">
+                  {Math.round(status.progress || 0)}%
+                </span>
               </div>
-            )}
-            
-            {status && (
-              <>
-              <div className="mb-4">
-                <div className="flex justify-between mb-2">
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700 leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    {status.current_step || 'Initializing...'}
-                  </span>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700 leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    {status.progress || 0}%
-                  </span>
-                </div>
               <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div
                   className={`h-full transition-all duration-500 ${getStatusColor(status.status)}`}
@@ -150,31 +160,25 @@ function ScrapingModal({ isOpen, onClose }) {
             </div>
 
             {/* Stats */}
-            {status.stats && (
+            {status.stats && Object.keys(status.stats).length > 0 && (
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
                   <div className="text-2xl font-bold text-purple-600">
-                    {status.stats.total_candidates || status.stats.urls_discovered || 0}
+                    {status.stats.total_candidates || status.stats.total || 0}
                   </div>
-                  <div className="text-xs text-gray-600">
-                    {status.stats.total_candidates ? 'Total' : 'URLs'}
-                  </div>
+                  <div className="text-xs text-gray-600">Total</div>
                 </div>
                 <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
                   <div className="text-2xl font-bold text-purple-600">
-                    {status.stats.uncontacted || status.stats.pages_scraped || 0}
+                    {status.stats.created || 0}
                   </div>
-                  <div className="text-xs text-gray-600">
-                    {status.stats.uncontacted ? 'Uncontacted' : 'Scraped'}
-                  </div>
+                  <div className="text-xs text-gray-600">Created</div>
                 </div>
                 <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
                   <div className="text-2xl font-bold text-purple-600">
-                    {status.stats.pending_pledge || status.stats.candidates_processed || 0}
+                    {status.stats.updated || 0}
                   </div>
-                  <div className="text-xs text-gray-600">
-                    {status.stats.pending_pledge ? 'Pending' : 'Processed'}
-                  </div>
+                  <div className="text-xs text-gray-600">Updated</div>
                 </div>
               </div>
             )}
@@ -182,9 +186,9 @@ function ScrapingModal({ isOpen, onClose }) {
             {/* Console Logs */}
             {status.logs && status.logs.length > 0 && (
               <div className="bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
-                <div className="font-mono text-xs text-green-400">
+                <div className="font-mono text-xs text-green-400 space-y-1">
                   {status.logs.map((log, idx) => (
-                    <div key={idx} className="mb-1">
+                    <div key={idx} className="leading-relaxed">
                       {log}
                     </div>
                   ))}
@@ -221,8 +225,6 @@ function ScrapingModal({ isOpen, onClose }) {
                 </button>
               </div>
             )}
-              </>
-            )}
           </div>
         )}
       </div>
@@ -230,7 +232,7 @@ function ScrapingModal({ isOpen, onClose }) {
   );
 }
 
-// Main SOI Component
+// Main Component - Connected to Real Django Backend
 export default function SOIManagement() {
   const [candidates, setCandidates] = useState([]);
   const [stats, setStats] = useState(null);
@@ -239,70 +241,46 @@ export default function SOIManagement() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrapingModal, setShowScrapingModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [currentPage]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       setFetchingData(true);
-      // Show loading indicator while fetching
+      
+      console.log("📡 Loading SOI data from Django backend...");
+      
+      // ✅ Fetch real data from Django API
       const [candidatesData, statsData] = await Promise.all([
-        getSOICandidates(),
+        getSOICandidates({ page: currentPage, page_size: pageSize }),
         getSOIDashboardStats(),
       ]);
       
-      // Debug: Log the raw API response
-      console.log("🔍 SOI Data Fetching Debug:");
-      console.log("Raw candidatesData:", candidatesData);
-      console.log("Type:", Array.isArray(candidatesData) ? "Array" : typeof candidatesData);
+      console.log("✅ Received candidates:", candidatesData);
+      console.log("✅ Received stats:", statsData);
       
-      // Ensure we handle array response correctly
       const candidatesArray = Array.isArray(candidatesData) 
         ? candidatesData 
         : (candidatesData?.results || candidatesData || []);
       
-      // Debug: Log processed array and check for missing fields
-      console.log("Processed candidatesArray length:", candidatesArray.length);
-      if (candidatesArray.length > 0) {
-        console.log("Sample candidate object:", candidatesArray[0]);
-        console.log("Sample candidate fields:", Object.keys(candidatesArray[0]));
-        
-        // Check for missing or null fields
-        const sampleCandidate = candidatesArray[0];
-        const expectedFields = ['id', 'name', 'office', 'party', 'email', 'phone', 'contacted', 'pledge_received', 'filing_date'];
-        const missingFields = expectedFields.filter(field => 
-          !(field in sampleCandidate) || sampleCandidate[field] === null || sampleCandidate[field] === undefined
-        );
-        const emptyFields = expectedFields.filter(field => 
-          sampleCandidate[field] === '' || sampleCandidate[field] === null || sampleCandidate[field] === undefined
-        );
-        
-        if (missingFields.length > 0) {
-          console.warn("⚠️ Missing fields in candidate data:", missingFields);
-        }
-        if (emptyFields.length > 0) {
-          console.warn("⚠️ Empty/null fields in candidate data:", emptyFields);
-        }
-        
-        // Log field values for debugging
-        expectedFields.forEach(field => {
-          const value = sampleCandidate[field];
-          console.log(`  ${field}:`, value, `(type: ${typeof value})`);
-        });
-      }
-      
       setCandidates(candidatesArray);
       setStats(statsData || {});
+      setTotalCount(candidatesData?.count || candidatesArray.length || 0);
+      setTotalPages(Math.ceil((candidatesData?.count || candidatesArray.length || 0) / pageSize));
       
-      console.log("✅ Data loaded successfully");
     } catch (error) {
       console.error("❌ Error loading data:", error);
-      console.error("Error details:", error.response?.data || error.message);
       setCandidates([]);
       setStats({});
+      setTotalCount(0);
+      setTotalPages(1);
     } finally {
       setLoading(false);
       setFetchingData(false);
@@ -311,19 +289,25 @@ export default function SOIManagement() {
 
   const handleMarkContacted = async (id) => {
     try {
+      console.log(`📞 Marking candidate ${id} as contacted...`);
       await markCandidateContacted(id);
-      loadData();
+      console.log("✅ Successfully marked as contacted");
+      loadData(); // Reload to get fresh data
     } catch (error) {
-      console.error("Error marking contacted:", error);
+      console.error("❌ Error marking contacted:", error);
+      alert("Failed to mark candidate as contacted. Please try again.");
     }
   };
 
   const handleMarkPledged = async (id) => {
     try {
+      console.log(`✅ Marking candidate ${id} pledge as received...`);
       await markPledgeReceived(id);
-      loadData();
+      console.log("✅ Successfully marked pledge as received");
+      loadData(); // Reload to get fresh data
     } catch (error) {
-      console.error("Error marking pledged:", error);
+      console.error("❌ Error marking pledged:", error);
+      alert("Failed to mark pledge as received. Please try again.");
     }
   };
 
@@ -339,169 +323,159 @@ export default function SOIManagement() {
   const getStatusBadge = (candidate) => {
     if (candidate.pledge_received) {
       return (
-        <span className="flex items-center gap-1 px-2 sm:px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
           <CheckCircle className="w-3 h-3" />
-          <span className="hidden sm:inline">Pledged</span>
-          <span className="sm:hidden">✓</span>
+          Pledged
         </span>
       );
     }
     if (candidate.contacted) {
       return (
-        <span className="flex items-center gap-1 px-2 sm:px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <span className="flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
           <Clock className="w-3 h-3" />
-          <span className="hidden sm:inline">Pending</span>
-          <span className="sm:hidden">⏱</span>
+          Pending
         </span>
       );
     }
     return (
-      <span className="flex items-center gap-1 px-2 sm:px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <span className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
         <AlertCircle className="w-3 h-3" />
-        <span className="hidden sm:inline">New</span>
-        <span className="sm:hidden">!</span>
+        New
       </span>
     );
   };
 
   if (loading) {
     return (
-      <div className="flex h-screen">
-        <SideBar />
-        <div className="flex-1 ml-20 flex items-center justify-center bg-gray-50">
-          <LoadingSpinner 
-            size="xl" 
-            message="Loading candidate data..." 
-            fullScreen={false}
-          />
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading SOI data from server...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="soi-management flex h-screen bg-gray-50 relative" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <SideBar />
-      
-      {/* Loading Overlay - Shows when fetching/scraping data */}
-      {fetchingData && (
-        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-40 flex items-center justify-center">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-            <LoadingSpinner 
-              size="xl" 
-              message="Fetching SOI data... please wait." 
-              fullScreen={false}
-            />
-          </div>
-        </div>
-      )}
-      
-      <div className="flex-1 ml-20 overflow-y-auto">
-        <div className="p-4 sm:p-6 md:p-8">
-          {/* Header */}
-          <div className="mb-6 md:mb-8">
-            <h3 className="text-2xl font-bold text-gray-900">
-              Statement of Interest Tracking
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-              Monitor and manage candidate SOI filings and pledge commitments
-            </p>
-          </div>
+    <div className="flex min-h-screen bg-gray-50">
+      {/* === Sidebar === */}
+      <Sidebar />
 
+      {/* === Main Content === */}
+      <main className="ml-20 flex-1">
+        {/* Loading Overlay */}
+        {fetchingData && (
+          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-40 flex items-center justify-center">
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <Loader className="w-16 h-16 animate-spin text-purple-600 mx-auto" />
+              <p className="mt-4 text-gray-600">Fetching SOI data...</p>
+            </div>
+          </div>
+        )}
+        
+        {/* === Header === */}
+        <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Arizona Sunshine</h1>
+            <p className="text-sm text-gray-500">Statement of Interest Tracking</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search candidates..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+            <button className="p-2 rounded-lg bg-purple-600 hover:bg-purple-700 transition">
+              <Bell className="w-5 h-5 text-white" />
+            </button>
+          </div>
+        </header>
+
+        {/* === Content === */}
+        <div className="p-8">
           {/* Automation Control */}
-          <div className="bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] rounded-2xl p-6 sm:p-8 mb-6 md:mb-8 text-white shadow-xl">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] rounded-2xl p-8 mb-8 text-white shadow-xl">
+            <div className="flex items-center justify-between">
               <div className="flex-1">
-                <h2 className="text-xl sm:text-2xl font-bold mb-2 flex items-center gap-2 leading-tight">
-                  <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6" />
+                <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                  <RefreshCw className="w-6 h-6" />
                   Automated SOI Scraping
                 </h2>
-                <p className="text-sm sm:text-base text-purple-100 leading-relaxed">
-                  Automatically discover and process new SOI filings from Arizona.vote
+                <p className="text-purple-100">
+                  Trigger scraping on home machine • Real-time webhook updates • Cloudflare bypass
                 </p>
               </div>
               <button
                 onClick={() => setShowScrapingModal(true)}
-                className="bg-white text-purple-700 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:bg-purple-50 hover:text-purple-800 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 sm:gap-3 whitespace-nowrap border-2 border-purple-200"
-                style={{ fontFamily: "'Inter', sans-serif" }}
+                className="bg-white text-purple-700 px-8 py-4 rounded-xl font-semibold hover:bg-purple-50 transition-all transform hover:scale-105 shadow-lg flex items-center gap-3"
               >
-                <Play className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="hidden sm:inline">Scrape Data Now!</span>
-                <span className="sm:hidden">Scrape</span>
+                <Play className="w-5 h-5" />
+                Scrape Data Now!
               </button>
             </div>
           </div>
 
           {/* Stats Grid */}
           {stats && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 md:mb-8">
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md border-l-4 border-purple-600">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-purple-600">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs sm:text-sm text-gray-600 mb-1 leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>Total Candidates</div>
-                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <div className="text-sm text-gray-600 mb-1">Total Candidates</div>
+                    <div className="text-3xl font-bold text-gray-900">
                       {stats.total_candidates || 0}
                     </div>
                   </div>
-                  <Users className="w-10 h-10 sm:w-12 sm:h-12 text-purple-600 opacity-20" />
+                  <Users className="w-12 h-12 text-purple-600 opacity-20" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md border-l-4 border-purple-500">
+              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-purple-500">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs sm:text-sm text-gray-600 mb-1 leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>Uncontacted</div>
-                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <div className="text-sm text-gray-600 mb-1">Uncontacted</div>
+                    <div className="text-3xl font-bold text-gray-900">
                       {stats.uncontacted || 0}
                     </div>
                   </div>
-                  <Target className="w-10 h-10 sm:w-12 sm:h-12 text-purple-500 opacity-20" />
+                  <Target className="w-12 h-12 text-purple-500 opacity-20" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md border-l-4 border-purple-700">
+              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-purple-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs sm:text-sm text-gray-600 mb-1 leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>Pending Pledge</div>
-                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <div className="text-sm text-gray-600 mb-1">Pending Pledge</div>
+                    <div className="text-3xl font-bold text-gray-900">
                       {stats.pending_pledge || 0}
                     </div>
                   </div>
-                  <Clock className="w-10 h-10 sm:w-12 sm:h-12 text-purple-700 opacity-20" />
+                  <Clock className="w-12 h-12 text-purple-700 opacity-20" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md border-l-4 border-purple-800">
+              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-purple-800">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs sm:text-sm text-gray-600 mb-1 leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>Pledged</div>
-                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <div className="text-sm text-gray-600 mb-1">Pledged</div>
+                    <div className="text-3xl font-bold text-gray-900">
                       {stats.pledged || 0}
                     </div>
                   </div>
-                  <Award className="w-10 h-10 sm:w-12 sm:h-12 text-purple-800 opacity-20" />
+                  <Award className="w-12 h-12 text-purple-800 opacity-20" />
                 </div>
               </div>
             </div>
           )}
 
           {/* Filters */}
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md mb-6">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
-                <input
-                  type="text"
-                  placeholder="Search candidates..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  style={{ fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
+          <div className="bg-white rounded-xl p-6 shadow-md mb-6">
+            <div className="flex gap-2 flex-wrap">
               {[
                 { id: "all", label: "All Candidates", count: candidates?.length || 0 },
                 { id: "uncontacted", label: "Uncontacted", count: stats?.uncontacted || 0 },
@@ -511,125 +485,147 @@ export default function SOIManagement() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition ${
+                  className={`px-4 py-2 rounded-lg font-medium transition ${
                     activeTab === tab.id
                       ? "bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
-                  style={{ fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}
                 >
-                  <span className="hidden sm:inline">{tab.label}</span>
-                  <span className="sm:hidden">{tab.label.split(' ')[0]}</span> ({tab.count})
+                  {tab.label} ({tab.count})
                 </button>
               ))}
             </div>
           </div>
 
           {/* Candidates Table */}
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700" style={{ fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                       Candidate
                     </th>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell" style={{ fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                       Office
                     </th>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell" style={{ fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                       Contact
                     </th>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700" style={{ fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                       Status
                     </th>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700" style={{ fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
-                  {filteredCandidates.map((candidate) => (
-                    <tr key={candidate.id} className="hover:bg-gray-50 transition">
-                      <td className="px-4 sm:px-6 py-3 sm:py-4">
-                        <div className="font-semibold text-sm sm:text-base text-gray-900 leading-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          {candidate.name || candidate.candidate_name || 'Unknown Name'}
-                        </div>
-                        {candidate.party && (
-                          <div className="text-xs sm:text-sm text-gray-500 leading-normal mt-1" style={{ fontFamily: "'Inter', sans-serif" }}>
-                            {candidate.party}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base text-gray-700 hidden sm:table-cell leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>
-                        {candidate.office || 'Unknown Office'}
-                      </td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
-                        <div className="space-y-1">
-                          {candidate.email && (
-                            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>
-                              <Mail className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span className="truncate max-w-[200px]">{candidate.email}</span>
-                            </div>
-                          )}
-                          {candidate.phone && (
-                            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 leading-normal" style={{ fontFamily: "'Inter', sans-serif" }}>
-                              <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
-                              {candidate.phone}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4">{getStatusBadge(candidate)}</td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4">
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          {!candidate.contacted && (
-                            <button
-                              onClick={() => handleMarkContacted(candidate.id)}
-                              className="px-2 sm:px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg text-xs sm:text-sm hover:from-purple-700 hover:to-purple-800 transition whitespace-nowrap"
-                              style={{ fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}
-                            >
-                              <span className="hidden sm:inline">Mark Contacted</span>
-                              <span className="sm:hidden">Contact</span>
-                            </button>
-                          )}
-                          {candidate.contacted && !candidate.pledge_received && (
-                            <button
-                              onClick={() => handleMarkPledged(candidate.id)}
-                              className="px-2 sm:px-3 py-1 bg-green-600 text-white rounded-lg text-xs sm:text-sm hover:bg-green-700 transition whitespace-nowrap"
-                              style={{ fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}
-                            >
-                              <span className="hidden sm:inline">Pledge Received</span>
-                              <span className="sm:hidden">Pledge</span>
-                            </button>
-                          )}
-                        </div>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredCandidates.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="py-12 text-center text-gray-500">
+                        <Users className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                        <div className="text-lg font-semibold mb-1">No candidates found</div>
+                        <div className="text-sm">Try adjusting your filters or run a new scrape</div>
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredCandidates.map((candidate) => (
+                      <tr key={candidate.id} className="hover:bg-gray-50 transition">
+                        <td className="px-6 py-4">
+                          <div className="font-semibold text-gray-900">
+                            {candidate.name || candidate.candidate_name || 'Unknown'}
+                          </div>
+                          {candidate.party && (
+                            <div className="text-sm text-gray-500">{candidate.party}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {candidate.office || 'Unknown'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="space-y-1">
+                            {candidate.email && (
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Mail className="w-4 h-4" />
+                                {candidate.email}
+                              </div>
+                            )}
+                            {candidate.phone && (
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Phone className="w-4 h-4" />
+                                {candidate.phone}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">{getStatusBadge(candidate)}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            {!candidate.contacted && (
+                              <button
+                                onClick={() => handleMarkContacted(candidate.id)}
+                                className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg text-sm hover:from-purple-700 hover:to-purple-800 transition"
+                              >
+                                Mark Contacted
+                              </button>
+                            )}
+                            {candidate.contacted && !candidate.pledge_received && (
+                              <button
+                                onClick={() => handleMarkPledged(candidate.id)}
+                                className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition"
+                              >
+                                Pledge Received
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
+          </div>
 
-            {filteredCandidates.length === 0 && (
-              <div className="p-8 sm:p-12 text-center text-gray-500">
-                <Users className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 opacity-20" />
-                <div className="text-base sm:text-lg font-semibold mb-1 leading-tight" style={{ fontFamily: "'Inter', sans-serif" }}>No candidates found</div>
-                <div className="text-xs sm:text-sm leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  Try adjusting your filters or run a new scrape
-                </div>
-              </div>
-            )}
+          {/* === Pagination === */}
+          <div className="mt-6 flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              {totalCount} Results
+            </p>
+            <div className="flex items-center gap-2">
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-10 h-10 rounded-lg font-medium transition ${
+                    currentPage === page
+                      ? "bg-purple-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              {totalPages > 5 && (
+                <button
+                  onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+                  className="w-10 h-10 rounded-lg bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 flex items-center justify-center transition"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </main>
 
       <ScrapingModal
         isOpen={showScrapingModal}
         onClose={() => {
           setShowScrapingModal(false);
-          setFetchingData(true); // Show loading when reloading data
-          loadData(); // Reload data after scraping
+          setFetchingData(true);
+          loadData(); // Reload data after scraping completes
         }}
       />
     </div>
