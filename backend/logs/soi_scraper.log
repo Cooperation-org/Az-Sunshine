@@ -74,3 +74,160 @@
 [04:23:17]   - Pledged: 0
 [04:23:17] ✅ Scraping completed successfully
 [04:23:17] Total candidates in database: 135
+[08:57:34] 
+--- New Scrape Run Started ---
+[08:57:34] Scrape ID: scrape_20251112_085734
+[08:57:34] Running: python manage.py soi_scraper
+[08:58:39] Scraper return code: 0
+[08:58:39] Scraper output:
+[08:58:39]   ======================================================================
+[08:58:39]   🗳️  Arizona SOI Scraper + Database Loader
+[08:58:39]   ======================================================================
+[08:58:39]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[08:58:39]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[08:58:39]   🌐 Using Chrome from: /usr/bin/google-chrome
+[08:58:39]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[08:58:39] Database check: 135 total candidates found
+[08:58:39]   - Uncontacted: 134
+[08:58:39]   - Contacted: 1
+[08:58:39]   - Pledged: 0
+[08:58:39] ✅ Scraping completed successfully
+[08:58:39] Total candidates in database: 135
+[19:12:14] 
+--- New Scrape Run Started ---
+[19:12:14] Scrape ID: scrape_20251112_191214
+[19:12:14] Running: python manage.py soi_scraper
+[19:12:59] Scraper return code: 0
+[19:12:59] Scraper output:
+[19:12:59]   ======================================================================
+[19:12:59]   🗳️  Arizona SOI Scraper + Database Loader
+[19:12:59]   ======================================================================
+[19:12:59]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[19:12:59]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[19:12:59]   🌐 Using Chrome from: /usr/bin/google-chrome
+[19:12:59]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[19:12:59] Database check: 135 total candidates found
+[19:12:59]   - Uncontacted: 134
+[19:12:59]   - Contacted: 1
+[19:12:59]   - Pledged: 0
+[19:12:59] ✅ Scraping completed successfully
+[19:12:59] Total candidates in database: 135
+[21:43:01] 
+--- New Scrape Run Started ---
+[21:43:01] Scrape ID: scrape_20251112_214301
+[21:43:01] Running: python manage.py soi_scraper
+[21:44:11] Scraper return code: 0
+[21:44:11] Scraper output:
+[21:44:11]   ======================================================================
+[21:44:11]   🗳️  Arizona SOI Scraper + Database Loader
+[21:44:11]   ======================================================================
+[21:44:11]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[21:44:11]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[21:44:11]   🌐 Using Chrome from: /usr/bin/google-chrome
+[21:44:11]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[21:44:11] Database check: 404 total candidates found
+[21:44:11]   - Uncontacted: 403
+[21:44:11]   - Contacted: 1
+[21:44:11]   - Pledged: 0
+[21:44:11] ✅ Scraping completed successfully
+[21:44:11] Total candidates in database: 404
+[21:47:10] 
+--- New Scrape Run Started ---
+[21:47:10] Scrape ID: scrape_20251112_214710
+[21:47:10] Running: python manage.py soi_scraper
+[21:48:10] Scraper return code: 0
+[21:48:10] Scraper output:
+[21:48:10]   ======================================================================
+[21:48:10]   🗳️  Arizona SOI Scraper + Database Loader
+[21:48:10]   ======================================================================
+[21:48:10]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[21:48:10]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[21:48:10]   🌐 Using Chrome from: /usr/bin/google-chrome
+[21:48:10]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[21:48:10] Database check: 404 total candidates found
+[21:48:10]   - Uncontacted: 403
+[21:48:10]   - Contacted: 1
+[21:48:10]   - Pledged: 0
+[21:48:10] ✅ Scraping completed successfully
+[21:48:10] Total candidates in database: 404
+[21:50:28] 
+--- New Scrape Run Started ---
+[21:50:28] Scrape ID: scrape_20251112_215028
+[21:50:28] Running: python manage.py soi_scraper
+[21:51:29] Scraper return code: 0
+[21:51:29] Scraper output:
+[21:51:29]   ======================================================================
+[21:51:29]   🗳️  Arizona SOI Scraper + Database Loader
+[21:51:29]   ======================================================================
+[21:51:29]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[21:51:29]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[21:51:29]   🌐 Using Chrome from: /usr/bin/google-chrome
+[21:51:29]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[21:51:29] Database check: 404 total candidates found
+[21:51:29]   - Uncontacted: 403
+[21:51:29]   - Contacted: 1
+[21:51:29]   - Pledged: 0
+[21:51:29] ✅ Scraping completed successfully
+[21:51:29] Total candidates in database: 404
+[21:56:08] 
+--- New Scrape Run Started ---
+[21:56:08] Scrape ID: scrape_20251112_215608
+[21:56:08] Running: python manage.py soi_scraper
+[21:57:12] Scraper return code: 0
+[21:57:12] Scraper output:
+[21:57:12]   Loading: [████████████████████████████░░] 94% Processed 410/412 candidates
+[21:57:12]   Complete: [██████████████████████████████] 100% ✅ Done!
+[21:57:12]   ======================================================================
+[21:57:12]   ✅ SCRAPING & LOADING COMPLETE!
+[21:57:12]   ======================================================================
+[21:57:12]   📊 Total candidates scraped: 412
+[21:57:12]   ✨ Created in DB: 0
+[21:57:12]   🔄 Updated in DB: 0
+[21:57:12]   ⏭️  Skipped: 412
+[21:57:12]   ======================================================================
+[21:57:12]   📋 NEXT STEPS (Phase 1 Workflow):
+[21:57:12]   ======================================================================
+[21:57:12]   1️⃣  Review uncontacted candidates at /soi/
+[21:57:12]   2️⃣  Send info packets to candidate emails
+[21:57:12]   3️⃣  Mark as "contacted" after sending
+[21:57:12]   4️⃣  Monitor pledge receipts
+[21:57:12]   ======================================================================
+[21:57:12] 📊 Parsed stats: Created=0, Updated=0
+[21:57:13] Database check: 404 total candidates found
+[21:57:13]   - Uncontacted: 403
+[21:57:13]   - Contacted: 1
+[21:57:13]   - Pledged: 0
+[21:57:13] ✅ Scraping completed successfully
+[21:57:13] Total candidates in database: 404
+[21:57:13] Created: 0, Updated: 0
+[22:05:12] 
+--- New Scrape Run Started ---
+[22:05:12] Scrape ID: scrape_20251112_220512
+[22:05:12] Running: python manage.py soi_scraper
+[22:06:14] Scraper return code: 0
+[22:06:14] Scraper output:
+[22:06:14]   Loading: [████████████████████████████░░] 94% Processed 410/412 candidates
+[22:06:14]   Complete: [██████████████████████████████] 100% ✅ Done!
+[22:06:14]   ======================================================================
+[22:06:14]   ✅ SCRAPING & LOADING COMPLETE!
+[22:06:14]   ======================================================================
+[22:06:14]   📊 Total candidates scraped: 412
+[22:06:14]   ✨ Created in DB: 0
+[22:06:14]   🔄 Updated in DB: 0
+[22:06:14]   ⏭️  Skipped: 412
+[22:06:14]   ======================================================================
+[22:06:14]   📋 NEXT STEPS (Phase 1 Workflow):
+[22:06:14]   ======================================================================
+[22:06:14]   1️⃣  Review uncontacted candidates at /soi/
+[22:06:14]   2️⃣  Send info packets to candidate emails
+[22:06:14]   3️⃣  Mark as "contacted" after sending
+[22:06:14]   4️⃣  Monitor pledge receipts
+[22:06:14]   ======================================================================
+[22:06:14] 📊 Parsed stats: Created=0, Updated=0
+[22:06:14] Database check: 404 total candidates found
+[22:06:14]   - Uncontacted: 403
+[22:06:14]   - Contacted: 1
+[22:06:14]   - Pledged: 0
+[22:06:14] ✅ Scraping completed successfully
+[22:06:14] Total candidates in database: 404
+[22:06:14] Created: 0, Updated: 0
