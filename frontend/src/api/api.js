@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://167.172.30.134/api/v1/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/v1/";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -45,12 +45,71 @@ api.interceptors.response.use(
 );
 
 //
-// ==================== PHASE 1: SOI TRACKING ====================
+// ==================== NEW: WEBHOOK-BASED SOI SCRAPING ====================
 //
 
 /**
- * Trigger SOI scraping process
+ * Trigger scraping on home machine via webhook
+ * POST /api/v1/soi/trigger-local/
+ * 
+ * This is the NEW preferred method that:
+ * 1. Sends trigger to home machine
+ * 2. Home machine runs scraper
+ * 3. Progress updates sent via webhook
+ * 4. Frontend polls for status
+ */
+export async function triggerWebhookScraping() {
+  try {
+    const res = await api.post("soi/trigger-local/");
+    return res.data;
+  } catch (error) {
+    console.error("Failed to trigger webhook scraping:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get webhook scraping status (for real-time updates)
+ * GET /api/v1/soi/webhook/status/
+ * 
+ * Frontend should poll this endpoint every 2-3 seconds
+ * during active scraping to get real-time progress
+ */
+export async function getWebhookScrapingStatus() {
+  try {
+    const res = await api.get("soi/webhook/status/");
+    return res.data;
+  } catch (error) {
+    console.error("Failed to get webhook status:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get webhook scraping history
+ * GET /api/v1/soi/webhook/history/
+ */
+export async function getWebhookScrapingHistory() {
+  try {
+    const res = await api.get("soi/webhook/history/");
+    return res.data;
+  } catch (error) {
+    console.error("Failed to get webhook history:", error);
+    throw error;
+  }
+}
+
+//
+// ==================== LEGACY: DIRECT SOI SCRAPING (VPS) ====================
+// These endpoints run scraping directly on VPS (not recommended due to Cloudflare)
+//
+
+/**
+ * LEGACY: Trigger SOI scraping directly on VPS
  * POST /api/v1/soi/scrape/trigger/
+ * 
+ * NOTE: This may fail due to Cloudflare blocking datacenter IPs
+ * Use triggerWebhookScraping() instead for production
  */
 export async function triggerScraping() {
   try {
@@ -63,7 +122,7 @@ export async function triggerScraping() {
 }
 
 /**
- * Get current scraping status
+ * LEGACY: Get current scraping status (direct VPS scraping)
  * GET /api/v1/soi/scrape/status/
  */
 export async function getScrapingStatus() {
@@ -77,7 +136,7 @@ export async function getScrapingStatus() {
 }
 
 /**
- * Get scraping history
+ * LEGACY: Get scraping history (direct VPS scraping)
  * GET /api/v1/soi/scrape/history/
  */
 export async function getScrapingHistory() {
@@ -89,6 +148,10 @@ export async function getScrapingHistory() {
     throw error;
   }
 }
+
+//
+// ==================== SOI DASHBOARD & CANDIDATES ====================
+//
 
 /**
  * Get SOI dashboard statistics
