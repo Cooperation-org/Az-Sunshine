@@ -38,3 +38,6 @@ transparency_backup.dump
 transparency/utils/mdb_exports.tar.gz
 
 Analyser/
+scraper_service.log
+logs/
+*.log
