@@ -12,8 +12,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-
 from transparency.models import CandidateStatementOfInterest
+from django.views.decorators.csrf import csrf_exempt
 
 # Cache keys
 SCRAPE_STATUS_KEY = "soi_scrape_status"
@@ -22,6 +22,7 @@ SCRAPE_HISTORY_KEY = "soi_scrape_history"
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@csrf_exempt
 def trigger_scraping(request):
     """Trigger the SOI scraping process with detailed logging."""
     current_status = cache.get(SCRAPE_STATUS_KEY)

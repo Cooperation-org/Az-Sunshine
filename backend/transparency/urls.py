@@ -19,10 +19,15 @@ router.register(r'offices', OfficeViewSet, basename='office')
 router.register(r'cycles', CycleViewSet, basename='cycle')
 
 urlpatterns = [
-    # Root endpoint: /api/v1/ returns SOI candidates as array (not paginated)
-    path('', soi_candidates_list, name='api-root'),
+    # === SOI endpoints (MUST come BEFORE router to avoid conflicts) ===
+    path('soi/scrape/trigger/', trigger_scraping, name='trigger-scraping'),
+    path('soi/scrape/status/', scraping_status, name='scraping-status'),
+    path('soi/scrape/history/', scraping_history, name='scraping-history'),
+    path('soi/dashboard-stats/', soi_dashboard_stats, name='soi-dashboard-stats'),
+    path('soi/candidates/', soi_candidates_list, name='soi-candidates-list'),
     
-    path('', include(router.urls)),
+    # Backward compatibility alias
+    path('soi_candidates/', soi_candidates_list, name='soi-candidates-alias'),
 
     # === Existing API endpoints ===
     path('races/ie-spending/', race_ie_spending, name='race-ie-spending'),
@@ -35,15 +40,6 @@ urlpatterns = [
     path('candidates/', candidates_list, name='candidates-list'),
     path('donors/', donors_list, name='donors-list'),
 
-    # === SOI endpoints (FIXED) ===
-    path('soi/scrape/trigger/', trigger_scraping, name='trigger-scraping'),
-    path('soi/scrape/status/', scraping_status, name='scraping-status'),
-    path('soi/scrape/history/', scraping_history, name='scraping-history'),
-    path('soi/dashboard-stats/', soi_dashboard_stats, name='soi-dashboard-stats'),
-    
-    # FIXED: Add dedicated endpoint for candidate list (used by frontend)
-    path('soi/candidates/', soi_candidates_list, name='soi-candidates-list'),
-    
-    # Backward compatibility alias
-    path('soi_candidates/', soi_candidates_list, name='soi-candidates-alias'),
+    # Router MUST come last to avoid catching specific paths
+    path('', include(router.urls)),
 ]
