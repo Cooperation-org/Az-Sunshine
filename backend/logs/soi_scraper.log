@@ -36,3 +36,41 @@
 [22:37:58]   - Pledged: 0
 [22:37:58] ✅ Scraping completed successfully
 [22:37:58] Total candidates in database: 135
+[04:18:02] 
+--- New Scrape Run Started ---
+[04:18:02] Scrape ID: scrape_20251112_041802
+[04:18:02] Running: python manage.py soi_scraper
+[04:19:33] Scraper return code: 0
+[04:19:33] Scraper output:
+[04:19:33]   ======================================================================
+[04:19:33]   🗳️  Arizona SOI Scraper + Database Loader
+[04:19:33]   ======================================================================
+[04:19:33]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[04:19:33]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[04:19:33]   🌐 Using Chrome from: /usr/bin/google-chrome
+[04:19:33]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[04:19:33] Database check: 135 total candidates found
+[04:19:33]   - Uncontacted: 134
+[04:19:33]   - Contacted: 1
+[04:19:33]   - Pledged: 0
+[04:19:33] ✅ Scraping completed successfully
+[04:19:33] Total candidates in database: 135
+[04:22:11] 
+--- New Scrape Run Started ---
+[04:22:11] Scrape ID: scrape_20251112_042211
+[04:22:11] Running: python manage.py soi_scraper
+[04:23:17] Scraper return code: 0
+[04:23:17] Scraper output:
+[04:23:17]   ======================================================================
+[04:23:17]   🗳️  Arizona SOI Scraper + Database Loader
+[04:23:17]   ======================================================================
+[04:23:17]   Starting: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Initializing scraper...
+[04:23:17]   Initializing: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5% Setting up browser...
+[04:23:17]   🌐 Using Chrome from: /usr/bin/google-chrome
+[04:23:17]   Scraping: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0% Page 1/3
+[04:23:17] Database check: 135 total candidates found
+[04:23:17]   - Uncontacted: 134
+[04:23:17]   - Contacted: 1
+[04:23:17]   - Pledged: 0
+[04:23:17] ✅ Scraping completed successfully
+[04:23:17] Total candidates in database: 135
