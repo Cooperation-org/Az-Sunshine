@@ -709,7 +709,7 @@ class CandidateStatementOfInterest(models.Model):
         default='uncontacted',
         db_index=True
     )
-    contact_date = models.DateField(null=True, blank=True, db_index=True)
+    contact_date = models.DateField(null=True, blank=True, db_index=True, db_column='contacted_date')
     contacted_by = models.CharField(max_length=100, blank=True)
     
     # Pledge tracking
