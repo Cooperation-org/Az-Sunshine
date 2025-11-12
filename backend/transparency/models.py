@@ -693,8 +693,10 @@ class CandidateStatementOfInterest(models.Model):
     candidate_name = models.CharField(max_length=255, db_index=True)
     office = models.ForeignKey(Office, on_delete=models.CASCADE, db_index=True)
     email = models.EmailField(blank=True, db_index=True)
-    phone = models.CharField(max_length=20, blank=True, db_index=True)  # NEW FIELD
+    phone = models.CharField(max_length=100, blank=True, db_index=True)  # NEW FIELD
     filing_date = models.DateField(db_index=True)
+    party = models.CharField(max_length=100, blank=True, null=True, db_index=True)
+
     
     # Manual tracking via Django admin
     contact_status = models.CharField(
