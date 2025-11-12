@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Play,
@@ -27,6 +28,11 @@ import {
   markCandidateContacted,
   markPledgeReceived,
 } from "../api/api";
+
+
+import { Upload, Download, FileText } from "lucide-react";
+import { useRef } from "react";
+
 
 // Scraping Modal Component
 function ScrapingModal({ isOpen, onClose }) {

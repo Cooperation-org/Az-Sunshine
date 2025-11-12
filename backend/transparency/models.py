@@ -688,31 +688,46 @@ class Report(models.Model):
 
 # ==================== PHASE 1: CANDIDATE TRACKING ====================
 
+
 class CandidateStatementOfInterest(models.Model):
     """Phase 1: Track SOI filings and candidate outreach"""
     candidate_name = models.CharField(max_length=255, db_index=True)
     office = models.ForeignKey(Office, on_delete=models.CASCADE, db_index=True)
-    email = models.EmailField(blank=True, db_index=True)
-    phone = models.CharField(max_length=20, blank=True, db_index=True)  # NEW FIELD
+    email = models.EmailField(blank=True, null=True, db_index=True)  # ✅ Already has phone
+    phone = models.CharField(max_length=20, blank=True, db_index=True)
+    
+    # ADD THIS: Party affiliation (scraped from SOI page)
+    party = models.CharField(max_length=100, blank=True, db_index=True)
+    
     filing_date = models.DateField(db_index=True)
     
-    # Manual tracking via Django admin
+    # ADD THIS: Source URL for tracking which SOI page they came from
+    source_url = models.URLField(blank=True, help_text="URL where SOI was scraped from")
+    
+    # CHANGE: Align status choices with project spec (Ben's workflow)
     contact_status = models.CharField(
         max_length=20,
         choices=[
-            ('uncontacted', 'Uncontacted'),
-            ('contacted', 'Email Sent'),
-            ('acknowledged', 'Acknowledged'),
+            ('uncontacted', 'Uncontacted - Need to Send Email'),  # ✅ Default per Ben
+            ('contacted', 'Contacted - Email Sent'),              # ✅ After manual send
+            ('no_email', 'No Email Available'),                   # NEW: For candidates without email
+            ('bounced', 'Email Bounced'),                          # NEW: If email fails
         ],
-        default='uncontacted',
+        default='uncontacted',  # ✅ Correct default per Ben's spec
         db_index=True
     )
-    contact_date = models.DateField(null=True, blank=True, db_index=True)
-    contacted_by = models.CharField(max_length=100, blank=True)
     
-    # Pledge tracking
+    # RENAME: contact_date -> contacted_date (for consistency)
+    contacted_date = models.DateField(null=True, blank=True, db_index=True, 
+                                      help_text="Date info packet was sent")
+    contacted_by = models.CharField(max_length=100, blank=True,
+                                   help_text="Person who sent the email")
+    
+    # RENAME: pledge_date -> pledge_received_date (clearer naming)
     pledge_received = models.BooleanField(default=False, db_index=True)
-    pledge_date = models.DateField(null=True, blank=True, db_index=True)
+    pledge_received_date = models.DateField(null=True, blank=True, db_index=True,
+                                            help_text="Date pledge was received")
+    
     notes = models.TextField(blank=True)
     
     # Link to Entity if they become a candidate committee
@@ -745,12 +760,35 @@ class CandidateStatementOfInterest(models.Model):
             models.Index(fields=['office', 'contact_status'], name='idx_soi_office_status'),
             models.Index(fields=['contact_status', 'pledge_received'], name='idx_soi_status_pledge'),
             
-            # Phone search
+            # Phone and email search
             models.Index(fields=['phone'], name='idx_soi_phone'),
+            models.Index(fields=['email'], name='idx_soi_email'),
+            
+            # Party filtering
+            models.Index(fields=['party'], name='idx_soi_party'),
         ]
     
     def __str__(self):
         return f"{self.candidate_name} - {self.office.name}"
+    
+    @property
+    def needs_contact(self):
+        """Helper for filtering uncontacted candidates with email"""
+        return self.contact_status == 'uncontacted' and self.email
+    
+    @property
+    def days_since_filing(self):
+        """Days since SOI was filed"""
+        from django.utils import timezone
+        return (timezone.now().date() - self.filing_date).days
+    
+    @property
+    def days_since_contacted(self):
+        """Days since candidate was contacted"""
+        from django.utils import timezone
+        if self.contacted_date:
+            return (timezone.now().date() - self.contacted_date).days
+        return None
 # ==================== PHASE 1 AGGREGATION MANAGER ====================
 
 class RaceAggregationManager:

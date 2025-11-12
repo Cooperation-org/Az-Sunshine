@@ -23,11 +23,16 @@ urlpatterns = [
     path('soi/scrape/trigger/', trigger_scraping, name='trigger-scraping'),
     path('soi/scrape/status/', scraping_status, name='scraping-status'),
     path('soi/scrape/history/', scraping_history, name='scraping-history'),
+    path('soi/upload-csv/', upload_soi_csv, name='upload_soi_csv'),
     path('soi/dashboard-stats/', soi_dashboard_stats, name='soi-dashboard-stats'),
     path('soi/candidates/', soi_candidates_list, name='soi-candidates-list'),
     
     # Backward compatibility alias
     path('soi_candidates/', soi_candidates_list, name='soi-candidates-alias'),
+    
+    
+    
+    
 
     # === Existing API endpoints ===
     path('races/ie-spending/', race_ie_spending, name='race-ie-spending'),

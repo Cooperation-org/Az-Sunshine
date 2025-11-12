@@ -660,6 +660,35 @@ export function formatDate(dateString) {
   });
 }
 
+
+/**
+ * Upload SOI CSV file
+ * POST /api/v1/soi/upload-csv/
+ */
+export async function uploadSOICSV(file) {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    console.log("📤 Uploading CSV file:", file.name);
+    
+    const res = await api.post("soi/upload-csv/", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    console.log("✅ CSV upload response:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error("❌ Failed to upload CSV:", error);
+    throw error;
+  }
+}
+
+
+
+
 //
 // ==================== DEFAULT EXPORT ====================
 //
