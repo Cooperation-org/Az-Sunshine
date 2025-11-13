@@ -231,3 +231,34 @@
 [22:06:14] ✅ Scraping completed successfully
 [22:06:14] Total candidates in database: 404
 [22:06:14] Created: 0, Updated: 0
+[09:41:32] 
+--- New Scrape Run Started ---
+[09:41:32] Scrape ID: scrape_20251113_094132
+[09:41:32] Running: python manage.py soi_scraper
+[09:42:51] Scraper return code: 0
+[09:42:51] Scraper output:
+[09:42:51]   Complete: [██████████████████████████████] 100% ✅ Done!
+[09:42:51]   ======================================================================
+[09:42:51]   ✅ SCRAPING & LOADING COMPLETE!
+[09:42:51]   ======================================================================
+[09:42:51]   📊 Total candidates scraped: 413
+[09:42:51]   ✨ Created in DB: 0
+[09:42:51]   🔄 Updated in DB: 0
+[09:42:51]   ⏭️  Skipped: 0
+[09:42:51]   ❌ Errors: 413
+[09:42:51]   ======================================================================
+[09:42:51]   📋 NEXT STEPS (Phase 1 Workflow):
+[09:42:51]   ======================================================================
+[09:42:51]   1️⃣  Review uncontacted candidates at /soi/
+[09:42:51]   2️⃣  Send info packets to candidate emails
+[09:42:51]   3️⃣  Mark as "contacted" after sending
+[09:42:51]   4️⃣  Monitor pledge receipts
+[09:42:51]   ======================================================================
+[09:42:51] 📊 Parsed stats: Created=0, Updated=0
+[09:42:51] Database check: 404 total candidates found
+[09:42:51]   - Uncontacted: 403
+[09:42:51]   - Contacted: 1
+[09:42:51]   - Pledged: 0
+[09:42:51] ✅ Scraping completed successfully
+[09:42:51] Total candidates in database: 404
+[09:42:51] Created: 0, Updated: 0
