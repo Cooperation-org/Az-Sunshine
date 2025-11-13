@@ -37,6 +37,37 @@ INSTALLED_APPS = [
     "transparency",
 ]
 
+
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+
+# CSRF Configuration
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
+    "http://localhost:5177",
+    "http://localhost:5178",
+    "http://localhost:5179",
+    "http://localhost:3000",
+    "http://167.172.30.134",
+    "http://167.172.30.134",
+    "https://167.172.30.134",
+    "https://c874829bc855.ngrok-free.app",
+]
+
+
+# Webhook Configuration  
+HOME_SCRAPER_WEBHOOK_URL = os.getenv(
+    "HOME_SCRAPER_WEBHOOK_URL", 
+    "https://c874829bc855.ngrok-free.app/trigger"
+)
+SOI_WEBHOOK_SECRET = os.getenv("SOI_WEBHOOK_SECRET", "change-this-secret-key")
+
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -107,25 +138,6 @@ USE_TZ = True
 # Static files
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-
-
-# CSRF Configuration
-CSRF_TRUSTED_ORIGINS = [
-    "http://167.172.30.134",
-    "https://167.172.30.134",
-    "https://c874829bc855.ngrok-free.app",
-]
-
-# Webhook Configuration  
-HOME_SCRAPER_WEBHOOK_URL = os.getenv(
-    "HOME_SCRAPER_WEBHOOK_URL", 
-    "https://c874829bc855.ngrok-free.app/trigger"
-)
-SOI_WEBHOOK_SECRET = os.getenv("SOI_WEBHOOK_SECRET", "change-this-secret-key")
 
 
 # Email configuration

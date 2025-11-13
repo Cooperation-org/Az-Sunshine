@@ -714,7 +714,7 @@ class CandidateStatementOfInterest(models.Model):
     
     # Pledge tracking
     pledge_received = models.BooleanField(default=False, db_index=True)
-    pledge_date = models.DateField(null=True, blank=True, db_index=True)
+    pledge_date = models.DateField(null=True, blank=True, db_index=True, db_column='pledge_received_date')
     notes = models.TextField(blank=True)
     
     # Link to Entity if they become a candidate committee
@@ -941,73 +941,3 @@ class Phase1DataValidator:
         
         return issues if issues else ["No data integrity issues found"]
 
-
-# ==================== USAGE EXAMPLES ====================
-
-"""
-PHASE 1 USAGE EXAMPLES:
-
-# In Django shell or views:
-
-from transparency.models import Committee, Entity, Office, Cycle
-from transparency.models import RaceAggregationManager, Phase1DataValidator
-
-# ===== BEN'S REQUIREMENT: "Aggregate total IE spending for/vs candidates" =====
-candidate = Committee.objects.get(committee_id=1234)
-ie_summary = candidate.get_ie_spending_summary()
-print(f"IE For: ${ie_summary['for']['total']}")
-print(f"IE Against: ${ie_summary['against']['total']}")
-print(f"Net IE: ${ie_summary['net']}")
-
-# ===== BEN'S REQUIREMENT: "Compare to grassroots threshold" =====
-threshold_comparison = candidate.compare_to_grassroots_threshold(5000)
-if threshold_comparison['exceeds_threshold_for']:
-    print(f"IE spending FOR exceeds threshold by {threshold_comparison['times_threshold_for']}x")
-
-# ===== BEN'S REQUIREMENT: "Aggregate IE donors by race and candidate" =====
-top_donors = candidate.get_ie_donors()
-for donor in top_donors[:10]:
-    print(f"{donor['entity__first_name']} {donor['entity__last_name']}: ${donor['total_contributed']}")
-
-# ===== BEN'S REQUIREMENT: "Pull donors to relevant IEs" =====
-ie_spending_breakdown = candidate.get_ie_spending_by_committee()
-for item in ie_spending_breakdown:
-    print(f"{item['committee__name__last_name']}: ${item['total']}")
-
-# ===== BEN'S REQUIREMENT: "Aggregate by race" =====
-office = Office.objects.get(name='Governor')
-cycle = Cycle.objects.get(name='2024')
-race_spending = RaceAggregationManager.get_race_ie_spending(office, cycle)
-for item in race_spending:
-    print(f"{item['subject_committee__name__first_name']} {item['subject_committee__name__last_name']}: ${item['total_ie']}")
-
-# ===== BEN'S REQUIREMENT: "Top donors by race" =====
-top_race_donors = RaceAggregationManager.get_top_ie_donors_by_race(office, cycle, limit=20)
-for donor in top_race_donors:
-    print(f"{donor['entity__first_name']} {donor['entity__last_name']}: ${donor['total_contributed']}")
-
-# ===== BEN'S REQUIREMENT: "Total IE spending funded indirectly by a donor" =====
-donor = Entity.objects.get(name_id=5678)
-donor_impact = donor.get_total_ie_impact_by_candidate()
-for impact in donor_impact:
-    print(f"Candidate: {impact['subject_committee__name__first_name']} {impact['subject_committee__name__last_name']}")
-    print(f"  Office: {impact['subject_committee__candidate_office__name']}")
-    print(f"  IE Total: ${impact['ie_total']}")
-    print(f"  For/Against: {'FOR' if impact['is_for_benefit'] else 'AGAINST'}")
-
-# ===== VALIDATE PHASE 1 DATA MAPPING =====
-validation = Phase1DataValidator.validate_ie_tracking()
-print(f"IE Transactions: {validation['total_ie_transactions']}")
-print(f"Candidates with IE: {validation['candidates_with_ie_spending']}")
-
-candidate_validation = Phase1DataValidator.validate_candidate_tracking()
-print(f"Total Committees: {candidate_validation['total_committees']}")
-print(f"Candidate Committees: {candidate_validation['candidate_committees']}")
-
-donor_validation = Phase1DataValidator.validate_donor_tracking()
-print(f"Unique Donors: {donor_validation['unique_donors']}")
-
-integrity_issues = Phase1DataValidator.check_data_integrity()
-for issue in integrity_issues:
-    print(f"⚠️ {issue}")
-"""

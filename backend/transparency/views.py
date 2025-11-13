@@ -1,8 +1,6 @@
-# views.py for Arizona Sunshine Transparency Project - PHASE 1
-# API endpoints for React frontend
 
-from django.db.models import Sum, Count, Q, F, Prefetch
 from django.utils import timezone
+from django.db.models import Sum, Count, Q, Prefetch
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -10,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from decimal import Decimal
 from datetime import datetime, timedelta
+import logging
 
 from .models import (
     Committee, Entity, Transaction, Office, Cycle, Party,
@@ -22,6 +21,9 @@ from .serializers import (
     TransactionSerializer, CandidateSOISerializer,
     OfficeSerializer, CycleSerializer, RaceAggregationSerializer
 )
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 
 # ==================== PAGINATION ====================
@@ -47,7 +49,7 @@ class CandidateSOIViewSet(viewsets.ModelViewSet):
     """
     queryset = CandidateStatementOfInterest.objects.all()
     serializer_class = CandidateSOISerializer
-    permission_classes = [AllowAny]  # Adjust based on your auth requirements
+    permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
@@ -56,9 +58,9 @@ class CandidateSOIViewSet(viewsets.ModelViewSet):
         )
         
         # Filter by contact status
-        status = self.request.query_params.get('status', None)
-        if status:
-            queryset = queryset.filter(contact_status=status)
+        status_param = self.request.query_params.get('status', None)
+        if status_param:
+            queryset = queryset.filter(contact_status=status_param)
         
         # Filter by pledge received
         pledge = self.request.query_params.get('pledge_received', None)
@@ -213,10 +215,7 @@ class CommitteeViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=True, methods=['get'])
     def ie_spending_summary(self, request, pk=None):
-        """
-        Phase 1 Requirement 2a: Aggregate IE spending for/against candidate
-        Ben: "Aggregate by entity, race, and candidate"
-        """
+        """Phase 1 Requirement 2a: Aggregate IE spending for/against candidate"""
         committee = self.get_object()
         summary = committee.get_ie_spending_summary()
         
@@ -230,10 +229,7 @@ class CommitteeViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=True, methods=['get'])
     def ie_spending_by_committee(self, request, pk=None):
-        """
-        Phase 1 Requirement 2b: Pull donors to relevant IEs
-        Shows which committees spent IE money on this candidate
-        """
+        """Phase 1 Requirement 2b: Which committees spent IE money on this candidate"""
         committee = self.get_object()
         breakdown = committee.get_ie_spending_by_committee()
         
@@ -245,10 +241,7 @@ class CommitteeViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=True, methods=['get'])
     def ie_donors(self, request, pk=None):
-        """
-        Phase 1 Requirement 2c: Aggregate IE donors by race and candidate
-        Ben: "Pull donors (individual and super PAC) to relevant IEs"
-        """
+        """Phase 1 Requirement 2c: Aggregate IE donors by race and candidate"""
         committee = self.get_object()
         donors = committee.get_ie_donors()
         
@@ -260,10 +253,7 @@ class CommitteeViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=True, methods=['get'])
     def grassroots_threshold(self, request, pk=None):
-        """
-        Phase 1 Requirement 2d-2e: Compare to grassroots threshold
-        Default AZ threshold is $5,000
-        """
+        """Phase 1 Requirement 2d-2e: Compare to grassroots threshold"""
         committee = self.get_object()
         threshold = Decimal(request.query_params.get('threshold', '5000'))
         
@@ -292,37 +282,35 @@ class CommitteeViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def top(self, request):
-        """Top committees by IE spending (for frontend compatibility)"""
+        """Top committees by IE spending"""
         limit = int(request.query_params.get('limit', 10))
         
-        # Get committees that have IE spending (either for or against)
         committees = Committee.objects.filter(
             candidate__isnull=False
         ).annotate(
             total_ie_for=Sum(
                 'subject_of_ies__amount',
-                filter=Q(subject_of_ies__is_for_benefit=True,
-                        subject_of_ies__deleted=False)
+                filter=Q(subject_of_ies__is_for_benefit=True, subject_of_ies__deleted=False)
             ),
             total_ie_against=Sum(
                 'subject_of_ies__amount',
-                filter=Q(subject_of_ies__is_for_benefit=False,
-                        subject_of_ies__deleted=False)
+                filter=Q(subject_of_ies__is_for_benefit=False, subject_of_ies__deleted=False)
             )
         )
         
-        # Calculate total IE spending
+        # Calculate total and sort
+        committees_with_totals = []
         for committee in committees:
-            committee.total = (committee.total_ie_for or Decimal('0')) + (committee.total_ie_against or Decimal('0'))
+            total = (committee.total_ie_for or Decimal('0')) + (committee.total_ie_against or Decimal('0'))
+            committees_with_totals.append((committee, total))
         
-        # Sort by total IE spending and take top N
-        top_committees = sorted(committees, key=lambda c: c.total, reverse=True)[:limit]
+        committees_with_totals.sort(key=lambda x: x[1], reverse=True)
+        top_committees = [c[0] for c in committees_with_totals[:limit]]
         
         serializer = self.get_serializer(top_committees, many=True)
-        # Add total field to each result
         result_data = serializer.data
-        for i, committee in enumerate(top_committees):
-            result_data[i]['total'] = float(committee.total)
+        for i, (committee, total) in enumerate(committees_with_totals[:limit]):
+            result_data[i]['total'] = float(total)
             result_data[i]['name'] = committee.name.full_name if committee.name else 'Unknown'
         
         return Response(result_data)
@@ -331,10 +319,7 @@ class CommitteeViewSet(viewsets.ReadOnlyModelViewSet):
 # ==================== PHASE 1: ENTITY/DONOR VIEWS ====================
 
 class EntityViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Entity (donor/individual/organization) data
-    Phase 1: Track donor impact through IE committees
-    """
+    """Entity (donor/individual/organization) data"""
     queryset = Entity.objects.all()
     serializer_class = EntitySerializer
     permission_classes = [AllowAny]
@@ -347,8 +332,7 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet):
         search = self.request.query_params.get('search', None)
         if search:
             queryset = queryset.filter(
-                Q(last_name__icontains=search) |
-                Q(first_name__icontains=search)
+                Q(last_name__icontains=search) | Q(first_name__icontains=search)
             )
         
         # Filter by entity type
@@ -374,10 +358,7 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=True, methods=['get'])
     def ie_impact_by_candidate(self, request, pk=None):
-        """
-        Phase 1 Requirement 2e: Total IE spending funded indirectly by donor
-        Ben: "Compare total IE spending funded indirectly by a given donor or entity"
-        """
+        """Total IE spending funded indirectly by donor"""
         entity = self.get_object()
         impact = entity.get_total_ie_impact_by_candidate()
         
@@ -402,26 +383,28 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def top_donors(self, request):
         """Top donors by total contribution amount"""
-        limit = int(request.query_params.get('limit', 50))
-        cycle_id = request.query_params.get('cycle', None)
-        
-        filters = {
-            'transactions__transaction_type__income_expense_neutral': 1,
-            'transactions__deleted': False
-        }
-        
-        if cycle_id:
-            filters['transactions__committee__election_cycle_id'] = cycle_id
-        
-        top_donors = Entity.objects.filter(
-            **filters
-        ).annotate(
-            total_contributed=Sum('transactions__amount'),
-            num_contributions=Count('transactions__transaction_id')
-        ).order_by('-total_contributed')[:limit]
-        
-        serializer = self.get_serializer(top_donors, many=True)
-        return Response(serializer.data)
+        try:
+            limit = int(request.query_params.get('limit', 50))
+            cycle_id = request.query_params.get('cycle', None)
+            
+            filters = Q(
+                transactions__transaction_type__income_expense_neutral=1,
+                transactions__deleted=False
+            )
+            
+            if cycle_id:
+                filters &= Q(transactions__committee__election_cycle_id=cycle_id)
+            
+            top_donors = Entity.objects.filter(filters).annotate(
+                total_contributed=Sum('transactions__amount'),
+                num_contributions=Count('transactions__transaction_id', distinct=True)
+            ).order_by('-total_contributed')[:limit]
+            
+            serializer = self.get_serializer(top_donors, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Top donors error: {e}", exc_info=True)
+            return Response([], status=status.HTTP_200_OK)
 
 
 # ==================== PHASE 1: RACE AGGREGATION ====================
@@ -429,15 +412,7 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def race_ie_spending(request):
-    """
-    Phase 1 Requirement: Aggregate by race
-    Ben: "Aggregate by entity, race, and candidate"
-    
-    Query params:
-    - office: office_id (required)
-    - cycle: cycle_id (required)
-    - party: party_id (optional)
-    """
+    """Phase 1 Requirement: Aggregate by race"""
     office_id = request.GET.get('office')
     cycle_id = request.GET.get('cycle')
     party_id = request.GET.get('party', None)
@@ -458,9 +433,7 @@ def race_ie_spending(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    race_spending = RaceAggregationManager.get_race_ie_spending(
-        office, cycle, party
-    )
+    race_spending = RaceAggregationManager.get_race_ie_spending(office, cycle, party)
     
     return Response({
         'office': office.name,
@@ -473,15 +446,7 @@ def race_ie_spending(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def race_top_donors(request):
-    """
-    Phase 1 Requirement: Top IE donors by race
-    Ben: "Aggregate IE donors by race and candidate"
-    
-    Query params:
-    - office: office_id (required)
-    - cycle: cycle_id (required)
-    - limit: number of donors to return (default 20)
-    """
+    """Phase 1 Requirement: Top IE donors by race"""
     office_id = request.GET.get('office')
     cycle_id = request.GET.get('cycle')
     limit = int(request.GET.get('limit', 20))
@@ -501,9 +466,7 @@ def race_top_donors(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    top_donors = RaceAggregationManager.get_top_ie_donors_by_race(
-        office, cycle, limit
-    )
+    top_donors = RaceAggregationManager.get_top_ie_donors_by_race(office, cycle, limit)
     
     return Response({
         'office': office.name,
@@ -515,9 +478,7 @@ def race_top_donors(request):
 # ==================== PHASE 1: TRANSACTION VIEWS ====================
 
 class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Transaction data (contributions and expenditures)
-    """
+    """Transaction data (contributions and expenditures)"""
     queryset = Transaction.objects.filter(deleted=False)
     serializer_class = TransactionSerializer
     permission_classes = [AllowAny]
@@ -530,34 +491,29 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
             'subject_committee', 'subject_committee__name'
         )
         
-        # Filter by committee
+        # Apply filters
         committee_id = self.request.query_params.get('committee', None)
         if committee_id:
             queryset = queryset.filter(committee_id=committee_id)
         
-        # Filter by entity (donor/payee)
         entity_id = self.request.query_params.get('entity', None)
         if entity_id:
             queryset = queryset.filter(entity_id=entity_id)
         
-        # Filter by transaction type
         txn_type = self.request.query_params.get('type', None)
         if txn_type == 'contributions':
             queryset = queryset.filter(transaction_type__income_expense_neutral=1)
         elif txn_type == 'expenses':
             queryset = queryset.filter(transaction_type__income_expense_neutral=2)
         
-        # Filter IE transactions only
         ie_only = self.request.query_params.get('ie_only', None)
         if ie_only == 'true':
             queryset = queryset.filter(subject_committee__isnull=False)
         
-        # Filter by subject (for IE spending)
         subject_id = self.request.query_params.get('subject_committee', None)
         if subject_id:
             queryset = queryset.filter(subject_committee_id=subject_id)
         
-        # Filter by date range
         date_from = self.request.query_params.get('date_from', None)
         date_to = self.request.query_params.get('date_to', None)
         if date_from:
@@ -565,7 +521,6 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
         if date_to:
             queryset = queryset.filter(transaction_date__lte=date_to)
         
-        # Filter by amount range
         amount_min = self.request.query_params.get('amount_min', None)
         amount_max = self.request.query_params.get('amount_max', None)
         if amount_min:
@@ -573,7 +528,6 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
         if amount_max:
             queryset = queryset.filter(amount__lte=amount_max)
         
-        # Order by
         order_by = self.request.query_params.get('order_by', '-transaction_date')
         queryset = queryset.order_by(order_by)
         
@@ -582,9 +536,7 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def ie_transactions(self, request):
         """All independent expenditure transactions"""
-        ie_txns = self.get_queryset().filter(
-            subject_committee__isnull=False
-        )
+        ie_txns = self.get_queryset().filter(subject_committee__isnull=False)
         
         page = self.paginate_queryset(ie_txns)
         serializer = self.get_serializer(page, many=True)
@@ -612,7 +564,7 @@ class OfficeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Office.objects.all()
     serializer_class = OfficeSerializer
     permission_classes = [AllowAny]
-    pagination_class = None  # Return all offices
+    pagination_class = None
 
 
 class CycleViewSet(viewsets.ReadOnlyModelViewSet):
@@ -620,7 +572,7 @@ class CycleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Cycle.objects.all().order_by('-begin_date')
     serializer_class = CycleSerializer
     permission_classes = [AllowAny]
-    pagination_class = None  # Return all cycles
+    pagination_class = None
 
 
 # ==================== PHASE 1: DATA VALIDATION ====================
@@ -628,10 +580,7 @@ class CycleViewSet(viewsets.ReadOnlyModelViewSet):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def validate_phase1_data(request):
-    """
-    Data validation endpoint for Phase 1
-    Checks data integrity per Ben's requirements
-    """
+    """Data validation endpoint for Phase 1"""
     ie_validation = Phase1DataValidator.validate_ie_tracking()
     candidate_validation = Phase1DataValidator.validate_candidate_tracking()
     donor_validation = Phase1DataValidator.validate_donor_tracking()
@@ -651,54 +600,70 @@ def validate_phase1_data(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def dashboard_summary(request):
-    """
-    High-level stats for Phase 1 dashboard
-    """
-    # Get current cycle (most recent)
-    current_cycle = Cycle.objects.order_by('-begin_date').first()
-    
-    # Candidate committees count
-    candidate_count = Committee.objects.filter(
-        candidate__isnull=False
-    ).count()
-    
-    # Total IE spending
-    ie_spending = Transaction.objects.filter(
-        subject_committee__isnull=False,
-        deleted=False
-    ).aggregate(total=Sum('amount'))
-    
-    # Candidates exceeding grassroots threshold
-    candidates_over_threshold = 0
-    threshold = Decimal('5000')
-    
-    # Check all candidate committees for threshold
-    for committee in Committee.objects.filter(candidate__isnull=False):
-        ie_for = committee.get_ie_for()
-        ie_against = committee.get_ie_against()
-        if ie_for > threshold or ie_against > threshold:
-            candidates_over_threshold += 1
-    
-    # SOI stats
-    soi_stats = {
-        'total_filings': CandidateStatementOfInterest.objects.count(),
-        'uncontacted': CandidateStatementOfInterest.objects.filter(
-            contact_status='uncontacted'
-        ).count(),
-        'pledges_received': CandidateStatementOfInterest.objects.filter(
-            pledge_received=True
-        ).count(),
-    }
-    
-    return Response({
-        'current_cycle': current_cycle.name if current_cycle else None,
-        'candidate_committees': candidate_count,
-        'total_ie_spending': ie_spending['total'] or Decimal('0.00'),
-        'candidates_over_grassroots_threshold': candidates_over_threshold,
-        'grassroots_threshold': threshold,
-        'soi_tracking': soi_stats,
-        'last_updated': timezone.now().isoformat()
-    })
+    """High-level stats for Phase 1 dashboard - OPTIMIZED"""
+    try:
+        current_cycle = Cycle.objects.order_by('-begin_date').first()
+        candidate_count = Committee.objects.filter(candidate__isnull=False).count()
+        
+        ie_spending = Transaction.objects.filter(
+            subject_committee__isnull=False,
+            deleted=False
+        ).aggregate(total=Sum('amount'))
+        
+        # OPTIMIZED: Single query for threshold calculation
+        threshold = Decimal('5000')
+        candidates_over_threshold = Committee.objects.filter(
+            candidate__isnull=False
+        ).annotate(
+            ie_for_total=Sum(
+                'subject_of_ies__amount',
+                filter=Q(subject_of_ies__is_for_benefit=True, subject_of_ies__deleted=False)
+            ),
+            ie_against_total=Sum(
+                'subject_of_ies__amount',
+                filter=Q(subject_of_ies__is_for_benefit=False, subject_of_ies__deleted=False)
+            )
+        ).filter(
+            Q(ie_for_total__gt=threshold) | Q(ie_against_total__gt=threshold)
+        ).count()
+        
+        # SOI stats with error handling
+        try:
+            soi_stats = {
+                'total_filings': CandidateStatementOfInterest.objects.count(),
+                'uncontacted': CandidateStatementOfInterest.objects.filter(
+                    contact_status='uncontacted'
+                ).count(),
+                'pledges_received': CandidateStatementOfInterest.objects.filter(
+                    pledge_received=True
+                ).count(),
+            }
+        except Exception as soi_error:
+            logger.error(f"Error getting SOI stats: {soi_error}")
+            soi_stats = {'total_filings': 0, 'uncontacted': 0, 'pledges_received': 0}
+        
+        return Response({
+            'current_cycle': current_cycle.name if current_cycle else None,
+            'candidate_committees': candidate_count,
+            'total_ie_spending': float(ie_spending['total'] or Decimal('0.00')),
+            'candidates_over_grassroots_threshold': candidates_over_threshold,
+            'grassroots_threshold': float(threshold),
+            'soi_tracking': soi_stats,
+            'last_updated': timezone.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Dashboard summary error: {e}", exc_info=True)
+        return Response({
+            'error': str(e),
+            'current_cycle': None,
+            'candidate_committees': 0,
+            'total_ie_spending': 0,
+            'candidates_over_grassroots_threshold': 0,
+            'grassroots_threshold': 5000,
+            'soi_tracking': {'total_filings': 0, 'uncontacted': 0, 'pledges_received': 0},
+            'last_updated': timezone.now().isoformat()
+        }, status=status.HTTP_200_OK)
 
 
 # ==================== FRONTEND ADAPTER ENDPOINTS ====================
@@ -706,45 +671,32 @@ def dashboard_summary(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def metrics(request):
-    """
-    Adapter endpoint for frontend metrics call
-    Maps to dashboard_summary with different format
-    """
-    # Get current cycle (most recent) - handle None case
+    """Adapter endpoint for frontend metrics call"""
     current_cycle = Cycle.objects.order_by('-begin_date').first()
     
-    # Candidate committees - count all if no cycle
     if current_cycle:
         candidate_count = Committee.objects.filter(
             candidate__isnull=False,
             election_cycle=current_cycle
         ).count()
         
-        # Total IE spending in current cycle
         ie_spending = Transaction.objects.filter(
             subject_committee__isnull=False,
             subject_committee__election_cycle=current_cycle,
             deleted=False
         ).aggregate(total=Sum('amount'))
     else:
-        # No cycle - count all candidate committees
-        candidate_count = Committee.objects.filter(
-            candidate__isnull=False
-        ).count()
-        
-        # Total IE spending (all cycles)
+        candidate_count = Committee.objects.filter(candidate__isnull=False).count()
         ie_spending = Transaction.objects.filter(
             subject_committee__isnull=False,
             deleted=False
         ).aggregate(total=Sum('amount'))
     
-    # Count IE transactions (all cycles)
     num_expenditures = Transaction.objects.filter(
         subject_committee__isnull=False,
         deleted=False
     ).count()
     
-    # Transform to match frontend expectations
     return Response({
         'total_expenditures': float(ie_spending['total'] or Decimal('0.00')),
         'num_candidates': candidate_count,
@@ -756,64 +708,57 @@ def metrics(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def donors_top(request):
-    """Adapter endpoint: /api/donors/top/ -> maps to entities/top_donors/"""
-    limit = int(request.query_params.get('limit', 50))
-    cycle_id = request.query_params.get('cycle', None)
-    
-    filters = {
-        'transactions__transaction_type__income_expense_neutral': 1,
-        'transactions__deleted': False
-    }
-    
-    if cycle_id:
-        filters['transactions__committee__election_cycle_id'] = cycle_id
-    
-    top_donors = Entity.objects.filter(
-        **filters
-    ).annotate(
-        total_contributed=Sum('transactions__amount'),
-        num_contributions=Count('transactions__transaction_id')
-    ).order_by('-total_contributed')[:limit]
-    
-    result = []
-    for donor in top_donors:
-        result.append({
-            'name': donor.full_name,
-            'total_contribution': float(donor.total_contributed or 0),
-            'num_contributions': donor.num_contributions
-        })
-    
-    return Response(result)
+    """Top donors endpoint - OPTIMIZED"""
+    try:
+        limit = int(request.query_params.get('limit', 50))
+        cycle_id = request.query_params.get('cycle', None)
+        
+        filters = Q(
+            transactions__transaction_type__income_expense_neutral=1,
+            transactions__deleted=False
+        )
+        
+        if cycle_id:
+            filters &= Q(transactions__committee__election_cycle_id=cycle_id)
+        
+        top_donors = Entity.objects.filter(filters).annotate(
+            total_contributed=Sum('transactions__amount'),
+            num_contributions=Count('transactions__transaction_id', distinct=True)
+        ).order_by('-total_contributed')[:limit]
+        
+        result = [
+            {
+                'name': donor.full_name,
+                'total_contribution': float(donor.total_contributed or 0),
+                'num_contributions': donor.num_contributions or 0
+            }
+            for donor in top_donors
+        ]
+        
+        return Response(result)
+        
+    except Exception as e:
+        logger.error(f"Top donors error: {e}", exc_info=True)
+        return Response([], status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def candidates_list(request):
-    """
-    Adapter endpoint: /api/candidates/ -> maps to committees with candidates
-    Returns candidates with IE spending totals
-    """
-    from django.db.models import Sum, Q
-    
-    # Get candidate committees
-    queryset = Committee.objects.filter(
-        candidate__isnull=False
-    ).select_related(
-        'name', 'candidate', 'candidate_party', 'candidate_office',
-        'election_cycle'
+    """Adapter endpoint: /api/candidates/ -> maps to committees with candidates"""
+    queryset = Committee.objects.filter(candidate__isnull=False).select_related(
+        'name', 'candidate', 'candidate_party', 'candidate_office', 'election_cycle'
     )
     
-    # Filter by office if provided
+    # Apply filters
     office_id = request.query_params.get('office', None)
     if office_id:
         queryset = queryset.filter(candidate_office_id=office_id)
     
-    # Filter by party if provided
     party_id = request.query_params.get('party', None)
     if party_id:
         queryset = queryset.filter(candidate_party_id=party_id)
     
-    # Filter by cycle if provided
     cycle_id = request.query_params.get('cycle', None)
     if cycle_id:
         queryset = queryset.filter(election_cycle_id=cycle_id)
@@ -822,13 +767,11 @@ def candidates_list(request):
     queryset = queryset.annotate(
         ie_total_for=Sum(
             'subject_of_ies__amount',
-            filter=Q(subject_of_ies__is_for_benefit=True,
-                   subject_of_ies__deleted=False)
+            filter=Q(subject_of_ies__is_for_benefit=True, subject_of_ies__deleted=False)
         ),
         ie_total_against=Sum(
             'subject_of_ies__amount',
-            filter=Q(subject_of_ies__is_for_benefit=False,
-                     subject_of_ies__deleted=False)
+            filter=Q(subject_of_ies__is_for_benefit=False, subject_of_ies__deleted=False)
         )
     )
     
@@ -845,7 +788,7 @@ def candidates_list(request):
                 entity=committee.candidate
             ).order_by('-filing_date').first()
             contacted = soi.contact_status == 'contacted' if soi else False
-            contacted_at = soi.contacted_at.isoformat() if soi and soi.contacted_at else None
+            contacted_at = soi.contact_date.isoformat() if soi and soi.contact_date else None
         except:
             contacted = False
             contacted_at = None
@@ -870,13 +813,7 @@ def candidates_list(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def donors_list(request):
-    """
-    Adapter endpoint: /api/donors/ -> maps to entities with contribution data
-    Returns donors with total contributions and linked committees count
-    """
-    from django.db.models import Sum, Count, Q
-    
-    # Get entities that have made contributions
+    """Adapter endpoint: /api/donors/ -> maps to entities with contribution data"""
     queryset = Entity.objects.filter(
         transactions__transaction_type__income_expense_neutral=1,
         transactions__deleted=False
@@ -890,9 +827,7 @@ def donors_list(request):
     search = request.query_params.get('search', None)
     if search:
         queryset = queryset.filter(
-            Q(full_name__icontains=search) |
-            Q(last_name__icontains=search) |
-            Q(first_name__icontains=search)
+            Q(last_name__icontains=search) | Q(first_name__icontains=search)
         )
     
     # Pagination
@@ -933,10 +868,7 @@ def donors_list(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def expenditures_list(request):
-    """
-    Adapter endpoint: /api/expenditures/ -> maps to transactions with IE filter
-    """
-    # Get IE transactions (expenses with subject_committee)
+    """Adapter endpoint: /api/expenditures/ -> maps to transactions with IE filter"""
     queryset = Transaction.objects.filter(
         subject_committee__isnull=False,
         transaction_type__income_expense_neutral=2,
@@ -953,7 +885,6 @@ def expenditures_list(request):
     
     if page is not None:
         serializer = TransactionSerializer(page, many=True)
-        # Transform to match frontend expectations
         result_data = []
         for item in serializer.data:
             subject_comm = item.get('subject_committee', {})
@@ -982,13 +913,23 @@ def expenditures_list(request):
     result_data = []
     for item in serializer.data:
         subject_comm = item.get('subject_committee', {})
+        memo = item.get('memo', '').strip()
+        is_for_benefit = item.get('is_for_benefit')
+        candidate_name = subject_comm.get('candidate_name') if subject_comm else 'Candidate'
+        
+        if memo:
+            purpose = memo
+        else:
+            support_type = 'Support' if is_for_benefit else 'Oppose'
+            purpose = f"{support_type} {candidate_name}"
+        
         result_data.append({
             'date': item.get('transaction_date'),
             'amount': item.get('amount'),
-            'support_oppose': 'Support' if item.get('is_for_benefit') else 'Oppose',
+            'support_oppose': 'Support' if is_for_benefit else 'Oppose',
             'ie_committee': {'name': item.get('committee', {}).get('name', 'Unknown')},
-            'candidate_name': subject_comm.get('candidate_name') if subject_comm else 'N/A',
-            'purpose': item.get('memo') or (('Support' if item.get('is_for_benefit') else 'Oppose') + ' ' + (subject_comm.get('candidate_name') if subject_comm else 'Candidate'))
+            'candidate_name': candidate_name,
+            'purpose': purpose
         })
     return Response({'results': result_data})
 
@@ -1004,13 +945,11 @@ def committees_top(request):
     ).annotate(
         total_ie_for=Sum(
             'subject_of_ies__amount',
-            filter=Q(subject_of_ies__is_for_benefit=True,
-                    subject_of_ies__deleted=False)
+            filter=Q(subject_of_ies__is_for_benefit=True, subject_of_ies__deleted=False)
         ),
         total_ie_against=Sum(
             'subject_of_ies__amount',
-            filter=Q(subject_of_ies__is_for_benefit=False,
-                    subject_of_ies__deleted=False)
+            filter=Q(subject_of_ies__is_for_benefit=False, subject_of_ies__deleted=False)
         )
     )
     
