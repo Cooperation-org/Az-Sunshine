@@ -9,15 +9,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import {
-  getExpenditures,
-  getTopCommittees,
-  getTopDonors,
-  getDashboardSummary,
-} from "../api/api";
 import { Link } from "react-router-dom";
 import { Bell, Search } from "lucide-react";
 import Sidebar from "../components/Sidebar";
+import api from "../api/api";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -54,116 +49,116 @@ const CommitteeItemSkeleton = () => (
 );
 
 export default function Dashboard() {
+  // Separate loading states for progressive loading
   const [metrics, setMetrics] = useState({});
-  const [topCommittees, setTopCommittees] = useState([]);
-  const [topDonors, setTopDonors] = useState([]);
-  const [expenditures, setExpenditures] = useState([]);
+  const [chartsData, setChartsData] = useState(null);
+  const [recentExpenditures, setRecentExpenditures] = useState([]);
+  
   const [loading, setLoading] = useState({
     summary: true,
-    committees: true,
-    donors: true,
+    charts: true,
     expenditures: true,
   });
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        console.log("🔄 Loading dashboard data from backend...");
-        
-        // Load summary first (critical data)
-        getDashboardSummary()
-          .then((summaryData) => {
-            console.log("✅ Summary:", summaryData);
-            setMetrics({
-              total_expenditures: parseFloat(summaryData.total_ie_spending || 0),
-              num_candidates: summaryData.candidate_committees || 0,
-              num_expenditures: 0, // Will update when expenditures load
-              soi_stats: summaryData.soi_tracking || {}
-            });
-            setLoading(prev => ({ ...prev, summary: false }));
-          })
-          .catch(err => {
-            console.error("❌ Summary load error:", err);
-            setLoading(prev => ({ ...prev, summary: false }));
-          });
-
-        // Load secondary data in parallel (non-blocking)
-        Promise.all([
-          getTopCommittees(),
-          getTopDonors(),
-          getExpenditures({ page_size: 100 }),
-        ]).then(([committees, donors, exp]) => {
-          console.log("✅ Top Committees:", committees);
-          console.log("✅ Top Donors:", donors);
-          console.log("✅ Expenditures:", exp);
-          
-          setTopCommittees(Array.isArray(committees) ? committees : committees.results || []);
-          setLoading(prev => ({ ...prev, committees: false }));
-          
-          setTopDonors(Array.isArray(donors) ? donors : donors.results || []);
-          setLoading(prev => ({ ...prev, donors: false }));
-          
-          const expData = exp.results || exp || [];
-          setExpenditures(expData);
-          setMetrics(prev => ({ ...prev, num_expenditures: exp.count || 0 }));
-          setLoading(prev => ({ ...prev, expenditures: false }));
-        }).catch(err => {
-          console.error("❌ Secondary data load error:", err);
-          setLoading({ summary: false, committees: false, donors: false, expenditures: false });
-        });
-        
-      } catch (err) {
-        console.error("❌ Dashboard load error:", err);
-        console.error("Error details:", err.response?.data || err.message);
-        setLoading({ summary: false, committees: false, donors: false, expenditures: false });
-      }
-    }
-    loadData();
+    loadDashboard();
   }, []);
 
-  const committeesToShow = topCommittees.slice(0, 10);
-  const donorsToShow = topDonors.slice(0, 10);
+  async function loadDashboard() {
+    console.log("🚀 Loading dashboard with progressive enhancement...");
+    
+    // STEP 1: Load critical metrics first (fastest)
+    loadSummary();
+    
+    // STEP 2: Load charts data after 100ms (allows UI to render)
+    setTimeout(() => loadChartsData(), 100);
+    
+    // STEP 3: Load recent expenditures last (nice-to-have)
+    setTimeout(() => loadRecentExpenditures(), 200);
+  }
 
-  const donorData = {
-    labels: donorsToShow.map((d) => d.name || d.full_name || "Unknown"),
-    datasets: [
-      {
-        label: "Total Contributions (USD)",
-        data: donorsToShow.map((d) => parseFloat(d.total_contribution || d.total_contributed || 0)),
-        backgroundColor: "rgba(124, 107, 166, 0.6)",
-        borderColor: "rgba(124, 107, 166, 1)",
-        borderWidth: 1,
-        borderRadius: 6,
-        barThickness: 30,
-      },
-    ],
-  };
+  async function loadSummary() {
+    try {
+      console.log("📊 Loading summary metrics...");
+      const data = await api.get('dashboard/summary-optimized/');
+      
+      setMetrics({
+        total_expenditures: parseFloat(data.data.total_ie_spending || 0),
+        num_candidates: data.data.candidate_committees || 0,
+        num_expenditures: data.data.num_expenditures || 0,
+        soi_stats: data.data.soi_tracking || {}
+      });
+      
+      setLoading(prev => ({ ...prev, summary: false }));
+      console.log("✅ Summary loaded", data.data.cached ? "(from cache)" : "(fresh)");
+      
+    } catch (err) {
+      console.error("❌ Summary load error:", err);
+      setLoading(prev => ({ ...prev, summary: false }));
+    }
+  }
 
-  const totalsByType = expenditures.reduce((acc, e) => {
-    const key = e.support_oppose || "Unknown";
-    acc[key] = (acc[key] || 0) + Number(e.amount || 0);
-    return acc;
-  }, {});
+  async function loadChartsData() {
+    try {
+      console.log("📈 Loading charts data...");
+      const data = await api.get('dashboard/charts-data/');
+      
+      setChartsData(data.data);
+      setLoading(prev => ({ ...prev, charts: false }));
+      console.log("✅ Charts loaded");
+      
+    } catch (err) {
+      console.error("❌ Charts load error:", err);
+      setChartsData({ top_committees: [], top_donors: [], support_oppose: { support: 0, oppose: 0 } });
+      setLoading(prev => ({ ...prev, charts: false }));
+    }
+  }
 
-  const supportAmount = totalsByType["Support"] || 0;
-  const opposeAmount = totalsByType["Oppose"] || 0;
+  async function loadRecentExpenditures() {
+    try {
+      console.log("📋 Loading recent expenditures...");
+      const data = await api.get('dashboard/recent-expenditures/');
+      
+      setRecentExpenditures(data.data);
+      setLoading(prev => ({ ...prev, expenditures: false }));
+      console.log("✅ Expenditures loaded");
+      
+    } catch (err) {
+      console.error("❌ Expenditures load error:", err);
+      setRecentExpenditures([]);
+      setLoading(prev => ({ ...prev, expenditures: false }));
+    }
+  }
+
+  // Prepare chart data
+  const donorData = chartsData?.top_donors?.length > 0 ? {
+    labels: chartsData.top_donors.map(d => d.name_full || "Unknown"),
+    datasets: [{
+      label: "Total Contributions (USD)",
+      data: chartsData.top_donors.map(d => parseFloat(d.total_contributed || 0)),
+      backgroundColor: "rgba(124, 107, 166, 0.6)",
+      borderColor: "rgba(124, 107, 166, 1)",
+      borderWidth: 1,
+      borderRadius: 6,
+      barThickness: 30,
+    }],
+  } : null;
+
+  const supportAmount = chartsData?.support_oppose?.support || 0;
+  const opposeAmount = chartsData?.support_oppose?.oppose || 0;
   const totalAmount = supportAmount + opposeAmount;
   const supportPercent = totalAmount > 0 ? ((supportAmount / totalAmount) * 100).toFixed(0) : 50;
   const opposePercent = totalAmount > 0 ? ((opposeAmount / totalAmount) * 100).toFixed(0) : 50;
 
   const pieData = {
     labels: ["Support", "Oppose"],
-    datasets: [
-      {
-        data: [supportAmount, opposeAmount],
-        backgroundColor: ["#5B4A7D", "#E5E7EB"],
-        borderWidth: 0,
-        borderRadius: 4,
-      },
-    ],
+    datasets: [{
+      data: [supportAmount, opposeAmount],
+      backgroundColor: ["#5B4A7D", "#E5E7EB"],
+      borderWidth: 0,
+      borderRadius: 4,
+    }],
   };
-
-  const latestExpenditures = expenditures.slice(0, 4);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -197,9 +192,9 @@ export default function Dashboard() {
               <h2 className="text-white text-xl font-bold mb-1">Top 10 Donors</h2>
               <p className="text-white/70 text-sm mb-6">Total Contribution</p>
               <div className="h-[240px] bg-white/5 rounded-xl p-4">
-                {loading.donors ? (
+                {loading.charts ? (
                   <ChartSkeleton />
-                ) : donorsToShow.length === 0 ? (
+                ) : !donorData ? (
                   <div className="flex items-center justify-center h-full text-white/50">
                     No donor data available
                   </div>
@@ -238,11 +233,11 @@ export default function Dashboard() {
               <h2 className="text-gray-900 text-xl font-bold mb-1">Support vs Oppose</h2>
               <p className="text-gray-500 text-sm mb-6">Spending</p>
               <div className="flex justify-center items-center h-[240px]">
-                {loading.expenditures ? (
+                {loading.charts ? (
                   <div className="w-52 h-52">
                     <ChartSkeleton />
                   </div>
-                ) : expenditures.length === 0 ? (
+                ) : (supportAmount === 0 && opposeAmount === 0) ? (
                   <div className="text-gray-400">No expenditure data</div>
                 ) : (
                   <div className="relative w-52 h-52">
@@ -273,7 +268,7 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-              {!loading.expenditures && expenditures.length > 0 && (
+              {!loading.charts && (supportAmount > 0 || opposeAmount > 0) && (
                 <div className="flex justify-center gap-6 mt-6 text-sm">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#5B4A7D]"></div>
@@ -314,13 +309,7 @@ export default function Dashboard() {
                 <div className="bg-white rounded-2xl p-6 shadow-lg text-black relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full"></div>
                   <p className="text-black/90 text-sm mb-1">IE Transactions</p>
-                  <p className="text-3xl font-bold">
-                    {loading.expenditures ? (
-                      <span className="text-gray-400">...</span>
-                    ) : (
-                      Number(metrics.num_expenditures || 0).toLocaleString()
-                    )}
-                  </p>
+                  <p className="text-3xl font-bold">{Number(metrics.num_expenditures || 0).toLocaleString()}</p>
                 </div>
 
                 <Link to="/soi" className="bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] rounded-2xl p-6 shadow-lg text-white relative overflow-hidden hover:shadow-xl transition">
@@ -355,28 +344,28 @@ export default function Dashboard() {
                       <TableRowSkeleton />
                       <TableRowSkeleton />
                     </>
-                  ) : latestExpenditures.length === 0 ? (
+                  ) : recentExpenditures.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="py-8 text-center text-gray-400">
                         No expenditure data available
                       </td>
                     </tr>
                   ) : (
-                    latestExpenditures.map((exp, idx) => (
+                    recentExpenditures.map((exp, idx) => (
                       <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-4 px-2 text-sm text-gray-700">
-                          {exp.date ? new Date(exp.date).toLocaleDateString() : "N/A"}
+                          {exp.transaction_date ? new Date(exp.transaction_date).toLocaleDateString() : "N/A"}
                         </td>
-                        <td className="py-4 px-2 text-sm text-gray-700">{exp.ie_committee?.name || "Unknown"}</td>
+                        <td className="py-4 px-2 text-sm text-gray-700">{exp.committee_name || "Unknown"}</td>
                         <td className="py-4 px-2 text-sm text-gray-700">{exp.candidate_name || "N/A"}</td>
                         <td className="py-4 px-2 text-sm text-gray-700">${Number(exp.amount || 0).toLocaleString()}</td>
                         <td className="py-4 px-2">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            exp.support_oppose === "Support" 
+                            exp.is_for_benefit 
                               ? "bg-green-100 text-green-700" 
                               : "bg-red-100 text-red-700"
                           }`}>
-                            {exp.support_oppose || "Unknown"}
+                            {exp.is_for_benefit ? "Support" : "Oppose"}
                           </span>
                         </td>
                       </tr>
@@ -392,27 +381,27 @@ export default function Dashboard() {
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <h2 className="text-gray-900 text-lg font-semibold mb-4">Top 10 IE Committees</h2>
               <div className="space-y-3">
-                {loading.committees ? (
+                {loading.charts ? (
                   <>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
                       <CommitteeItemSkeleton key={i} />
                     ))}
                   </>
-                ) : committeesToShow.length === 0 ? (
+                ) : !chartsData?.top_committees || chartsData.top_committees.length === 0 ? (
                   <div className="text-center text-gray-400 py-8">
                     No committee data available
                   </div>
                 ) : (
-                  committeesToShow.map((committee, idx) => (
+                  chartsData.top_committees.map((committee, idx) => (
                     <div key={idx} className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] flex items-center justify-center text-white font-semibold flex-shrink-0">
-                        {(committee.name?.full_name || committee.name || "?").charAt(0)}
+                        {(committee.name_full || "?").charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          {committee.name?.full_name || committee.name || "Unknown"}
+                          {committee.name_full || "Unknown"}
                         </p>
-                        <p className="text-xs text-gray-500">${Number(committee.total || 0).toLocaleString()}</p>
+                        <p className="text-xs text-gray-500">${Number(committee.total_ie || 0).toLocaleString()}</p>
                       </div>
                     </div>
                   ))
