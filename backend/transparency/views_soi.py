@@ -1,8 +1,6 @@
 """
-FIXED API Views for Statement of Interest (SOI) - Direct Scraping
+FIXED API Views for Statement of Interest (SOI)
 File: transparency/views_soi.py
-
-This version parses scraper output to extract Created/Updated stats.
 """
 
 import os
@@ -15,6 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from transparency.models import CandidateStatementOfInterest
 from django.views.decorators.csrf import csrf_exempt
 import logging
@@ -25,17 +24,15 @@ logger = logging.getLogger(__name__)
 SCRAPE_STATUS_KEY = "soi_scrape_status"
 SCRAPE_HISTORY_KEY = "soi_scrape_history"
 
+# Pagination class
+class SOIPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 
 def parse_scraper_stats(output):
-    """
-    Parse scraper output to extract statistics
-    
-    Looks for patterns like:
-    - "✨ Created in DB: 0"
-    - "🔄 Updated in DB: 0"
-    - "⏭️  Skipped: 412"
-    - "📊 Total candidates scraped: 412"
-    """
+    """Parse scraper output to extract statistics"""
     stats = {
         'total_candidates': 0,
         'created': 0,
@@ -44,7 +41,7 @@ def parse_scraper_stats(output):
         'errors': 0
     }
     
-    # Pattern 1: "✨ Created in DB: 0" or "Created in DB: 0" or "Created: 45"
+    # Pattern 1: Created
     created_patterns = [
         r'Created in DB:\s*(\d+)',
         r'Created:\s*(\d+)',
@@ -55,7 +52,7 @@ def parse_scraper_stats(output):
             stats['created'] = int(match.group(1))
             break
     
-    # Pattern 2: "🔄 Updated in DB: 0" or "Updated in DB: 0" or "Updated: 67"
+    # Pattern 2: Updated
     updated_patterns = [
         r'Updated in DB:\s*(\d+)',
         r'Updated:\s*(\d+)',
@@ -66,17 +63,17 @@ def parse_scraper_stats(output):
             stats['updated'] = int(match.group(1))
             break
     
-    # Pattern 3: "⏭️  Skipped: 412" or "Skipped: 10"
+    # Pattern 3: Skipped
     skipped_match = re.search(r'Skipped:\s*(\d+)', output, re.IGNORECASE)
     if skipped_match:
         stats['skipped'] = int(skipped_match.group(1))
     
-    # Pattern 4: "❌ Errors: 2" or "Errors: 2"
+    # Pattern 4: Errors
     errors_match = re.search(r'Errors:\s*(\d+)', output, re.IGNORECASE)
     if errors_match:
         stats['errors'] = int(errors_match.group(1))
     
-    # Pattern 5: "📊 Total candidates scraped: 412"
+    # Pattern 5: Total
     total_patterns = [
         r'Total candidates scraped:\s*(\d+)',
         r'Total:\s*(\d+)',
@@ -92,12 +89,11 @@ def parse_scraper_stats(output):
     logger.info(f"📊 Parsed stats from output: {stats}")
     return stats
 
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def soi_dashboard_stats(request):
-    """
-    Return summarized dashboard statistics for SOI filings
-    """
+    """Return summarized dashboard statistics for SOI filings"""
     try:
         total = CandidateStatementOfInterest.objects.count()
         uncontacted = CandidateStatementOfInterest.objects.filter(
@@ -141,10 +137,11 @@ def soi_dashboard_stats(request):
 @permission_classes([AllowAny])
 def soi_candidates_list(request):
     """
-    FIXED: Return list of SOI candidates with proper error handling
-    Safely handles missing 'phone' field
+    FIXED: Return paginated list of SOI candidates
     """
     try:
+        logger.info("🔵 SOI candidates endpoint called")
+        
         # Get filter parameters
         status_filter = request.GET.get('status', None)
         office_id = request.GET.get('office', None)
@@ -162,47 +159,50 @@ def soi_candidates_list(request):
         if search:
             queryset = queryset.filter(candidate_name__icontains=search)
         
+        queryset = queryset.order_by('-filing_date')
+        
+        # Get pagination params
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 10))
+        
+        # Calculate pagination
+        total_count = queryset.count()
+        start_idx = (page - 1) * page_size
+        end_idx = start_idx + page_size
+        
+        # Get paginated queryset
+        paginated_queryset = queryset[start_idx:end_idx]
+        
+        logger.info(f"📊 Total candidates: {total_count}, Page: {page}, Size: {page_size}")
+        
         # Serialize data
         candidates = []
-        for soi in queryset.order_by('-filing_date'):
+        for soi in paginated_queryset:
             try:
-                # Safely get phone field (may not exist in database)
-                phone_value = ''
-                try:
-                    phone_value = getattr(soi, 'phone', '') or ''
-                except (AttributeError, Exception):
-                    phone_value = ''
+                # Safely get phone field
+                phone_value = getattr(soi, 'phone', '') or ''
                 
                 # Get email safely
-                email_value = ''
-                try:
-                    email_value = getattr(soi, 'email', '') or ''
-                except (AttributeError, Exception):
-                    email_value = ''
+                email_value = getattr(soi, 'email', '') or ''
                 
                 # Get office name safely
                 office_name = 'Unknown'
-                try:
-                    if soi.office and hasattr(soi.office, 'name'):
-                        office_name = soi.office.name or 'Unknown'
-                except (AttributeError, Exception):
-                    office_name = 'Unknown'
+                if soi.office and hasattr(soi.office, 'name'):
+                    office_name = soi.office.name or 'Unknown'
                 
-                # Get contacted_date safely (field name varies)
+                # Get party safely
+                party_value = getattr(soi, 'party', '') or ''
+                
+                # Get contacted_date safely
                 contacted_at = None
-                try:
-                    if hasattr(soi, 'contacted_date') and soi.contacted_date:
-                        contacted_at = soi.contacted_date.isoformat()
-                    elif hasattr(soi, 'contact_date') and soi.contact_date:
-                        contacted_at = soi.contact_date.isoformat()
-                except (AttributeError, Exception):
-                    contacted_at = None
+                if hasattr(soi, 'contact_date') and soi.contact_date:
+                    contacted_at = soi.contact_date.isoformat()
                 
                 candidate_data = {
                     'id': soi.id,
                     'name': soi.candidate_name or '',
                     'office': office_name,
-                    'party': '',  # SOI doesn't have party info yet
+                    'party': party_value,
                     'email': email_value,
                     'phone': phone_value,
                     'contacted': soi.contact_status != 'uncontacted',
@@ -216,21 +216,30 @@ def soi_candidates_list(request):
                 candidates.append(candidate_data)
                 
             except Exception as row_error:
-                logger.error(f"Error processing SOI {soi.id}: {row_error}")
+                logger.error(f"❌ Error processing SOI {soi.id}: {row_error}")
                 continue
         
-        logger.info(f"Returning {len(candidates)} SOI candidates")
-        return Response(candidates)
+        logger.info(f"✅ Returning {len(candidates)} SOI candidates for page {page}")
+        
+        # Return paginated response
+        return Response({
+            'results': candidates,
+            'count': total_count,
+            'next': page < (total_count // page_size) if total_count > 0 else None,
+            'previous': page > 1,
+        })
         
     except Exception as e:
-        logger.error(f"Error in soi_candidates_list: {e}", exc_info=True)
+        logger.error(f"❌ Error in soi_candidates_list: {e}", exc_info=True)
         import traceback
         traceback.print_exc()
+        
         return Response(
             {
                 'error': str(e),
                 'detail': 'Error fetching SOI candidates. Check server logs.',
-                'candidates': []
+                'results': [],
+                'count': 0
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -240,7 +249,7 @@ def soi_candidates_list(request):
 @permission_classes([AllowAny])
 @csrf_exempt
 def trigger_scraping(request):
-    """Trigger the SOI scraping process - FIXED VERSION with stats parsing"""
+    """Trigger the SOI scraping process"""
     current_status = cache.get(SCRAPE_STATUS_KEY)
     if current_status and current_status.get("status") == "running":
         return Response(
@@ -298,23 +307,18 @@ def trigger_scraping(request):
         
         append_log(f"Scraper return code: {result.returncode}")
         
-        # Combine stdout and stderr for parsing
         full_output = result.stdout + "\n" + result.stderr
         
-        # Log output for debugging
         if result.stdout:
             append_log("Scraper output:")
-            for line in result.stdout.split('\n')[-20:]:  # Last 20 lines
+            for line in result.stdout.split('\n')[-20:]:
                 if line.strip():
                     append_log(f"  {line.strip()}")
         
         if result.returncode == 0:
             update_status(scrape_id, 70, "Scraping Complete", "Processing data...")
-            
-            # Parse stats from output
             parsed_stats = parse_scraper_stats(full_output)
             append_log(f"📊 Parsed stats: Created={parsed_stats['created']}, Updated={parsed_stats['updated']}")
-            
         else:
             append_log(f"ERROR: {result.stderr}")
             update_status(scrape_id, 40, "Scraping Error", result.stderr[:200])
@@ -334,9 +338,6 @@ def trigger_scraping(request):
         ).count()
 
         append_log(f"Database check: {total_candidates} total candidates found")
-        append_log(f"  - Uncontacted: {uncontacted}")
-        append_log(f"  - Contacted: {contacted}")
-        append_log(f"  - Pledged: {pledged}")
 
         final_status = cache.get(SCRAPE_STATUS_KEY)
         final_status.update({
@@ -358,10 +359,6 @@ def trigger_scraping(request):
         final_status["logs"].append("✅ Scraping process completed successfully.")
         cache.set(SCRAPE_STATUS_KEY, final_status, timeout=3600)
         save_to_history(final_status)
-
-        append_log("✅ Scraping completed successfully")
-        append_log(f"Total candidates in database: {total_candidates}")
-        append_log(f"Created: {parsed_stats['created']}, Updated: {parsed_stats['updated']}")
 
         return Response(final_status)
 
@@ -393,7 +390,6 @@ def scraping_history(request):
     return Response({"history": history[-10:]})
 
 
-# Helper functions
 def update_status(scrape_id, progress, step, message):
     """Update scraping progress in cache."""
     current = cache.get(SCRAPE_STATUS_KEY)

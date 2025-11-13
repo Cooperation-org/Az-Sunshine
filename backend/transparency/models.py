@@ -709,12 +709,12 @@ class CandidateStatementOfInterest(models.Model):
         default='uncontacted',
         db_index=True
     )
-    contact_date = models.DateField(null=True, blank=True, db_index=True, db_column='contacted_date')
+    contact_date = models.DateField(null=True, blank=True, db_index=True)
     contacted_by = models.CharField(max_length=100, blank=True)
     
     # Pledge tracking
     pledge_received = models.BooleanField(default=False, db_index=True)
-    pledge_date = models.DateField(null=True, blank=True, db_index=True, db_column='pledge_received_date')
+    pledge_date = models.DateField(null=True, blank=True, db_index=True)
     notes = models.TextField(blank=True)
     
     # Link to Entity if they become a candidate committee
