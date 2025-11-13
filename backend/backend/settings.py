@@ -152,5 +152,22 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 # Anthropic API Key
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
+
+# Use memory cache for development (fast but temporary)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
+# For production, use Redis (persistent and fast)
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',
+#     }
+# }
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
