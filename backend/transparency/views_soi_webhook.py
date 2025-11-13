@@ -2,14 +2,13 @@
 Django Webhook Receiver for Real-Time SOI Scraping Updates
 File: transparency/views_soi_webhook.py
 
-This receives updates from the scraper (running on home machine or cron)
-and stores them in cache for the React frontend to display in real-time.
+FIXED: Added @csrf_exempt to all POST endpoints
 """
 
 import os
 from datetime import datetime
 from django.core.cache import cache
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt  # Import this
 from django.views.decorators.http import require_http_methods
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -18,6 +17,9 @@ from rest_framework import status
 import json
 import hmac
 import hashlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Cache keys
 WEBHOOK_STATUS_KEY = "soi_webhook_status"
@@ -39,7 +41,7 @@ def verify_webhook_signature(request_body, signature):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@csrf_exempt
+@csrf_exempt  # ✅ CRITICAL: Disable CSRF for webhook endpoint
 @require_http_methods(['POST'])
 def webhook_receiver(request):
     """
@@ -61,14 +63,6 @@ def webhook_receiver(request):
     }
     """
     try:
-        # Optional: Verify signature for security
-        # signature = request.headers.get('X-Webhook-Signature', '')
-        # if not verify_webhook_signature(request.body, signature):
-        #     return Response(
-        #         {'error': 'Invalid signature'},
-        #         status=status.HTTP_401_UNAUTHORIZED
-        #     )
-        
         payload = request.data
         
         # Validate required fields
@@ -129,8 +123,7 @@ def webhook_receiver(request):
         })
         
     except Exception as e:
-        import logging
-        logging.error(f"Webhook error: {e}")
+        logger.error(f"Webhook error: {e}", exc_info=True)
         return Response(
             {'error': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -168,7 +161,7 @@ def webhook_history(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@csrf_exempt
+@csrf_exempt  # ✅ CRITICAL: Disable CSRF for trigger endpoint
 def trigger_local_scraping(request):
     """
     Trigger scraping on local/home machine via webhook callback
@@ -179,14 +172,26 @@ def trigger_local_scraping(request):
     POST /api/v1/soi/trigger-local/
     """
     try:
-        # Get home machine webhook URL from environment
-        home_webhook_url = os.getenv('HOME_SCRAPER_WEBHOOK_URL')
+        logger.info("🚀 Trigger local scraping called")
+        
+        # Get home machine webhook URL from settings
+        from django.conf import settings
+        home_webhook_url = getattr(settings, 'HOME_SCRAPER_WEBHOOK_URL', None)
         
         if not home_webhook_url:
+            logger.error("❌ HOME_SCRAPER_WEBHOOK_URL not configured in settings")
             return Response(
-                {'error': 'Home scraper webhook not configured'},
+                {
+                    'error': 'Home scraper webhook not configured',
+                    'detail': 'HOME_SCRAPER_WEBHOOK_URL is not set in Django settings'
+                },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
+        
+        logger.info(f"📡 Sending trigger to: {home_webhook_url}")
+        
+        # Get webhook secret from settings
+        webhook_secret = getattr(settings, 'SOI_WEBHOOK_SECRET', 'change-this-secret-key')
         
         # Send trigger to home machine
         import requests
@@ -197,36 +202,67 @@ def trigger_local_scraping(request):
                 'triggered_by': 'web_ui',
                 'timestamp': datetime.now().isoformat()
             },
+            headers={
+                'X-Service-Secret': webhook_secret,
+                'Content-Type': 'application/json'
+            },
             timeout=10
         )
         
+        logger.info(f"📥 Response status: {response.status_code}")
+        
         if response.status_code == 200:
             # Set initial status
+            scrape_id = f"scrape_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             initial_status = {
-                'scrape_id': f"scrape_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                'scrape_id': scrape_id,
                 'status': 'triggered',
-                'progress': 0,
+                'progress': 5,
                 'current_step': 'Triggering home scraper...',
-                'logs': ['[Starting] Scrape triggered from web UI'],
+                'logs': [
+                    f"[{datetime.now().strftime('%H:%M:%S')}] Scrape triggered from web UI",
+                    f"[{datetime.now().strftime('%H:%M:%S')}] Waiting for home machine response..."
+                ],
                 'started_at': datetime.now().isoformat(),
                 'stats': {}
             }
             cache.set(WEBHOOK_STATUS_KEY, initial_status, timeout=3600)
             
+            logger.info(f"✅ Scraping triggered successfully - {scrape_id}")
+            
             return Response({
                 'success': True,
                 'message': 'Scraping triggered on home machine',
-                'status': initial_status
+                'scrape_id': scrape_id,
+                'webhook_url': home_webhook_url
             })
         else:
+            error_msg = f'Failed to trigger scraping: {response.status_code} - {response.text}'
+            logger.error(f"❌ {error_msg}")
             return Response(
-                {'error': f'Failed to trigger scraping: {response.status_code}'},
+                {'error': error_msg},
                 status=status.HTTP_502_BAD_GATEWAY
             )
             
-    except Exception as e:
+    except requests.exceptions.Timeout:
+        error_msg = 'Timeout connecting to home scraper - check if service is running'
+        logger.error(f"❌ {error_msg}")
         return Response(
-            {'error': str(e)},
+            {'error': error_msg},
+            status=status.HTTP_504_GATEWAY_TIMEOUT
+        )
+    except requests.exceptions.ConnectionError as e:
+        error_msg = f'Cannot connect to home scraper: {str(e)}'
+        logger.error(f"❌ {error_msg}")
+        return Response(
+            {'error': error_msg, 'detail': 'Check if home machine is online and ngrok/webhook URL is correct'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+    except Exception as e:
+        error_msg = f'Unexpected error: {str(e)}'
+        logger.error(f"❌ {error_msg}", exc_info=True)
+        return Response(
+            {'error': error_msg},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
