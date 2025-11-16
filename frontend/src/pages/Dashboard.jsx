@@ -140,7 +140,7 @@ export default function Dashboard() {
       label: "Total Contributions (USD)",
       data: chartsData.top_donors.map(d => parseFloat(d.total_contributed || 0)),
       // Bright cyan/teal color for better visibility against purple background
-      backgroundColor: "rgba(6, 182, 212, 0.8)",  // Cyan-500 with 80% opacity for better visibility
+      backgroundColor: "rgba(255, 255, 255, 0.8)",  // Cyan-500 with 80% opacity for better visibility
       borderColor: "rgba(255, 255, 255, 1)",      // White border for sharp contrast
       borderWidth: 2,                              // Thicker border for better visibility
       borderRadius: 6,
@@ -337,10 +337,10 @@ export default function Dashboard() {
           {/* Bottom Section - Responsive: 1 column on mobile, 3 columns on desktop */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Expenditures Table - Responsive: Full width on mobile, 2 columns on desktop */}
-            <div className="lg:col-span-2 bg-white rounded-2xl p-4 sm:p-6 shadow-lg overflow-hidden">
+            <div className="lg:col-span-2 bg-white rounded-2xl p-4 sm:p-6 shadow-lg overflow-hidden flex flex-col">
               <h2 className="text-gray-900 text-base sm:text-lg font-semibold mb-4">Latest Independent Expenditure</h2>
-              {/* Table Container - Horizontal scroll on mobile */}
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
+              {/* Scrollable Table Container - Vertical scroll with fixed max-height */}
+              <div className="overflow-y-auto overflow-x-auto -mx-4 sm:mx-0 max-h-[300px] sm:max-h-[400px] lg:max-h-[500px] flex-1">
                 <div className="inline-block min-w-full align-middle">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -393,15 +393,17 @@ export default function Dashboard() {
                   </table>
                 </div>
               </div>
+              {/* View All Link - Fixed at bottom, outside scrollable area */}
               <Link to="/expenditures" className="inline-block mt-4 text-purple-600 hover:text-purple-700 text-sm font-medium">
                 View All Expenditures →
               </Link>
             </div>
 
             {/* Top Committees List - Responsive: Full width on mobile, 1 column on desktop */}
-            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex flex-col">
               <h2 className="text-gray-900 text-base sm:text-lg font-semibold mb-4">Top 10 IE Committees</h2>
-              <div className="space-y-2 sm:space-y-3">
+              {/* Scrollable Content Container - Vertical scroll with fixed max-height */}
+              <div className="overflow-y-auto space-y-2 sm:space-y-3 max-h-[300px] sm:max-h-[400px] lg:max-h-[500px] flex-1 pr-2">
                 {loading.charts ? (
                   <>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
