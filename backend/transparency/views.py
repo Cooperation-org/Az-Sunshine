@@ -21,7 +21,10 @@ from .serializers import (
     TransactionSerializer, CandidateSOISerializer,
     OfficeSerializer, CycleSerializer, RaceAggregationSerializer
 )
+from django.http import JsonResponse
 import logging
+import requests
+import json
 
 
 
@@ -29,6 +32,11 @@ import logging
 
 # Initialize logger
 logger = logging.getLogger(__name__)
+
+NGROK_URL = "https://0a23bd51.ngrok.io/run-scraper"
+SECRET_TOKEN = "MY_SECRET_123"
+
+
 
 
 # ==================== PAGINATION ====================
@@ -1195,3 +1203,32 @@ def clear_dashboard_cache(request):
         return Response({'success': True, 'message': 'Dashboard cache cleared'})
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=500)
+
+
+
+
+def trigger_scrape(request):
+    try:
+        requests.post(
+            NGROK_URL,
+            headers={"X-Secret": SECRET_TOKEN},
+            timeout=5
+        )
+        return JsonResponse({"message": "Scraper triggered on home device"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+
+def upload_scraped(request):
+    token = request.headers.get("X-Secret")
+    if token != SECRET_TOKEN:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    data = json.loads(request.body.decode())
+
+    # Save or process incoming scraped data
+    with open("/opt/az_sunshine/scraped/output.json", "w") as f:
+        json.dump(data, f)
+
+    return JsonResponse({"message": "Scraped data received"})

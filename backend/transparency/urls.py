@@ -5,6 +5,8 @@ from rest_framework.routers import DefaultRouter
 from .views import *
 from .views_soi import *
 from .views_soi_webhook import *
+# from .views import trigger_scrape, upload_scraped
+
 
 app_name = 'transparency'
 
@@ -48,6 +50,9 @@ urlpatterns = [
     path('expenditures/', expenditures_list, name='expenditures-list'),
     path('candidates/', candidates_list, name='candidates-list'),
     path('donors/', donors_list, name='donors-list'),
+    
+    path("trigger-scrape/", trigger_scrape),
+    path("upload-scraped/", upload_scraped),
 
     # Router MUST come last
     path('', include(router.urls)),

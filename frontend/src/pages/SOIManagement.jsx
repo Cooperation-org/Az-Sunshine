@@ -114,7 +114,7 @@ function ScrapingModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
+        
         <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 p-6 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -129,17 +129,39 @@ function ScrapingModal({ isOpen, onClose }) {
               )}
               <h2 className="text-xl sm:text-2xl font-bold">SOI Data Scraping</h2>
             </div>
-            <button
+
+            {/* <button
               onClick={onClose}
               className="hover:bg-white/20 p-2 rounded-lg transition"
               disabled={status?.status === 'running' || status?.status === 'triggered'}
             >
               <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+            </button> */}
 
-        {/* Progress */}
+            <button
+              onClick={async () => {
+                setScraping(true);
+                try {
+                  setShowScrapingModal(true);
+                  await triggerWebhookScraping();
+                } catch (err) {
+                  console.error(err);
+                  alert("Failed to trigger scraping");
+                } finally {
+                  setScraping(false);
+                }
+              }}
+              disabled={scraping}
+              className="bg-white text-purple-700 px-8 py-4 rounded-xl font-semibold hover:bg-purple-50 transition-all transform hover:scale-105 shadow-lg flex items-center gap-3 disabled:opacity-50"
+            >
+              <Play className="w-5 h-5" />
+              {scraping ? "Scraping..." : "Scrape Data Now!"}
+            </button>
+
+            </div>
+          </div>
+
+          
         {status && (
           <div className="p-6">
             <div className="mb-4">
