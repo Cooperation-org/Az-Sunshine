@@ -140,7 +140,10 @@ def upload_scraped(request):
                 
                 office, _ = Office.objects.get_or_create(
                     name=office_name,
-                    defaults={'office_type': 'STATE'}
+                    defaults={
+                        'office_id': hash(office_name) % 1000000,  # Generate ID
+                        'office_type': 'STATE'
+                    }
                 )
                 
                 # Parse filing date
