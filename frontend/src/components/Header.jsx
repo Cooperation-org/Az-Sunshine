@@ -17,7 +17,7 @@ export default function Header({ title, subtitle }) {
             className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
-        <button className="p-2 rounded-lg bg-purple-600 hover:bg-purple-700 transition">
+        <button className="p-2 rounded-lg bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] transition">
           <Bell className="w-5 h-5 text-white" />
         </button>
       </div>
