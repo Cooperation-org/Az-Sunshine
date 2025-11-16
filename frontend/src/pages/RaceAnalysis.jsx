@@ -107,13 +107,15 @@ export default function RaceAnalysis() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       
-      <main className="ml-20 flex-1">
+      {/* Main Content - Responsive: No left margin on mobile */}
+      <main className="flex-1 lg:ml-0 min-w-0">
         <Header title="Arizona Sunshine" subtitle="Race Analysis" />
 
-        <div className="p-8">
-          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Select Race</h2>
-            <div className="grid grid-cols-2 gap-4">
+        <div className="p-4 sm:p-6 lg:p-8">
+          {/* Select Race Form - Responsive: 1 column on mobile, 2 on desktop */}
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-4 sm:mb-6">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-4">Select Race</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Office</label>
                 <select
@@ -151,13 +153,15 @@ export default function RaceAnalysis() {
             <div className="text-center py-12 text-gray-500">Loading race data...</div>
           ) : raceData ? (
             <>
-              <div className="grid grid-cols-3 gap-6 mb-6">
-                <div className="bg-white rounded-2xl p-6 shadow-lg col-span-2">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">
+              {/* Charts Section - Responsive: 1 column on mobile, 3 on desktop */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                {/* Bar Chart - Responsive: Full width on mobile, 2 columns on desktop */}
+                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg lg:col-span-2">
+                  <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-4">
                     IE Spending by Candidate - {raceData.office} ({raceData.cycle})
                   </h2>
                   {chartData && (
-                    <div style={{ height: 400 }}>
+                    <div className="h-[250px] sm:h-[300px] lg:h-[400px]">
                       <Bar 
                         data={chartData} 
                         options={{ 
@@ -185,9 +189,10 @@ export default function RaceAnalysis() {
                   )}
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-lg">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Top Donors in Race</h2>
-                  <div className="space-y-3">
+                {/* Top Donors List - Responsive: Full width on mobile, 1 column on desktop */}
+                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+                  <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-4">Top Donors in Race</h2>
+                  <div className="space-y-2 sm:space-y-3">
                     {topDonors.slice(0, 10).map((donor, idx) => (
                       <div key={idx} className="flex justify-between items-center pb-2 border-b border-gray-100">
                         <div className="flex-1 min-w-0">
@@ -205,19 +210,23 @@ export default function RaceAnalysis() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Candidate Breakdown</h2>
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Candidate</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Party</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Total IE</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">IE For</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">IE Against</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Net IE</th>
-                    </tr>
-                  </thead>
+              {/* Candidate Breakdown Table - Responsive: Horizontal scroll on mobile */}
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg overflow-hidden">
+                <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-4">Candidate Breakdown</h2>
+                {/* Table Container - Horizontal scroll on mobile */}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        {/* Table Headers - Responsive text sizes and padding */}
+                        <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Candidate</th>
+                        <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Party</th>
+                        <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Total IE</th>
+                        <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">IE For</th>
+                        <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">IE Against</th>
+                        <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Net IE</th>
+                      </tr>
+                    </thead>
                   <tbody className="divide-y divide-gray-100">
                     {raceData.candidates.map((candidate, idx) => {
                       const ieFor = parseFloat(candidate.is_for_benefit === true ? candidate.total_ie : 0);
@@ -226,22 +235,23 @@ export default function RaceAnalysis() {
                       
                       return (
                         <tr key={idx} className="hover:bg-gray-50">
-                          <td className="py-4 px-6 font-medium text-gray-900">
+                          {/* Table Cells - Responsive padding and text sizes */}
+                          <td className="py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-medium text-gray-900 whitespace-nowrap">
                             {candidate.subject_committee__name__first_name} {candidate.subject_committee__name__last_name}
                           </td>
-                          <td className="py-4 px-6 text-gray-700">
+                          <td className="py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm text-gray-700 whitespace-nowrap">
                             {candidate.subject_committee__candidate_party__name || 'N/A'}
                           </td>
-                          <td className="py-4 px-6 font-bold text-gray-900">
+                          <td className="py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-900 whitespace-nowrap">
                             ${parseFloat(candidate.total_ie || 0).toLocaleString()}
                           </td>
-                          <td className="py-4 px-6 text-green-600">
+                          <td className="py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm text-green-600 whitespace-nowrap">
                             ${ieFor.toLocaleString()}
                           </td>
-                          <td className="py-4 px-6 text-red-600">
+                          <td className="py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm text-red-600 whitespace-nowrap">
                             ${ieAgainst.toLocaleString()}
                           </td>
-                          <td className="py-4 px-6 font-bold">
+                          <td className="py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold whitespace-nowrap">
                             <span className={netIE >= 0 ? 'text-green-600' : 'text-red-600'}>
                               ${netIE.toLocaleString()}
                             </span>
@@ -249,8 +259,9 @@ export default function RaceAnalysis() {
                         </tr>
                       );
                     })}
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           ) : (
