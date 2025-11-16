@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Play,
   CheckCircle,
@@ -7,7 +7,6 @@ import {
   Search,
   Mail,
   Phone,
-  X,
   Loader,
   RefreshCw,
   Users,
@@ -17,10 +16,7 @@ import {
   ChevronRight
 } from "lucide-react";
 
-// ✅ REAL API IMPORTS - Connected to your Django backend
 import {
-  triggerWebhookScraping,
-  getWebhookScrapingStatus,
   getSOICandidates,
   getSOIDashboardStats,
   markCandidateContacted,
@@ -29,83 +25,45 @@ import {
 
 import Sidebar from "../components/Sidebar";
 
-// Scraping Modal with Real-Time Webhook Updates
-function ScrapingModal({ isOpen, onClose }) {
-  const [status, setStatus] = useState(null);
-  const [isPolling, setIsPolling] = useState(false);
-  const pollIntervalRef = useRef(null);
+// Simple scraping modal - no complex polling needed
+function ScrapingModal({ isOpen, onClose, onComplete }) {
+  const [status, setStatus] = useState('idle');
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (isOpen && !isPolling) {
+    if (isOpen && status === 'idle') {
       startScraping();
     }
-    
-    // Cleanup on unmount
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
-    };
   }, [isOpen]);
 
   const startScraping = async () => {
-    try {
-      setIsPolling(true);
-      
-      // ✅ Trigger scraping on home machine via Django VPS
-      console.log("🚀 Triggering webhook scraping...");
-      const result = await triggerWebhookScraping();
-      
-      setStatus({
-        status: 'triggered',
-        progress: 0,
-        current_step: 'Triggering home scraper...',
-        logs: ['✅ Scraping triggered successfully', 'Waiting for home machine response...']
-      });
-      
-      // ✅ Start polling for real-time updates every 2 seconds
-      pollIntervalRef.current = setInterval(async () => {
-        try {
-          console.log("📊 Polling for status update...");
-          const currentStatus = await getWebhookScrapingStatus();
-          
-          console.log("Status update:", currentStatus);
-          setStatus(currentStatus);
-          
-          // Stop polling if completed or error
-          if (currentStatus.status === 'completed' || currentStatus.status === 'error') {
-            console.log("✅ Scraping finished, stopping poll");
-            clearInterval(pollIntervalRef.current);
-            setIsPolling(false);
-          }
-        } catch (error) {
-          console.error('Polling error:', error);
-          // Don't stop polling on network errors, just log them
-        }
-      }, 2000);
-      
-    } catch (error) {
-      console.error("❌ Failed to trigger scraping:", error);
-      setStatus({
-        status: 'error',
-        error: error.response?.data?.error || error.message || 'Failed to trigger scraping',
-        logs: [`❌ Error: ${error.response?.data?.error || error.message}`]
-      });
-      setIsPolling(false);
-    }
-  };
+    setStatus('running');
+    setMessage('Triggering scraper on home laptop...');
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'running':
-      case 'triggered':
-        return 'bg-gradient-to-r from-purple-500 to-purple-600';
-      case 'completed':
-        return 'bg-gradient-to-r from-green-500 to-green-600';
-      case 'error':
-        return 'bg-gradient-to-r from-red-500 to-red-600';
-      default:
-        return 'bg-gray-500';
+    try {
+      const response = await fetch('http://167.172.30.134/api/v1/trigger-scrape/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setStatus('success');
+        setMessage('✅ Scraper triggered successfully! Data will be processed shortly.');
+        setTimeout(() => {
+          onComplete();
+          onClose();
+        }, 2000);
+      } else {
+        setStatus('error');
+        setMessage(`❌ Error: ${result.error}`);
+      }
+    } catch (error) {
+      setStatus('error');
+      setMessage(`❌ Failed to trigger scraper: ${error.message}`);
     }
   };
 
@@ -113,156 +71,51 @@ function ScrapingModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        
-        <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {status?.status === 'running' || status?.status === 'triggered' || isPolling ? (
-                <Loader className="w-6 h-6 animate-spin" />
-              ) : status?.status === 'completed' ? (
-                <CheckCircle className="w-6 h-6" />
-              ) : status?.status === 'error' ? (
-                <AlertCircle className="w-6 h-6" />
-              ) : (
-                <RefreshCw className="w-6 h-6" />
-              )}
-              <h2 className="text-xl sm:text-2xl font-bold">SOI Data Scraping</h2>
-            </div>
-
-            {/* <button
-              onClick={onClose}
-              className="hover:bg-white/20 p-2 rounded-lg transition"
-              disabled={status?.status === 'running' || status?.status === 'triggered'}
-            >
-              <X className="w-5 h-5" />
-            </button> */}
-
-            <button
-              onClick={async () => {
-                setScraping(true);
-                try {
-                  setShowScrapingModal(true);
-                  await triggerWebhookScraping();
-                } catch (err) {
-                  console.error(err);
-                  alert("Failed to trigger scraping");
-                } finally {
-                  setScraping(false);
-                }
-              }}
-              disabled={scraping}
-              className="bg-white text-purple-700 px-8 py-4 rounded-xl font-semibold hover:bg-purple-50 transition-all transform hover:scale-105 shadow-lg flex items-center gap-3 disabled:opacity-50"
-            >
-              <Play className="w-5 h-5" />
-              {scraping ? "Scraping..." : "Scrape Data Now!"}
-            </button>
-
-            </div>
-          </div>
-
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+        <div className="text-center">
+          {status === 'running' && (
+            <>
+              <Loader className="w-16 h-16 animate-spin text-purple-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">Triggering Scraper...</h3>
+              <p className="text-gray-600">{message}</p>
+            </>
+          )}
           
-        {status && (
-          <div className="p-6">
-            <div className="mb-4">
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-semibold text-gray-700">
-                  {status.current_step || 'Initializing...'}
-                </span>
-                <span className="text-sm font-semibold text-gray-700">
-                  {Math.round(status.progress || 0)}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-500 ${getStatusColor(status.status)}`}
-                  style={{ width: `${status.progress || 0}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Stats */}
-            {status.stats && Object.keys(status.stats).length > 0 && (
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
-                  <div className="text-2xl font-bold text-purple-600">
-                    {status.stats.total_candidates || status.stats.total || 0}
-                  </div>
-                  <div className="text-xs text-gray-600">Total</div>
-                </div>
-                <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
-                  <div className="text-2xl font-bold text-purple-600">
-                    {status.stats.created || 0}
-                  </div>
-                  <div className="text-xs text-gray-600">Created</div>
-                </div>
-                <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
-                  <div className="text-2xl font-bold text-purple-600">
-                    {status.stats.updated || 0}
-                  </div>
-                  <div className="text-xs text-gray-600">Updated</div>
-                </div>
-              </div>
-            )}
-
-            {/* Console Logs */}
-            {status.logs && status.logs.length > 0 && (
-              <div className="bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
-                <div className="font-mono text-xs text-green-400 space-y-1">
-                  {status.logs.map((log, idx) => (
-                    <div key={idx} className="leading-relaxed">
-                      {log}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            {status.status === 'completed' && (
-              <div className="mt-4 flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="flex-1 bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:via-purple-800 hover:to-purple-900 transition"
-                >
-                  View Candidates
-                </button>
-              </div>
-            )}
-
-            {status.status === 'error' && (
-              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-semibold text-red-900">Scraping Failed</div>
-                    <div className="text-sm text-red-700">{status.error}</div>
-                  </div>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="mt-3 w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
-                >
-                  Close
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+          {status === 'success' && (
+            <>
+              <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">Success!</h3>
+              <p className="text-gray-600">{message}</p>
+            </>
+          )}
+          
+          {status === 'error' && (
+            <>
+              <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">Error</h3>
+              <p className="text-gray-600">{message}</p>
+              <button
+                onClick={onClose}
+                className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Close
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-// Main Component - Connected to Real Django Backend
 export default function SOIManagement() {
   const [candidates, setCandidates] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [fetchingData, setFetchingData] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrapingModal, setShowScrapingModal] = useState(false);
+  const [scraping, setScraping] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -275,11 +128,9 @@ export default function SOIManagement() {
   const loadData = async () => {
     try {
       setLoading(true);
-      setFetchingData(true);
       
       console.log("📡 Loading SOI data from Django backend...");
       
-      // ✅ Fetch real data from Django API
       const [candidatesData, statsData] = await Promise.all([
         getSOICandidates({ page: currentPage, page_size: pageSize }),
         getSOIDashboardStats(),
@@ -305,32 +156,37 @@ export default function SOIManagement() {
       setTotalPages(1);
     } finally {
       setLoading(false);
-      setFetchingData(false);
     }
   };
 
   const handleMarkContacted = async (id) => {
     try {
-      console.log(`📞 Marking candidate ${id} as contacted...`);
       await markCandidateContacted(id);
-      console.log("✅ Successfully marked as contacted");
-      loadData(); // Reload to get fresh data
+      loadData();
     } catch (error) {
-      console.error("❌ Error marking contacted:", error);
-      alert("Failed to mark candidate as contacted. Please try again.");
+      console.error("Error marking contacted:", error);
+      alert("Failed to mark candidate as contacted.");
     }
   };
 
   const handleMarkPledged = async (id) => {
     try {
-      console.log(`✅ Marking candidate ${id} pledge as received...`);
       await markPledgeReceived(id);
-      console.log("✅ Successfully marked pledge as received");
-      loadData(); // Reload to get fresh data
+      loadData();
     } catch (error) {
-      console.error("❌ Error marking pledged:", error);
-      alert("Failed to mark pledge as received. Please try again.");
+      console.error("Error marking pledged:", error);
+      alert("Failed to mark pledge as received.");
     }
+  };
+
+  const handleTriggerScraping = async () => {
+    setScraping(true);
+    setShowScrapingModal(true);
+  };
+
+  const handleScrapingComplete = () => {
+    setScraping(false);
+    loadData(); // Refresh data after scraping
   };
 
   const filteredCandidates = (Array.isArray(candidates) ? candidates : []).filter((c) => {
@@ -372,7 +228,7 @@ export default function SOIManagement() {
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading SOI data from server...</p>
+          <p className="text-gray-600">Loading SOI data...</p>
         </div>
       </div>
     );
@@ -380,22 +236,9 @@ export default function SOIManagement() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* === Sidebar === */}
       <Sidebar />
 
-      {/* === Main Content === */}
       <main className="ml-20 flex-1">
-        {/* Loading Overlay */}
-        {fetchingData && (
-          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-40 flex items-center justify-center">
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <Loader className="w-16 h-16 animate-spin text-purple-600 mx-auto" />
-              <p className="mt-4 text-gray-600">Fetching SOI data...</p>
-            </div>
-          </div>
-        )}
-        
-        {/* === Header === */}
         <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Arizona Sunshine</h1>
@@ -418,26 +261,26 @@ export default function SOIManagement() {
           </div>
         </header>
 
-        {/* === Content === */}
         <div className="p-8">
-          {/* Automation Control */}
-          <div className="bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] rounded-2xl p-8 mb-8 text-white shadow-xl">
+          {/* Scraping Control */}
+          <div className="bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl p-8 mb-8 text-white shadow-xl">
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                   <RefreshCw className="w-6 h-6" />
-                  Automated SOI Scraping
+                  Residential IP Scraping
                 </h2>
                 <p className="text-purple-100">
-                  Trigger scraping on home machine • Real-time webhook updates • Cloudflare bypass
+                  FastAPI agent on home laptop • Bypasses datacenter blocking • Secure ngrok tunnel
                 </p>
               </div>
               <button
-                onClick={() => setShowScrapingModal(true)}
-                className="bg-white text-purple-700 px-8 py-4 rounded-xl font-semibold hover:bg-purple-50 transition-all transform hover:scale-105 shadow-lg flex items-center gap-3"
+                onClick={handleTriggerScraping}
+                disabled={scraping}
+                className="bg-white text-purple-700 px-8 py-4 rounded-xl font-semibold hover:bg-purple-50 transition-all transform hover:scale-105 shadow-lg flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Play className="w-5 h-5" />
-                Scrape Data Now!
+                {scraping ? "Scraping..." : "Scrape Now"}
               </button>
             </div>
           </div>
@@ -457,7 +300,7 @@ export default function SOIManagement() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-purple-500">
+              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-red-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Uncontacted</div>
@@ -465,11 +308,11 @@ export default function SOIManagement() {
                       {stats.uncontacted || 0}
                     </div>
                   </div>
-                  <Target className="w-12 h-12 text-purple-500 opacity-20" />
+                  <Target className="w-12 h-12 text-red-500 opacity-20" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-purple-700">
+              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-yellow-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Pending Pledge</div>
@@ -477,11 +320,11 @@ export default function SOIManagement() {
                       {stats.pending_pledge || 0}
                     </div>
                   </div>
-                  <Clock className="w-12 h-12 text-purple-700 opacity-20" />
+                  <Clock className="w-12 h-12 text-yellow-500 opacity-20" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-purple-800">
+              <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-green-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Pledged</div>
@@ -489,7 +332,7 @@ export default function SOIManagement() {
                       {stats.pledged || 0}
                     </div>
                   </div>
-                  <Award className="w-12 h-12 text-purple-800 opacity-20" />
+                  <Award className="w-12 h-12 text-green-500 opacity-20" />
                 </div>
               </div>
             </div>
@@ -509,7 +352,7 @@ export default function SOIManagement() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
                     activeTab === tab.id
-                      ? "bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white"
+                      ? "bg-purple-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
@@ -525,21 +368,11 @@ export default function SOIManagement() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Candidate
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Office
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Contact
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Actions
-                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Candidate</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Office</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Contact</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -587,7 +420,7 @@ export default function SOIManagement() {
                             {!candidate.contacted && (
                               <button
                                 onClick={() => handleMarkContacted(candidate.id)}
-                                className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg text-sm hover:from-purple-700 hover:to-purple-800 transition"
+                                className="px-3 py-1 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition"
                               >
                                 Mark Contacted
                               </button>
@@ -610,11 +443,9 @@ export default function SOIManagement() {
             </div>
           </div>
 
-          {/* === Pagination === */}
+          {/* Pagination */}
           <div className="mt-6 flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              {totalCount} Results
-            </p>
+            <p className="text-sm text-gray-600">{totalCount} Results</p>
             <div className="flex items-center gap-2">
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
                 <button
@@ -644,11 +475,8 @@ export default function SOIManagement() {
 
       <ScrapingModal
         isOpen={showScrapingModal}
-        onClose={() => {
-          setShowScrapingModal(false);
-          setFetchingData(true);
-          loadData(); // Reload data after scraping completes
-        }}
+        onClose={() => setShowScrapingModal(false)}
+        onComplete={handleScrapingComplete}
       />
     </div>
   );
