@@ -22,6 +22,9 @@ from .serializers import (
     OfficeSerializer, CycleSerializer, RaceAggregationSerializer
 )
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+
 import logging
 import requests
 import json
@@ -29,12 +32,185 @@ import json
 
 
 
-
 # Initialize logger
 logger = logging.getLogger(__name__)
 
-NGROK_URL = "https://0a23bd51.ngrok.io/run-scraper"
+
+NGROK_URL = "https://c23d58d5e91b.ngrok-free.app/run-scraper"
 SECRET_TOKEN = "MY_SECRET_123"
+
+
+# ==================== FASTAPI TRIGGER ENDPOINT ====================
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def trigger_scrape(request):
+    """
+    Trigger scraping on home laptop via FastAPI agent
+    POST /api/v1/trigger-scrape/
+    """
+    try:
+        print(f"🚀 Triggering home scraper at {NGROK_URL}")
+        
+        response = requests.post(
+            NGROK_URL,
+            headers={"X-Secret": SECRET_TOKEN},
+            timeout=10  # Quick response, scraper runs async
+        )
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        print(f"✅ Scraper triggered: {result}")
+        return JsonResponse({
+            "success": True,
+            "message": "Scraper triggered on home device",
+            "result": result
+        })
+        
+    except requests.exceptions.Timeout:
+        return JsonResponse({
+            "success": False,
+            "error": "Request to home laptop timed out. Is ngrok running?"
+        }, status=504)
+    except requests.exceptions.ConnectionError:
+        return JsonResponse({
+            "success": False,
+            "error": "Cannot connect to home laptop. Check ngrok URL and agent.py"
+        }, status=503)
+    except Exception as e:
+        print(f"❌ Error triggering scraper: {e}")
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)
+
+
+# ==================== UPLOAD ENDPOINT ====================
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def upload_scraped(request):
+    """
+    Receive scraped data from home laptop
+    POST /api/v1/upload-scraped/
+    """
+    # Security check
+    token = request.headers.get("X-Secret")
+    if token != SECRET_TOKEN:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    try:
+        # Parse incoming data
+        data = json.loads(request.body.decode())
+        
+        print(f"📥 Received {len(data)} records from home scraper")
+        
+        # Save raw data to file (optional backup)
+        import os
+        from pathlib import Path
+        
+        scraped_dir = Path("/opt/az_sunshine/scraped")
+        scraped_dir.mkdir(parents=True, exist_ok=True)
+        
+        output_file = scraped_dir / "output.json"
+        with open(output_file, "w") as f:
+            json.dump(data, f, indent=2)
+        
+        print(f"💾 Saved to {output_file}")
+        
+        # Process and save to database
+        from .models import CandidateStatementOfInterest, Office
+        from django.utils import timezone
+        from datetime import datetime
+        
+        created_count = 0
+        updated_count = 0
+        error_count = 0
+        
+        for record in data:
+            try:
+                # Get or create office
+                office_name = record.get('office', 'Unknown').strip()
+                
+                # Skip invalid offices
+                if not office_name or office_name == 'Unknown' or len(office_name) < 2:
+                    error_count += 1
+                    continue
+                
+                office, _ = Office.objects.get_or_create(
+                    name=office_name,
+                    defaults={'office_type': 'STATE'}
+                )
+                
+                # Parse filing date
+                filing_date_str = record.get('filing_date')
+                if filing_date_str:
+                    try:
+                        filing_date = datetime.fromisoformat(filing_date_str).date()
+                    except:
+                        filing_date = timezone.now().date()
+                else:
+                    filing_date = timezone.now().date()
+                
+                # Get candidate name
+                candidate_name = record.get('name', '').strip()
+                if not candidate_name or len(candidate_name) < 2:
+                    error_count += 1
+                    continue
+                
+                # Create or update candidate SOI
+                candidate, created = CandidateStatementOfInterest.objects.update_or_create(
+                    candidate_name=candidate_name,
+                    office=office,
+                    defaults={
+                        'email': record.get('email', '').strip(),
+                        'phone': record.get('phone', '').strip(),
+                        'party': record.get('party', '').strip(),
+                        'filing_date': filing_date,
+                        'contact_status': 'uncontacted',
+                        'pledge_received': False,
+                    }
+                )
+                
+                if created:
+                    created_count += 1
+                else:
+                    updated_count += 1
+                    
+            except Exception as e:
+                print(f"❌ Error processing record: {e}")
+                import traceback
+                traceback.print_exc()
+                error_count += 1
+                continue
+        
+        result = {
+            "success": True,
+            "message": "Data received and processed",
+            "stats": {
+                "total": len(data),
+                "created": created_count,
+                "updated": updated_count,
+                "errors": error_count
+            }
+        }
+        
+        print(f"✅ Processing complete: {result['stats']}")
+        return JsonResponse(result)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "success": False,
+            "error": "Invalid JSON data"
+        }, status=400)
+    except Exception as e:
+        print(f"❌ Error processing upload: {e}")
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)
+
 
 
 
@@ -1204,31 +1380,3 @@ def clear_dashboard_cache(request):
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=500)
 
-
-
-
-def trigger_scrape(request):
-    try:
-        requests.post(
-            NGROK_URL,
-            headers={"X-Secret": SECRET_TOKEN},
-            timeout=5
-        )
-        return JsonResponse({"message": "Scraper triggered on home device"})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-
-
-def upload_scraped(request):
-    token = request.headers.get("X-Secret")
-    if token != SECRET_TOKEN:
-        return JsonResponse({"error": "Unauthorized"}, status=401)
-
-    data = json.loads(request.body.decode())
-
-    # Save or process incoming scraped data
-    with open("/opt/az_sunshine/scraped/output.json", "w") as f:
-        json.dump(data, f)
-
-    return JsonResponse({"message": "Scraped data received"})
