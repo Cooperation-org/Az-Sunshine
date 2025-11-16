@@ -56,16 +56,10 @@ CSRF_TRUSTED_ORIGINS = [
     "http://167.172.30.134",
     "http://167.172.30.134",
     "https://167.172.30.134",
-    "https://c874829bc855.ngrok-free.app",
+    
 ]
 
 
-# Webhook Configuration  
-HOME_SCRAPER_WEBHOOK_URL = os.getenv(
-    "HOME_SCRAPER_WEBHOOK_URL", 
-    "https://c874829bc855.ngrok-free.app/trigger"
-)
-SOI_WEBHOOK_SECRET = os.getenv("SOI_WEBHOOK_SECRET", "change-this-secret-key")
 
 
 MIDDLEWARE = [

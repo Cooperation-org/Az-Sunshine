@@ -53,6 +53,22 @@ urlpatterns = [
     
     path("trigger-scrape/", trigger_scrape),
     path("upload-scraped/", upload_scraped),
+    
+    
+    
+    path('soi/candidates/', soi_candidates_list, name='soi-candidates-list'),
+    path('soi/dashboard-stats/', soi_dashboard_stats, name='soi-dashboard-stats'),
+    
+    # === EXISTING ROUTES ===
+    path('soi/webhook/status/', scraping_status, name='soi-webhook-status'),
+    path('soi/webhook/history/', scraping_history, name='soi-webhook-history'),
+    path('soi/scrape/trigger/', trigger_scraping, name='trigger-scraping'),
+    # ... rest of your existing routes
+    
+    # === FASTAPI TRIGGERS ===
+    path('trigger-scrape/', trigger_scrape, name='trigger-scrape'),
+    path('upload-scraped/', upload_scraped, name='upload-scraped'),
+    
 
     # Router MUST come last
     path('', include(router.urls)),

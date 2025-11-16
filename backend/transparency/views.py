@@ -55,7 +55,7 @@ def trigger_scrape(request):
         response = requests.post(
             NGROK_URL,
             headers={"X-Secret": SECRET_TOKEN},
-            timeout=10  # Quick response, scraper runs async
+            timeout=600  # 10 minute timeout for scraping to complete
         )
         
         response.raise_for_status()
@@ -1380,3 +1380,100 @@ def clear_dashboard_cache(request):
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=500)
 
+
+
+# Add this near the bottom of views.py, after the other endpoints
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def soi_candidates_list(request):
+    """
+    Get SOI candidates list with pagination
+    GET /api/v1/soi/candidates/
+    """
+    try:
+        queryset = CandidateStatementOfInterest.objects.select_related('office').all()
+        
+        # Apply filters
+        status = request.query_params.get('status', None)
+        if status:
+            queryset = queryset.filter(contact_status=status)
+        
+        office_id = request.query_params.get('office', None)
+        if office_id:
+            queryset = queryset.filter(office_id=office_id)
+        
+        # Order by filing date (newest first)
+        queryset = queryset.order_by('-filing_date')
+        
+        # Pagination
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(queryset, request)
+        
+        # Transform to match frontend expectations
+        result_data = []
+        for candidate in (page if page is not None else queryset):
+            result_data.append({
+                'id': candidate.id,
+                'name': candidate.candidate_name,
+                'candidate_name': candidate.candidate_name,
+                'office': candidate.office.name if candidate.office else 'Unknown',
+                'party': candidate.party or '',
+                'email': candidate.email or '',
+                'phone': candidate.phone or '',
+                'filing_date': candidate.filing_date.isoformat() if candidate.filing_date else None,
+                'contact_status': candidate.contact_status,
+                'contacted': candidate.contact_status != 'uncontacted',
+                'contact_date': candidate.contact_date.isoformat() if candidate.contact_date else None,
+                'pledge_received': candidate.pledge_received,
+                'pledge_date': candidate.pledge_date.isoformat() if candidate.pledge_date else None,
+            })
+        
+        if page is not None:
+            return paginator.get_paginated_response(result_data)
+        
+        return Response({'results': result_data, 'count': len(result_data)})
+        
+    except Exception as e:
+        logger.error(f"Error fetching SOI candidates: {e}", exc_info=True)
+        return Response({
+            'error': str(e),
+            'results': [],
+            'count': 0
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def soi_dashboard_stats(request):
+    """
+    Get SOI dashboard statistics
+    GET /api/v1/soi/dashboard-stats/
+    """
+    try:
+        queryset = CandidateStatementOfInterest.objects.all()
+        
+        stats = {
+            'total_candidates': queryset.count(),
+            'uncontacted': queryset.filter(contact_status='uncontacted').count(),
+            'contacted': queryset.filter(contact_status='contacted').count(),
+            'pending_pledge': queryset.filter(
+                contact_status='contacted',
+                pledge_received=False
+            ).count(),
+            'pledged': queryset.filter(pledge_received=True).count(),
+        }
+        
+        return Response(stats)
+        
+    except Exception as e:
+        logger.error(f"Error fetching SOI stats: {e}", exc_info=True)
+        return Response({
+            'total_candidates': 0,
+            'uncontacted': 0,
+            'contacted': 0,
+            'pending_pledge': 0,
+            'pledged': 0,
+        })
+        
+        
