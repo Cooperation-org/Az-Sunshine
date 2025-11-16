@@ -3,7 +3,7 @@ import { Bell, Search } from "lucide-react";
 import { getOffices, getCycles, getRaceIESpending, getRaceTopDonors } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import { Bar } from "react-chartjs-2";
-
+import Header from "../components/Header";
 export default function RaceAnalysis() {
   const [offices, setOffices] = useState([]);
   const [cycles, setCycles] = useState([]);
@@ -77,17 +77,7 @@ export default function RaceAnalysis() {
       <Sidebar />
       
       <main className="ml-20 flex-1">
-        <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Race Analysis</h1>
-            <p className="text-sm text-gray-500">IE Spending by Race & Top Donors</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 rounded-lg bg-purple-600 hover:bg-purple-700 transition">
-              <Bell className="w-5 h-5 text-white" />
-            </button>
-          </div>
-        </header>
+        <Header title="Arizona Sunshine" subtitle="Race Analysis" />
 
         <div className="p-8">
           <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
