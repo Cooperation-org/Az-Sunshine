@@ -275,42 +275,43 @@ export default function SOIManagement() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
 
-      <main className="ml-20 flex-1">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+      {/* Main Content - Responsive: No left margin on mobile */}
+      <main className="flex-1 lg:ml-0 min-w-0">
+        {/* Header - Responsive */}
+        <header className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 sticky top-0 z-10">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Arizona Sunshine</h1>
-            <p className="text-sm text-gray-500">Statement of Interest Tracking</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Arizona Sunshine</h1>
+            <p className="text-xs sm:text-sm text-gray-500">Statement of Interest Tracking</p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
+          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-initial">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search candidates..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64 lg:w-80 focus:outline-none focus:ring-2 focus:ring-purple-500 transition text-sm sm:text-base"
               />
             </div>
-            <button className="p-2 rounded-lg bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] hover:bg-purple-700 transition">
+            <button className="p-2 rounded-lg bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] hover:bg-purple-700 transition flex-shrink-0">
               <Bell className="w-5 h-5 text-white" />
             </button>
           </div>
         </header>
 
-        <div className="p-8 space-y-6">
-          {/* Update Banner */}
+        <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+          {/* Update Banner - Responsive: Stack on mobile */}
           <div className="bg-gradient-to-r bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] rounded-2xl shadow-xl overflow-hidden">
-            <div className="p-8 flex items-center justify-between">
+            <div className="p-4 sm:p-6 lg:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
                   <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <RefreshCw className="w-6 h-6 text-white" />
+                    <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-white">Update Candidate Filings</h2>
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Update Candidate Filings</h2>
                 </div>
-                <p className="text-purple-100 ml-14">
+                <p className="text-purple-100 text-xs sm:text-sm ml-0 sm:ml-14">
                   Sync latest statements of interest from Arizona Secretary of State
                 </p>
               </div>
@@ -320,9 +321,9 @@ export default function SOIManagement() {
                   setShowScrapingModal(true);
                 }}
                 disabled={scraping}
-                className="bg-white text-purple-700 px-8 py-4 rounded-xl font-semibold hover:bg-purple-50 transition-all shadow-lg flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto bg-white text-purple-700 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-semibold hover:bg-purple-50 transition-all shadow-lg flex items-center justify-center gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Play className="w-5 h-5" />
+                <Play className="w-4 h-4 sm:w-5 sm:h-5" />
                 {scraping ? "Updating..." : "Check for Updates"}
               </button>
             </div>

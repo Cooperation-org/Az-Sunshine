@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutGrid,
@@ -8,15 +8,56 @@ import {
   LogOut,
   CheckSquare,
   TrendingUp,
+  Menu,
+  X,
 } from 'lucide-react';
 
 function SideBar() {
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
 
+  // Close mobile menu when route changes
+  React.useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
   return (
-    <aside className="w-20 rounded-3xl bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] flex flex-col items-center py-8 fixed h-full z-20">
+    <>
+      {/* Mobile Menu Button - Only visible on small screens */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 right-4  z-30 p-2 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white rounded-lg shadow-lg"
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Mobile Overlay - Shows when menu is open */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-20"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - Responsive: Hidden on mobile, drawer on tablet, fixed on desktop */}
+      <aside
+        className={`
+          fixed lg:static
+          top-0 left-0
+          w-64 lg:w-20
+          h-100
+          rounded-none lg:rounded-3xl
+          bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D]
+          flex flex-col items-center
+          py-8
+          z-30
+          transform transition-transform duration-300 ease-in-out
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
       <div className="flex flex-col items-center space-y-8 flex-1">
         {/* Logo */}
         <div className="rounded-xl p-1 mb-1">
@@ -67,93 +108,101 @@ function SideBar() {
 
         <hr className="w-1/2 border-white/20 p-1" />
 
-        {/* Navigation */}
-        <nav className="flex flex-col items-center space-y-6">
+        {/* Navigation - Responsive: Show labels on mobile/tablet, icons only on desktop */}
+        <nav className="flex flex-col items-center lg:items-center space-y-6 w-full px-4 lg:px-0">
           <Link
             to="/"
-            className={`p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
               isActive('/')
                 ? 'bg-white/20'
                 : 'hover:bg-white/10'
             }`}
             title="Dashboard"
           >
-            <LayoutGrid className="w-6 h-6 text-white" />
+            <LayoutGrid className="w-6 h-6 text-white flex-shrink-0" />
+            <span className="lg:hidden text-white font-medium">Dashboard</span>
           </Link>
 
           <Link
             to="/soi"
-            className={`p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
               isActive('/soi')
                 ? 'bg-white/20'
                 : 'hover:bg-white/10'
             }`}
             title="SOI Tracking"
           >
-            <CheckSquare className="w-6 h-6 text-white" />
+            <CheckSquare className="w-6 h-6 text-white flex-shrink-0" />
+            <span className="lg:hidden text-white font-medium">SOI Tracking</span>
           </Link>
 
           <Link
             to="/candidates"
-            className={`p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
               isActive('/candidates')
                 ? 'bg-white/20'
                 : 'hover:bg-white/10'
             }`}
             title="Candidates"
           >
-            <Users className="w-6 h-6 text-white" />
+            <Users className="w-6 h-6 text-white flex-shrink-0" />
+            <span className="lg:hidden text-white font-medium">Candidates</span>
           </Link>
 
           <Link
             to="/races"
-            className={`p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
               isActive('/races')
                 ? 'bg-white/20'
                 : 'hover:bg-white/10'
             }`}
             title="Race Analysis"
           >
-            <TrendingUp className="w-6 h-6 text-white" />
+            <TrendingUp className="w-6 h-6 text-white flex-shrink-0" />
+            <span className="lg:hidden text-white font-medium">Race Analysis</span>
           </Link>
 
           <Link
             to="/donors"
-            className={`p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
               isActive('/donors')
                 ? 'bg-white/20'
                 : 'hover:bg-white/10'
             }`}
             title="Donors"
           >
-            <DollarSign className="w-6 h-6 text-white" />
+            <DollarSign className="w-6 h-6 text-white flex-shrink-0" />
+            <span className="lg:hidden text-white font-medium">Donors</span>
           </Link>
 
           <Link
             to="/expenditures"
-            className={`p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
               isActive('/expenditures')
                 ? 'bg-white/20'
                 : 'hover:bg-white/10'
             }`}
             title="Expenditures"
           >
-            <FileText className="w-6 h-6 text-white" />
+            <FileText className="w-6 h-6 text-white flex-shrink-0" />
+            <span className="lg:hidden text-white font-medium">Expenditures</span>
           </Link>
         </nav>
       </div>
 
       <hr className="w-1/2 border-white/20 p-1 mb-2" />
 
-      {/* Logout */}
+      {/* Logout - Responsive: Show text on mobile/tablet */}
       <button
         onClick={() => console.log('Logout clicked')}
-        className="p-3 transition bg-white/20 rounded-xl hover:bg-white/30"
+        className="w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 transition bg-white/20 rounded-xl hover:bg-white/30"
         title="Logout"
       >
-        <LogOut className="w-6 h-6 text-white" />
+        <LogOut className="w-6 h-6 text-white flex-shrink-0" />
+        <span className="lg:hidden text-white font-medium">Logout</span>
       </button>
     </aside>
+    </>
   );
 }
 

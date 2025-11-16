@@ -51,79 +51,86 @@ export default function Donors() {
       {/* === Sidebar === */}
       <Sidebar />
 
-      {/* === Main Content === */}
-      <main className="ml-20 flex-1">
+      {/* === Main Content - Responsive: No left margin on mobile === */}
+      <main className="flex-1 lg:ml-0 min-w-0">
         {/* === Header === */}
         <Header title="Arizona Sunshine" subtitle="Donors" />
 
-        {/* === Content === */}
-        <div className="p-8">
+        {/* === Content - Responsive padding === */}
+        <div className="p-4 sm:p-6 lg:p-8">
           {loading ? (
             <div className="flex items-center justify-center h-64 text-gray-500">
               Loading donors...
             </div>
           ) : (
             <>
-              {/* === Donors Table === */}
+              {/* === Donors Table - Responsive: Horizontal scroll on mobile === */}
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                        Donor/Entity Name
-                      </th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                        Entity Type
-                      </th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                        Location
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {donors.length === 0 ? (
+                {/* Table Container - Horizontal scroll on mobile */}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <td colSpan="3" className="py-12 text-center text-gray-500">
-                          {searchTerm
-                            ? "No donors found matching your search."
-                            : "No donors found."}
-                        </td>
+                        {/* Table Headers - Responsive text sizes and padding */}
+                        <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                          Donor/Entity Name
+                        </th>
+                        <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                          Entity Type
+                        </th>
+                        <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                          Location
+                        </th>
                       </tr>
-                    ) : (
-                      donors.map((donor, idx) => (
-                      <tr key={donor.name_id || idx} className="hover:bg-gray-50 transition">
-                        <td className="py-5 px-6">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
-                              {(donor.full_name || donor.name || "?").charAt(0).toUpperCase()}
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {donors.length === 0 ? (
+                        <tr>
+                          <td colSpan="3" className="py-8 sm:py-12 text-center text-xs sm:text-sm text-gray-500">
+                            {searchTerm
+                              ? "No donors found matching your search."
+                              : "No donors found."}
+                          </td>
+                        </tr>
+                      ) : (
+                        donors.map((donor, idx) => (
+                        <tr key={donor.name_id || idx} className="hover:bg-gray-50 transition">
+                          {/* Table Cells - Responsive padding and text sizes */}
+                          <td className="py-3 sm:py-5 px-3 sm:px-6">
+                            <div className="flex items-center gap-2 sm:gap-4">
+                              {/* Avatar - Responsive size */}
+                              <div className="w-8 h-8 sm:w-10 sm:h-12 rounded-lg bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] flex items-center justify-center text-white text-xs sm:text-sm lg:text-lg font-semibold flex-shrink-0">
+                                {(donor.full_name || donor.name || "?").charAt(0).toUpperCase()}
+                              </div>
+                              <span className="text-xs sm:text-sm lg:text-base text-gray-900 font-medium truncate">{donor.full_name || donor.name || "Unknown"}</span>
                             </div>
-                            <span className="text-gray-900 font-medium">{donor.full_name || donor.name || "Unknown"}</span>
-                          </div>
-                        </td>
-                        <td className="py-5 px-6 text-gray-700 font-medium">
-                          {donor.entity_type?.name || "N/A"}
-                        </td>
-                        <td className="py-5 px-6 text-gray-900 font-semibold">
-                          {donor.city && donor.state ? `${donor.city}, ${donor.state}` : "N/A"}
-                        </td>
-                      </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                          </td>
+                          <td className="py-3 sm:py-5 px-3 sm:px-6 text-xs sm:text-sm text-gray-700 font-medium whitespace-nowrap">
+                            {donor.entity_type?.name || "N/A"}
+                          </td>
+                          <td className="py-3 sm:py-5 px-3 sm:px-6 text-xs sm:text-sm text-gray-900 font-semibold whitespace-nowrap">
+                            {donor.city && donor.state ? `${donor.city}, ${donor.state}` : "N/A"}
+                          </td>
+                        </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              {/* === Pagination === */}
-              <div className="mt-6 flex items-center justify-between">
-                <p className="text-sm text-gray-600">
+              {/* === Pagination - Responsive: Stack on mobile === */}
+              <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+                <p className="text-xs sm:text-sm text-gray-600">
                   {totalCount} results
                 </p>
-                <div className="flex items-center gap-2">
+                {/* Pagination - Responsive: Wrap on mobile */}
+                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                   {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-10 h-10 rounded-lg font-medium transition ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition ${
                         currentPage === page
                           ? "bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white"
                           : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
@@ -135,9 +142,9 @@ export default function Donors() {
                   {totalPages > 5 && (
                     <button
                       onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
-                      className="w-10 h-10 rounded-lg bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 flex items-center justify-center transition"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 flex items-center justify-center transition"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   )}
                 </div>
