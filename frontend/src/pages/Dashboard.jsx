@@ -175,16 +175,19 @@ export default function Dashboard() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
 
-      <main className="ml-20 flex-1">
-      <Header title="Arizona Sunshine" subtitle="Dashboard - Phase 1 Overview" />
+      {/* Main Content - Responsive: No left margin on mobile, padding on desktop */}
+      <main className="flex-1 lg:ml-0 min-w-0">
+        <Header title="Arizona Sunshine" subtitle="Dashboard - Phase 1 Overview" />
 
-        <div className="p-8">
-          {/* Charts Section */}
-          <div className="grid grid-cols-3 gap-6 mb-6">
-            <div className="col-span-2 bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] rounded-3xl p-8 shadow-lg">
-              <h2 className="text-white text-xl font-bold mb-1">Top 10 Donors</h2>
-              <p className="text-white/70 text-sm mb-6">Total Contribution</p>
-              <div className="h-[240px] bg-white/5 rounded-xl p-4">
+        <div className="p-4 sm:p-6 lg:p-8">
+          {/* Charts Section - Responsive: 1 column on mobile, 2 on tablet, 3 on desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+            {/* Top Donors Chart - Responsive: Full width on mobile/tablet, 2 columns on desktop */}
+            <div className="md:col-span-2 lg:col-span-2 bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg">
+              <h2 className="text-white text-lg sm:text-xl font-bold mb-1">Top 10 Donors</h2>
+              <p className="text-white/70 text-xs sm:text-sm mb-4 sm:mb-6">Total Contribution</p>
+              {/* Chart Container - Responsive height */}
+              <div className="h-[200px] sm:h-[240px] lg:h-[280px] bg-white/5 rounded-xl p-2 sm:p-4">
                 {loading.charts ? (
                   <ChartSkeleton />
                 ) : !donorData ? (
@@ -233,10 +236,12 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-8 shadow-lg">
-              <h2 className="text-gray-900 text-xl font-bold mb-1">Support vs Oppose</h2>
-              <p className="text-gray-500 text-sm mb-6">Spending</p>
-              <div className="flex justify-center items-center h-[240px]">
+            {/* Support vs Oppose Chart - Responsive: Full width on mobile, 1 column on desktop */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg">
+              <h2 className="text-gray-900 text-lg sm:text-xl font-bold mb-1">Support vs Oppose</h2>
+              <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">Spending</p>
+              {/* Chart Container - Responsive height and size */}
+              <div className="flex justify-center items-center h-[200px] sm:h-[240px] lg:h-[280px]">
                 {loading.charts ? (
                   <div className="w-52 h-52">
                     <ChartSkeleton />
@@ -244,7 +249,8 @@ export default function Dashboard() {
                 ) : (supportAmount === 0 && opposeAmount === 0) ? (
                   <div className="text-gray-400">No expenditure data</div>
                 ) : (
-                  <div className="relative w-52 h-52">
+                  // Doughnut Chart - Responsive size
+                  <div className="relative w-40 h-40 sm:w-48 sm:h-48 lg:w-52 lg:h-52">
                     <Doughnut 
                       data={pieData} 
                       options={{ 
@@ -287,8 +293,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Metrics Cards */}
-          <div className="grid grid-cols-4 gap-6 mb-6">
+          {/* Metrics Cards - Responsive: 1 column on mobile, 2 on tablet, 4 on desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
             {loading.summary ? (
               <>
                 <MetricCardSkeleton />
@@ -298,93 +304,104 @@ export default function Dashboard() {
               </>
             ) : (
               <>
-                <div className="bg-white rounded-2xl p-6 shadow-lg text-black relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full"></div>
-                  <p className="text-black/90 text-sm mb-1">Total IE Spending</p>
-                  <p className="text-3xl font-bold">${Number(metrics.total_expenditures || 0).toLocaleString()}</p>
+                {/* Metric Cards - Responsive padding and text sizes */}
+                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg text-black relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-bl-full"></div>
+                  <p className="text-black/90 text-xs sm:text-sm mb-1">Total IE Spending</p>
+                  <p className="text-2xl sm:text-3xl font-bold">${Number(metrics.total_expenditures || 0).toLocaleString()}</p>
                 </div>
                 
-                <div className="bg-white rounded-2xl p-6 shadow-lg text-black relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full"></div>
-                  <p className="text-black/90 text-sm mb-1">Total Candidates</p>
-                  <p className="text-3xl font-bold">{Number(metrics.num_candidates || 0).toLocaleString()}</p>
+                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg text-black relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-bl-full"></div>
+                  <p className="text-black/90 text-xs sm:text-sm mb-1">Total Candidates</p>
+                  <p className="text-2xl sm:text-3xl font-bold">{Number(metrics.num_candidates || 0).toLocaleString()}</p>
                 </div>
                 
-                <div className="bg-white rounded-2xl p-6 shadow-lg text-black relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full"></div>
-                  <p className="text-black/90 text-sm mb-1">IE Transactions</p>
-                  <p className="text-3xl font-bold">{Number(metrics.num_expenditures || 0).toLocaleString()}</p>
+                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg text-black relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-bl-full"></div>
+                  <p className="text-black/90 text-xs sm:text-sm mb-1">IE Transactions</p>
+                  <p className="text-2xl sm:text-3xl font-bold">{Number(metrics.num_expenditures || 0).toLocaleString()}</p>
                 </div>
 
-                <Link to="/soi" className="bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] rounded-2xl p-6 shadow-lg text-white relative overflow-hidden hover:shadow-xl transition">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-bl-full"></div>
-                  <p className="text-white/90 text-sm mb-1">SOI Uncontacted</p>
-                  <p className="text-3xl font-bold">{metrics.soi_stats?.uncontacted || 0}</p>
+                {/* SOI Card - Responsive padding and text sizes */}
+                <Link to="/soi" className="bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] rounded-2xl p-4 sm:p-6 shadow-lg text-white relative overflow-hidden hover:shadow-xl transition">
+                  <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-white/10 rounded-bl-full"></div>
+                  <p className="text-white/90 text-xs sm:text-sm mb-1">SOI Uncontacted</p>
+                  <p className="text-2xl sm:text-3xl font-bold">{metrics.soi_stats?.uncontacted || 0}</p>
                   <p className="text-xs text-white/70 mt-2">Click to manage →</p>
                 </Link>
               </>
             )}
           </div>
 
-          {/* Bottom Section */}
-          <div className="grid grid-cols-3 gap-6">
-            <div className="col-span-2 bg-white rounded-2xl p-6 shadow-lg">
-              <h2 className="text-gray-900 text-lg font-semibold mb-4">Latest Independent Expenditure</h2>
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">Date</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">Committee</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">Candidate</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">Amount</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">Support/Oppose</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading.expenditures ? (
-                    <>
-                      <TableRowSkeleton />
-                      <TableRowSkeleton />
-                      <TableRowSkeleton />
-                      <TableRowSkeleton />
-                    </>
-                  ) : recentExpenditures.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="py-8 text-center text-gray-400">
-                        No expenditure data available
-                      </td>
-                    </tr>
-                  ) : (
-                    recentExpenditures.map((exp, idx) => (
-                      <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-4 px-2 text-sm text-gray-700">
-                          {exp.transaction_date ? new Date(exp.transaction_date).toLocaleDateString() : "N/A"}
-                        </td>
-                        <td className="py-4 px-2 text-sm text-gray-700">{exp.committee_name || "Unknown"}</td>
-                        <td className="py-4 px-2 text-sm text-gray-700">{exp.candidate_name || "N/A"}</td>
-                        <td className="py-4 px-2 text-sm text-gray-700">${Number(exp.amount || 0).toLocaleString()}</td>
-                        <td className="py-4 px-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            exp.is_for_benefit 
-                              ? "bg-green-100 text-green-700" 
-                              : "bg-red-100 text-red-700"
-                          }`}>
-                            {exp.is_for_benefit ? "Support" : "Oppose"}
-                          </span>
-                        </td>
+          {/* Bottom Section - Responsive: 1 column on mobile, 3 columns on desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Expenditures Table - Responsive: Full width on mobile, 2 columns on desktop */}
+            <div className="lg:col-span-2 bg-white rounded-2xl p-4 sm:p-6 shadow-lg overflow-hidden">
+              <h2 className="text-gray-900 text-base sm:text-lg font-semibold mb-4">Latest Independent Expenditure</h2>
+              {/* Table Container - Horizontal scroll on mobile */}
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr className="border-b border-gray-200">
+                        {/* Table Headers - Responsive text sizes */}
+                        <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Date</th>
+                        <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Committee</th>
+                        <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Candidate</th>
+                        <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Amount</th>
+                        <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Support/Oppose</th>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {loading.expenditures ? (
+                        <>
+                          <TableRowSkeleton />
+                          <TableRowSkeleton />
+                          <TableRowSkeleton />
+                          <TableRowSkeleton />
+                        </>
+                      ) : recentExpenditures.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="py-8 text-center text-gray-400 text-sm">
+                            No expenditure data available
+                          </td>
+                        </tr>
+                      ) : (
+                        recentExpenditures.map((exp, idx) => (
+                          <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                            {/* Table Cells - Responsive padding and text sizes */}
+                            <td className="py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">
+                              {exp.transaction_date ? new Date(exp.transaction_date).toLocaleDateString() : "N/A"}
+                            </td>
+                            <td className="py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-gray-700 max-w-[120px] sm:max-w-none truncate sm:whitespace-normal">{exp.committee_name || "Unknown"}</td>
+                            <td className="py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-gray-700 max-w-[100px] sm:max-w-none truncate sm:whitespace-normal">{exp.candidate_name || "N/A"}</td>
+                            <td className="py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">${Number(exp.amount || 0).toLocaleString()}</td>
+                            <td className="py-3 sm:py-4 px-2 sm:px-4">
+                              <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                                exp.is_for_benefit 
+                                  ? "bg-green-100 text-green-700" 
+                                  : "bg-red-100 text-red-700"
+                              }`}>
+                                {exp.is_for_benefit ? "Support" : "Oppose"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
               <Link to="/expenditures" className="inline-block mt-4 text-purple-600 hover:text-purple-700 text-sm font-medium">
                 View All Expenditures →
               </Link>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h2 className="text-gray-900 text-lg font-semibold mb-4">Top 10 IE Committees</h2>
-              <div className="space-y-3">
+            {/* Top Committees List - Responsive: Full width on mobile, 1 column on desktop */}
+            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+              <h2 className="text-gray-900 text-base sm:text-lg font-semibold mb-4">Top 10 IE Committees</h2>
+              <div className="space-y-2 sm:space-y-3">
                 {loading.charts ? (
                   <>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
@@ -397,12 +414,13 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   chartsData.top_committees.map((committee, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    <div key={idx} className="flex items-center gap-2 sm:gap-3">
+                      {/* Committee Avatar - Responsive size */}
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] flex items-center justify-center text-white text-xs sm:text-sm font-semibold flex-shrink-0">
                         {(committee.name_full || "?").charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                           {committee.name_full || "Unknown"}
                         </p>
                         <p className="text-xs text-gray-500">${Number(committee.total_ie || 0).toLocaleString()}</p>
