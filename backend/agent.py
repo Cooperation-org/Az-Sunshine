@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import subprocess
 import requests
 import json
@@ -9,6 +10,15 @@ from datetime import datetime
 
 app = FastAPI()
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Configuration - UPDATE THESE VALUES
 SERVER_UPLOAD_URL = "http://167.172.30.134/api/v1/upload-scraped/"
 SECRET_TOKEN = os.getenv("SECRET_TOKEN", "MY_SECRET_123")
@@ -17,7 +27,7 @@ SECRET_TOKEN = os.getenv("SECRET_TOKEN", "MY_SECRET_123")
 BASE_DIR = Path(__file__).parent
 MANAGE_PY = BASE_DIR / "manage.py"
 CSV_OUTPUT = BASE_DIR / "data" / "soi_candidates.csv"
-VENV_PYTHON = BASE_DIR.parent / "venv" / "bin" / "python3"  # Adjust if needed
+VENV_PYTHON = BASE_DIR.parent / "venv" / "bin" / "python3"
 
 
 @app.get("/")
@@ -28,7 +38,8 @@ async def health_check():
         "service": "SOI Scraper Agent",
         "manage_py_exists": MANAGE_PY.exists(),
         "python_path": str(VENV_PYTHON),
-        "csv_output_dir": str(CSV_OUTPUT.parent)
+        "csv_output_dir": str(CSV_OUTPUT.parent),
+        "secret_token_configured": bool(SECRET_TOKEN)
     }
 
 
@@ -43,6 +54,7 @@ async def run_scraper(request: Request):
     # Security check
     token = request.headers.get("X-Secret")
     if token != SECRET_TOKEN:
+        print(f"❌ Unauthorized: received token '{token}', expected '{SECRET_TOKEN}'")
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     print("\n" + "="*70)
@@ -207,4 +219,5 @@ if __name__ == "__main__":
     print(f"📤 Upload URL: {SERVER_UPLOAD_URL}")
     print("="*70 + "\n")
     
+    # Run on port 5001 (not 8000 which conflicts with Django)
     uvicorn.run(app, host="0.0.0.0", port=5001)
