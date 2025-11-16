@@ -18,6 +18,7 @@ import {
   Legend,
 } from "chart.js";
 import Sidebar from "../components/Sidebar";
+import Preloader from "../components/Preloader";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -61,17 +62,9 @@ export default function CandidateDetail() {
     }
   }, [id]);
 
+  // Show preloader while candidate data is loading
   if (loading) {
-    return (
-      <div className="flex min-h-screen bg-gray-50">
-        <Sidebar />
-        <main className="ml-20 flex-1 p-8">
-          <div className="flex items-center justify-center h-64 text-gray-500">
-            Loading candidate data...
-          </div>
-        </main>
-      </div>
-    );
+    return <Preloader message="Loading candidate details..." />;
   }
 
   if (!candidate) {
