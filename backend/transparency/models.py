@@ -696,7 +696,7 @@ class CandidateStatementOfInterest(models.Model):
     phone = models.CharField(max_length=100, blank=True, db_index=True)  # NEW FIELD
     filing_date = models.DateField(db_index=True)
     party = models.CharField(max_length=100, blank=True, null=True, db_index=True)
-
+    source_url = models.URLField(max_length=500, null=True, blank=True, db_index=True)  # ADD THIS LINE
     
     # Manual tracking via Django admin
     contact_status = models.CharField(
