@@ -18,6 +18,7 @@ import {
   Filter
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
+import Preloader from "../components/Preloader";
 
 // REAL API CALLS
 const API_BASE_URL = "http://167.172.30.134/api/v1/";
@@ -265,15 +266,9 @@ export default function SOIManagement() {
     );
   };
 
+  // Show preloader on initial page load (same as original SOI implementation)
   if (loading && currentPage === 1) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading candidate data...</p>
-        </div>
-      </div>
-    );
+    return <Preloader message="Loading candidate data..." />;
   }
 
   return (

@@ -3,6 +3,7 @@ import { Bell, Search, ChevronRight } from "lucide-react";
 import { getDonors } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import Preloader from "../components/Preloader";
 export default function Donors() {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +40,11 @@ export default function Donors() {
     setCurrentPage(1);
     loadDonors(1);
   };
+
+  // Show preloader while initial data is loading
+  if (loading && currentPage === 1) {
+    return <Preloader message="Loading donors..." />;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">

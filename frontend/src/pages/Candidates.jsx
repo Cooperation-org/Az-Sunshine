@@ -4,6 +4,7 @@ import { getCandidates } from "../api/api";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import Preloader from "../components/Preloader";
 export default function Candidates() {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +39,11 @@ export default function Candidates() {
     // Return a default status
     return { label: "Active", color: "bg-green-100 text-green-700" };
   };
+
+  // Show preloader while initial data is loading
+  if (loading && currentPage === 1) {
+    return <Preloader message="Loading candidates..." />;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
