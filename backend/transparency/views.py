@@ -25,71 +25,96 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-import logging
 import requests
 import json
-
-
+import logging
 
 
 # Initialize logger
 logger = logging.getLogger(__name__)
-
-
 NGROK_URL = "https://c23d58d5e91b.ngrok-free.app/run-scraper"
 SECRET_TOKEN = "MY_SECRET_123"
 
 
-# ==================== FASTAPI TRIGGER ENDPOINT ====================
-
 @require_http_methods(["POST"])
-@csrf_exempt
+@csrf_exempt  # CRITICAL: Must disable CSRF for API calls
 def trigger_scrape(request):
     """
     Trigger scraping on home laptop via FastAPI agent
     POST /api/v1/trigger-scrape/
+    
+    This should call the LOCAL agent at http://localhost:5001
+    which is then exposed via ngrok tunnel
     """
     try:
-        print(f"🚀 Triggering home scraper at {NGROK_URL}")
+        logger.info(f"🚀 Triggering scraper at {NGROK_URL}")
         
         response = requests.post(
             NGROK_URL,
-            headers={"X-Secret": SECRET_TOKEN},
-            timeout=600  # 10 minute timeout for scraping to complete
+            headers={
+                "X-Secret": SECRET_TOKEN,
+                "Content-Type": "application/json"
+            },
+            timeout=600,  # 10 minute timeout for scraping to complete
+            json={}  # Send empty JSON body
         )
+        
+        # Check if we got HTML error page instead of JSON
+        content_type = response.headers.get('content-type', '')
+        if 'text/html' in content_type:
+            logger.error(f"❌ Received HTML response instead of JSON: {response.text[:200]}")
+            return JsonResponse({
+                "success": False,
+                "error": "Agent returned HTML error page. Is the agent running on port 5001?"
+            }, status=503)
         
         response.raise_for_status()
         result = response.json()
         
-        print(f"✅ Scraper triggered: {result}")
+        logger.info(f"✅ Scraper triggered: {result}")
         return JsonResponse({
             "success": True,
             "message": "Scraper triggered on home device",
             "result": result
         })
         
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"❌ Connection error: {e}")
+        return JsonResponse({
+            "success": False,
+            "error": f"Cannot connect to agent at {NGROK_URL}. Is ngrok tunnel active?"
+        }, status=503)
+        
     except requests.exceptions.Timeout:
         return JsonResponse({
             "success": False,
-            "error": "Request to home laptop timed out. Is ngrok running?"
+            "error": "Request to agent timed out (10 min limit)"
         }, status=504)
-    except requests.exceptions.ConnectionError:
-        return JsonResponse({
-            "success": False,
-            "error": "Cannot connect to home laptop. Check ngrok URL and agent.py"
-        }, status=503)
-    except Exception as e:
-        print(f"❌ Error triggering scraper: {e}")
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"❌ Request error: {e}")
         return JsonResponse({
             "success": False,
             "error": str(e)
         }, status=500)
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"❌ JSON decode error: {e}")
+        return JsonResponse({
+            "success": False,
+            "error": "Agent returned invalid JSON response"
+        }, status=500)
+        
+    except Exception as e:
+        logger.error(f"❌ Unexpected error: {e}", exc_info=True)
+        return JsonResponse({
+            "success": False,
+            "error": f"Unexpected error: {str(e)}"
+        }, status=500)
 
-
-# ==================== UPLOAD ENDPOINT ====================
 
 @require_http_methods(["POST"])
-@csrf_exempt
+@csrf_exempt  # CRITICAL: Must disable CSRF for external calls
 def upload_scraped(request):
     """
     Receive scraped data from home laptop
@@ -98,26 +123,14 @@ def upload_scraped(request):
     # Security check
     token = request.headers.get("X-Secret")
     if token != SECRET_TOKEN:
+        logger.warning("❌ Unauthorized upload attempt")
         return JsonResponse({"error": "Unauthorized"}, status=401)
 
     try:
         # Parse incoming data
         data = json.loads(request.body.decode())
         
-        print(f"📥 Received {len(data)} records from home scraper")
-        
-        # Save raw data to file (optional backup)
-        import os
-        from pathlib import Path
-        
-        scraped_dir = Path("/opt/az_sunshine/scraped")
-        scraped_dir.mkdir(parents=True, exist_ok=True)
-        
-        output_file = scraped_dir / "output.json"
-        with open(output_file, "w") as f:
-            json.dump(data, f, indent=2)
-        
-        print(f"💾 Saved to {output_file}")
+        logger.info(f"📥 Received {len(data)} records from home scraper")
         
         # Process and save to database
         from .models import CandidateStatementOfInterest, Office
@@ -141,7 +154,7 @@ def upload_scraped(request):
                 office, _ = Office.objects.get_or_create(
                     name=office_name,
                     defaults={
-                        'office_id': hash(office_name) % 1000000,  # Generate ID
+                        'office_id': hash(office_name) % 1000000,
                         'office_type': 'STATE'
                     }
                 )
@@ -182,9 +195,7 @@ def upload_scraped(request):
                     updated_count += 1
                     
             except Exception as e:
-                print(f"❌ Error processing record: {e}")
-                import traceback
-                traceback.print_exc()
+                logger.error(f"❌ Error processing record: {e}")
                 error_count += 1
                 continue
         
@@ -199,24 +210,31 @@ def upload_scraped(request):
             }
         }
         
-        print(f"✅ Processing complete: {result['stats']}")
+        logger.info(f"✅ Processing complete: {result['stats']}")
         return JsonResponse(result)
         
     except json.JSONDecodeError:
+        logger.error("❌ Invalid JSON data")
         return JsonResponse({
             "success": False,
             "error": "Invalid JSON data"
         }, status=400)
+        
     except Exception as e:
-        print(f"❌ Error processing upload: {e}")
+        logger.error(f"❌ Error processing upload: {e}", exc_info=True)
         return JsonResponse({
             "success": False,
             "error": str(e)
         }, status=500)
 
 
-
-
+# Add CORS headers manually if needed
+def add_cors_headers(response):
+    """Add CORS headers to response"""
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "Content-Type, X-Secret"
+    return response
 
 # ==================== PAGINATION ====================
 
