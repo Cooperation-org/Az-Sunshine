@@ -114,7 +114,7 @@ def trigger_scrape(request):
 
 
 @require_http_methods(["POST"])
-@csrf_exempt  # CRITICAL: Must disable CSRF for external calls
+@csrf_exempt
 def upload_scraped(request):
     """
     Receive scraped data from home laptop
@@ -132,7 +132,6 @@ def upload_scraped(request):
         
         logger.info(f"📥 Received {len(data)} records from home scraper")
         
-        # Process and save to database
         from .models import CandidateStatementOfInterest, Office
         from django.utils import timezone
         from datetime import datetime
@@ -140,24 +139,38 @@ def upload_scraped(request):
         created_count = 0
         updated_count = 0
         error_count = 0
+        error_details = []  # Track first 10 errors for debugging
         
-        for record in data:
+        for idx, record in enumerate(data):
             try:
-                # Get or create office
-                office_name = record.get('office', 'Unknown').strip()
-                
-                # Skip invalid offices
-                if not office_name or office_name == 'Unknown' or len(office_name) < 2:
+                # Get candidate name FIRST
+                candidate_name = record.get('name', '').strip()
+                if not candidate_name or len(candidate_name) < 2:
                     error_count += 1
+                    if len(error_details) < 10:
+                        error_details.append(f"Row {idx}: Empty candidate name")
                     continue
                 
-                office, _ = Office.objects.get_or_create(
+                # Get or create office (with better error handling)
+                office_name = record.get('office', '').strip()
+                
+                if not office_name or len(office_name) < 2:
+                    error_count += 1
+                    if len(error_details) < 10:
+                        error_details.append(f"Row {idx} ({candidate_name}): Empty office name")
+                    continue
+                
+                # Create office with a unique office_id
+                office, office_created = Office.objects.get_or_create(
                     name=office_name,
                     defaults={
-                        'office_id': hash(office_name) % 1000000,
+                        'office_id': abs(hash(office_name)) % 1000000,  # Use abs() to ensure positive
                         'office_type': 'STATE'
                     }
                 )
+                
+                if office_created:
+                    logger.info(f"✨ Created new office: {office_name}")
                 
                 # Parse filing date
                 filing_date_str = record.get('filing_date')
@@ -168,12 +181,6 @@ def upload_scraped(request):
                         filing_date = timezone.now().date()
                 else:
                     filing_date = timezone.now().date()
-                
-                # Get candidate name
-                candidate_name = record.get('name', '').strip()
-                if not candidate_name or len(candidate_name) < 2:
-                    error_count += 1
-                    continue
                 
                 # Create or update candidate SOI
                 candidate, created = CandidateStatementOfInterest.objects.update_or_create(
@@ -191,12 +198,18 @@ def upload_scraped(request):
                 
                 if created:
                     created_count += 1
+                    if created_count <= 5:  # Log first 5 creations
+                        logger.info(f"✅ Created: {candidate_name} - {office_name}")
                 else:
                     updated_count += 1
+                    if updated_count <= 5:  # Log first 5 updates
+                        logger.info(f"🔄 Updated: {candidate_name} - {office_name}")
                     
             except Exception as e:
-                logger.error(f"❌ Error processing record: {e}")
                 error_count += 1
+                if len(error_details) < 10:
+                    error_details.append(f"Row {idx} ({record.get('name', 'Unknown')}): {str(e)}")
+                logger.error(f"❌ Error processing record {idx}: {e}")
                 continue
         
         result = {
@@ -210,7 +223,10 @@ def upload_scraped(request):
             }
         }
         
-        logger.info(f"✅ Processing complete: {result['stats']}")
+        if error_details:
+            result["error_samples"] = error_details
+        
+        logger.info(f"✅ Processing complete: Created={created_count}, Updated={updated_count}, Errors={error_count}")
         return JsonResponse(result)
         
     except json.JSONDecodeError:
@@ -226,7 +242,6 @@ def upload_scraped(request):
             "success": False,
             "error": str(e)
         }, status=500)
-
 
 # Add CORS headers manually if needed
 def add_cors_headers(response):
