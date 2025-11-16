@@ -23,7 +23,7 @@ const ChartSkeleton = () => (
 
 const MetricCardSkeleton = () => (
   <div className="bg-white rounded-2xl p-6 shadow-lg">
-    <div className="h-4 bg-gray-200 rounded w-2/3 mb-3 animate-pulse">Hello World</div>
+    <div className="h-4 bg-gray-200 rounded w-2/3 mb-3 animate-pulse"></div>
     <div className="h-8 bg-gray-200 rounded w-1/2 animate-pulse"></div>
   </div>
 );
