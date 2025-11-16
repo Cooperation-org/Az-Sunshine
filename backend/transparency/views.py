@@ -193,6 +193,7 @@ def upload_scraped(request):
                         'filing_date': filing_date,
                         'contact_status': 'uncontacted',
                         'pledge_received': False,
+                        'source_url': record.get('source_url', 'https://azsos.gov/elections'),  # ADD THIS LINE
                     }
                 )
                 
