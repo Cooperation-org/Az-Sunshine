@@ -4,6 +4,7 @@ import { getOffices, getCycles, getRaceIESpending, getRaceTopDonors } from "../a
 import Sidebar from "../components/Sidebar";
 import { Bar } from "react-chartjs-2";
 import Header from "../components/Header";
+import Preloader from "../components/Preloader";
 export default function RaceAnalysis() {
   const [offices, setOffices] = useState([]);
   const [cycles, setCycles] = useState([]);
@@ -11,11 +12,14 @@ export default function RaceAnalysis() {
   const [selectedCycle, setSelectedCycle] = useState("");
   const [raceData, setRaceData] = useState(null);
   const [topDonors, setTopDonors] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Changed to true for initial load
+  const [initialLoad, setInitialLoad] = useState(true); // Track initial page load
 
   useEffect(() => {
     async function loadDropdowns() {
       try {
+        setLoading(true);
+        // Load dropdown options (offices and cycles) - these are fast lookups
         const [officesData, cyclesData] = await Promise.all([
           getOffices(),
           getCycles()
@@ -23,21 +27,38 @@ export default function RaceAnalysis() {
         setOffices(officesData);
         setCycles(cyclesData);
         
+        // Auto-select first cycle if available
         if (cyclesData.length > 0) {
           setSelectedCycle(cyclesData[0].cycle_id);
         }
       } catch (error) {
         console.error("Error loading dropdowns:", error);
+        // Set empty arrays on error so page still renders
+        setOffices([]);
+        setCycles([]);
+      } finally {
+        // Always set loading to false after dropdowns load
+        // This allows the page to render even if no office/cycle is selected yet
+        setLoading(false);
+        setInitialLoad(false);
       }
     }
     loadDropdowns();
   }, []);
 
   async function loadRaceData() {
-    if (!selectedOffice || !selectedCycle) return;
+    // Don't load race data if office or cycle is not selected
+    if (!selectedOffice || !selectedCycle) {
+      setRaceData(null);
+      setTopDonors([]);
+      return;
+    }
     
+    // Set loading state for race data (not initial page load)
     setLoading(true);
     try {
+      // Load race spending and top donors data in parallel
+      // These API calls might be slow if the database queries are complex
       const [spending, donors] = await Promise.all([
         getRaceIESpending(selectedOffice, selectedCycle),
         getRaceTopDonors(selectedOffice, selectedCycle)
@@ -46,7 +67,11 @@ export default function RaceAnalysis() {
       setTopDonors(donors.top_donors || []);
     } catch (error) {
       console.error("Error loading race data:", error);
+      // Set empty data on error so page still renders
+      setRaceData(null);
+      setTopDonors([]);
     } finally {
+      // Always set loading to false after race data loads
       setLoading(false);
     }
   }
@@ -71,6 +96,12 @@ export default function RaceAnalysis() {
       }
     ]
   } : null;
+
+  // Show preloader ONLY on initial page load (while dropdowns are loading)
+  // Once dropdowns are loaded, show the page even if race data is still loading
+  if (initialLoad) {
+    return <Preloader message="Loading race analysis..." />;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">

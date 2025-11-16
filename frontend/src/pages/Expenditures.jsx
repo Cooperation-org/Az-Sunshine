@@ -3,6 +3,7 @@ import { Bell, Search, ChevronRight, ChevronLeft } from "lucide-react";
 import { getExpenditures } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import Preloader from "../components/Preloader";
 export default function Expenditures() {
   const [expenditures, setExpenditures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,11 @@ export default function Expenditures() {
       (exp.support_oppose || "").toLowerCase().includes(searchLower)
     );
   });
+
+  // Show preloader while initial data is loading
+  if (loading && currentPage === 1) {
+    return <Preloader message="Loading expenditures..." />;
+  }
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";

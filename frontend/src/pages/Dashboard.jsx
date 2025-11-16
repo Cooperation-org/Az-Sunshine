@@ -14,6 +14,7 @@ import { Bell, Search } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import api from "../api/api";
 import Header from "../components/Header";
+import Preloader from "../components/Preloader";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -132,14 +133,16 @@ export default function Dashboard() {
   }
 
   // Prepare chart data
+  // Using bright, visible colors that contrast well with the purple gradient background
   const donorData = chartsData?.top_donors?.length > 0 ? {
     labels: chartsData.top_donors.map(d => d.name_full || "Unknown"),
     datasets: [{
       label: "Total Contributions (USD)",
       data: chartsData.top_donors.map(d => parseFloat(d.total_contributed || 0)),
-      backgroundColor: "rgba(124, 107, 166, 0.6)",
-      borderColor: "rgba(124, 107, 166, 1)",
-      borderWidth: 1,
+      // Bright cyan/teal color for better visibility against purple background
+      backgroundColor: "rgba(6, 182, 212, 0.8)",  // Cyan-500 with 80% opacity for better visibility
+      borderColor: "rgba(255, 255, 255, 1)",      // White border for sharp contrast
+      borderWidth: 2,                              // Thicker border for better visibility
       borderRadius: 6,
       barThickness: 30,
     }],
@@ -160,6 +163,13 @@ export default function Dashboard() {
       borderRadius: 4,
     }],
   };
+
+  // Show preloader while initial data is loading
+  // Check if all critical data sections are still loading
+  const isInitialLoading = loading.summary && loading.charts && loading.expenditures;
+  if (isInitialLoading) {
+    return <Preloader message="Loading dashboard data..." />;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -196,15 +206,26 @@ export default function Dashboard() {
                           borderColor: '#E5E7EB',
                           borderWidth: 1,
                           padding: 12,
-                          displayColors: false,
+                          displayColors: true,  // Show color in tooltip for better visibility
                           callbacks: {
                             label: (context) => `$${context.parsed.y.toLocaleString()}`
                           }
                         }
                       },
                       scales: {
-                        x: { display: false, grid: { display: false } },
-                        y: { display: false, grid: { display: false } }
+                        x: { 
+                          display: false, 
+                          grid: { display: false } 
+                        },
+                        y: { 
+                          display: false, 
+                          grid: { display: false } 
+                        }
+                      },
+                      // Enhanced visual settings for better visibility
+                      animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
                       }
                     }} 
                   />
