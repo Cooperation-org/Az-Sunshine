@@ -298,7 +298,7 @@ export default function SOIManagement() {
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
               />
             </div>
-            <button className="p-2 rounded-lg bg-purple-600 hover:bg-purple-700 transition">
+            <button className="p-2 rounded-lg bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] hover:bg-purple-700 transition">
               <Bell className="w-5 h-5 text-white" />
             </button>
           </div>
@@ -306,7 +306,7 @@ export default function SOIManagement() {
 
         <div className="p-8 space-y-6">
           {/* Update Banner */}
-          <div className="bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] rounded-2xl shadow-xl overflow-hidden">
             <div className="p-8 flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
@@ -417,7 +417,7 @@ export default function SOIManagement() {
                     onClick={() => handleTabChange(tab.id)}
                     className={`px-4 py-2.5 rounded-lg font-medium transition-all ${
                       activeTab === tab.id
-                        ? tab.color === "purple" ? "bg-purple-600 text-white shadow-md" :
+                        ? tab.color === "purple" ? "bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white shadow-md" :
                           tab.color === "rose" ? "bg-rose-600 text-white shadow-md" :
                           tab.color === "amber" ? "bg-amber-600 text-white shadow-md" :
                           "bg-emerald-600 text-white shadow-md"
@@ -482,7 +482,7 @@ export default function SOIManagement() {
                       <tr key={candidate.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-5">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
                               {(candidate.name || candidate.candidate_name || '?').charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -526,7 +526,7 @@ export default function SOIManagement() {
                             {!candidate.contacted && (
                               <button
                                 onClick={() => handleMarkContacted(candidate.id)}
-                                className="px-3 py-1 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition whitespace-nowrap"
+                                className="px-3 py-1 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white rounded-lg text-sm hover:bg-purple-700 transition whitespace-nowrap"
                               >
                                 Mark Contacted
                               </button>
@@ -583,7 +583,7 @@ export default function SOIManagement() {
                       onClick={() => setCurrentPage(page)}
                       className={`w-10 h-10 rounded-lg font-medium transition ${
                         currentPage === page
-                          ? "bg-purple-600 text-white"
+                          ? "bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white"
                           : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
                       }`}
                     >
