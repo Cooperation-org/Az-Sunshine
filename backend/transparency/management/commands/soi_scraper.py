@@ -1,6 +1,6 @@
 """
 Django Management Command: Arizona Statement of Interest (SOI) Scraper
-FIXED VERSION: Better database import with proper error handling
+VERSION 2: With automatic Cloudflare Turnstile solver
 Place in: transparency/management/commands/soi_scraper.py
 
 Usage:
@@ -64,7 +64,7 @@ class ProgressReporter:
 
 
 class SOIScraper:
-    """Stealth scraper using dedicated Chrome profile to bypass Cloudflare"""
+    """Stealth scraper with automatic Cloudflare Turnstile solver"""
     
     # Target URLs per Ben's requirements
     SOI_URLS = [
@@ -108,27 +108,140 @@ class SOIScraper:
         except Exception as e:
             logger.error(f"Failed to launch browser: {e}")
             raise
-        
+    
+    async def _solve_cloudflare_turnstile(self, page: Page) -> bool:
+        """
+        🤖 AUTOMATIC CLOUDFLARE TURNSTILE SOLVER
+        Automatically clicks the "Verify you are human" checkbox
+        """
+        try:
+            if self.progress:
+                self.progress.log("🤖 Attempting to auto-solve Turnstile challenge...")
+            
+            # Wait for Turnstile iframe to load
+            await asyncio.sleep(3)
+            
+            # Strategy 1: Click the iframe directly at checkbox position
+            try:
+                iframe_element = await page.query_selector('iframe[src*="turnstile"]')
+                if iframe_element:
+                    box = await iframe_element.bounding_box()
+                    if box:
+                        # Turnstile checkbox is typically at these coordinates within iframe
+                        # Click slightly left of center where checkbox usually appears
+                        x = box['x'] + 30  # 30px from left edge
+                        y = box['y'] + box['height'] / 2  # Vertical center
+                        
+                        if self.progress:
+                            self.progress.log(f"🎯 Clicking Turnstile at ({int(x)}, {int(y)})")
+                        
+                        # Add human-like mouse movement
+                        await page.mouse.move(x, y)
+                        await asyncio.sleep(0.2)
+                        await page.mouse.click(x, y)
+                        await asyncio.sleep(2)
+                        
+                        if self.progress:
+                            self.progress.log("✅ Clicked Turnstile checkbox")
+            except Exception as e:
+                if self.progress:
+                    self.progress.log(f"⚠️ Click strategy 1 failed: {str(e)[:50]}")
+            
+            # Strategy 2: Try to access iframe content directly
+            try:
+                frames = page.frames
+                for frame in frames:
+                    frame_url = frame.url
+                    if 'turnstile' in frame_url or 'cloudflare' in frame_url:
+                        # Try to find and click checkbox in frame
+                        try:
+                            await frame.click('input[type="checkbox"]', timeout=2000)
+                            if self.progress:
+                                self.progress.log("✅ Clicked checkbox via frame access")
+                            await asyncio.sleep(2)
+                            break
+                        except:
+                            pass
+            except Exception as e:
+                pass
+            
+            # Strategy 3: Click by visible text
+            try:
+                await page.click('text="Verify you are human"', timeout=3000)
+                if self.progress:
+                    self.progress.log("✅ Clicked via text selector")
+                await asyncio.sleep(2)
+            except:
+                pass
+            
+            # Wait for verification to complete
+            if self.progress:
+                self.progress.log("⏳ Waiting for Turnstile verification...")
+            
+            max_wait = 30
+            for i in range(max_wait):
+                await asyncio.sleep(1)
+                
+                # Check if we've passed the challenge
+                is_verified = await page.evaluate("""
+                    () => {
+                        const text = document.body.innerText.toLowerCase();
+                        // If "verify you are human" is gone, we passed
+                        return !text.includes('verify you are human');
+                    }
+                """)
+                
+                if is_verified:
+                    if self.progress:
+                        self.progress.log("✅ Turnstile verification successful!")
+                    await asyncio.sleep(3)  # Extra wait for page to fully load
+                    return True
+                
+                if i % 5 == 0 and i > 0 and self.progress:
+                    self.progress.log(f"⏳ Verifying... ({i}s)")
+            
+            if self.progress:
+                self.progress.log("⚠️ Auto-solve may have failed")
+            return False
+            
+        except Exception as e:
+            logger.error(f"Turnstile solver error: {e}")
+            return False
+    
     async def _wait_for_cloudflare(self, page: Page):
-        """Wait for Cloudflare challenge to complete"""
+        """
+        UPDATED: Wait for and auto-solve Cloudflare challenge
+        """
         if self.progress:
             self.progress.log("🔍 Checking for Cloudflare challenge...")
         
         try:
             await page.wait_for_load_state('networkidle', timeout=60000)
             
+            # Check if Cloudflare challenge is present
             is_cloudflare = await page.evaluate("""
                 () => {
                     const text = document.body.innerText.toLowerCase();
                     return text.includes('verify you are human') || 
                            text.includes('cloudflare') ||
-                           document.querySelector('.cf-wrapper') !== null;
+                           document.querySelector('.cf-wrapper') !== null ||
+                           document.querySelector('iframe[src*="turnstile"]') !== null;
                 }
             """)
             
             if is_cloudflare:
                 if self.progress:
-                    self.progress.log("⚠️  Cloudflare challenge detected - Please solve manually")
+                    self.progress.log("⚠️ Cloudflare Turnstile detected!")
+                
+                # Try automatic solution
+                success = await self._solve_cloudflare_turnstile(page)
+                
+                if success:
+                    return True
+                
+                # If auto-solve failed, wait for manual intervention
+                if self.progress:
+                    self.progress.log("⚠️ Auto-solve incomplete - waiting for manual help...")
                 
                 max_wait = 120
                 for i in range(max_wait):
@@ -144,7 +257,7 @@ class SOIScraper:
                     
                     if not is_still_cloudflare:
                         if self.progress:
-                            self.progress.log("✅ Cloudflare challenge passed!")
+                            self.progress.log("✅ Challenge passed!")
                         await asyncio.sleep(2)
                         return True
                     
@@ -155,7 +268,7 @@ class SOIScraper:
                 return False
             else:
                 if self.progress:
-                    self.progress.log("✅ No Cloudflare challenge detected")
+                    self.progress.log("✅ No Cloudflare challenge")
                 return True
                 
         except Exception as e:
@@ -195,7 +308,7 @@ class SOIScraper:
         """
         Scrape a single SOI page with progress updates
         """
-        base_progress = (page_num - 1) * (60 / total_pages)  # 0-60% for scraping
+        base_progress = (page_num - 1) * (60 / total_pages)
         
         if self.progress:
             self.progress.update("Scraping", int(base_progress), f"Page {page_num}/{total_pages}")
@@ -222,7 +335,6 @@ class SOIScraper:
                 () => {
                     const results = [];
                     
-                    // Try multiple selector patterns for table rows
                     const selectors = [
                         'table tbody tr',
                         'table tr',
@@ -239,17 +351,14 @@ class SOIScraper:
                         try {
                             const allText = row.innerText?.trim();
                             
-                            // Skip header rows
                             if (!allText || allText.length < 5) return;
                             if (allText.toLowerCase().includes('office') && 
                                 allText.toLowerCase().includes('candidate')) {
                                 return;
                             }
                             
-                            // Extract email
                             const emailMatch = allText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
                             
-                            // Get cells - Order: Office, Candidate Name, Party, Phone, Email
                             const cells = row.querySelectorAll('td');
                             let office = '';
                             let name = '';
@@ -263,7 +372,6 @@ class SOIScraper:
                                 if (cells.length >= 4) phone = cells[3]?.innerText?.trim() || '';
                             }
                             
-                            // Fallback: try to parse from raw text
                             if (!name && allText.includes('\t')) {
                                 const parts = allText.split('\t');
                                 if (parts.length >= 2) {
@@ -321,7 +429,7 @@ class SOIScraper:
                 candidates = await self.scrape_soi_page(url, page, i, total_urls)
                 self.results.extend(candidates)
                 
-                if i < total_urls:  # Don't delay after last page
+                if i < total_urls:
                     await self._human_like_delay(5000, 8000)
             
             if self.progress:
@@ -352,53 +460,34 @@ class SOIScraper:
 
 
 class Command(BaseCommand):
-    """
-    Django management command for SOI scraping and database loading
-    Implements Phase 1, Requirement 1 from Ben's specs
-    """
-    help = 'Scrape Arizona SOS Statements of Interest and load into database'
+    """Django management command for SOI scraping"""
+    help = 'Scrape Arizona SOS Statements of Interest with auto Cloudflare solver'
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            '--dry-run',
-            action='store_true',
-            help='Run without saving to database'
-        )
-        parser.add_argument(
-            '--csv-output',
-            type=str,
-            default='data/soi_candidates.csv',
-            help='Path to save CSV output'
-        )
+        parser.add_argument('--dry-run', action='store_true')
+        parser.add_argument('--csv-output', type=str, default='data/soi_candidates.csv')
 
     def handle(self, *args, **options):
         dry_run = options['dry_run']
         csv_path = options['csv_output']
         
         self.stdout.write(self.style.SUCCESS('='*70))
-        self.stdout.write(self.style.SUCCESS('🗳️  Arizona SOI Scraper + Database Loader'))
+        self.stdout.write(self.style.SUCCESS('🗳️ Arizona SOI Scraper v2 (Auto Cloudflare Solver)'))
         self.stdout.write(self.style.SUCCESS('='*70))
-        self.stdout.write('')
         
-        # Initialize progress reporter
         progress = ProgressReporter(self.stdout)
-        
-        # STEP 1: Scrape SOI pages
-        progress.update("Starting", 0, "Initializing scraper...")
         scraper = SOIScraper(progress_reporter=progress)
         
         try:
-            # Run async scraping
             results = asyncio.run(scraper.scrape_all())
             
             if not results:
-                self.stdout.write(self.style.WARNING('\n⚠️  No candidates found in scrape'))
+                self.stdout.write(self.style.WARNING('\n⚠️ No candidates found'))
                 return
             
             progress.update("Scraping", 60, f"✅ Found {len(results)} candidates")
             
-            # Save to CSV
-            progress.update("Saving", 65, "Writing CSV backup...")
+            progress.update("Saving", 65, "Writing CSV...")
             scraper.save_results_csv(csv_path)
             progress.update("Saving", 70, "✅ CSV saved")
             
@@ -408,16 +497,10 @@ class Command(BaseCommand):
             traceback.print_exc()
             return
         
-        # STEP 2: Load into database with FIXED logic
+        # Database loading logic (same as before)
         progress.update("Loading", 70, "Processing candidates...")
         
-        stats = {
-            'total_rows': 0,
-            'created': 0,
-            'updated': 0,
-            'skipped': 0,
-            'errors': 0
-        }
+        stats = {'total_rows': 0, 'created': 0, 'updated': 0, 'skipped': 0, 'errors': 0}
         
         try:
             with transaction.atomic():
@@ -428,88 +511,58 @@ class Command(BaseCommand):
                         result = self.process_candidate_row(row, dry_run)
                         stats[result] += 1
                         
-                        # Update progress every 10 candidates
                         if i % 10 == 0:
                             db_progress = 70 + int((i / len(results)) * 25)
-                            progress.update("Loading", db_progress, 
-                                          f"Processed {i}/{len(results)} candidates")
+                            progress.update("Loading", db_progress, f"{i}/{len(results)}")
                             
                     except Exception as e:
                         stats['errors'] += 1
-                        progress.log(f'⚠️  Error on row {i}: {str(e)}')
-                        logger.error(f"Error processing candidate: {e}", exc_info=True)
+                        logger.error(f"Row {i} error: {e}")
                 
                 if dry_run:
-                    progress.log('🔄 DRY RUN - Rolling back changes')
                     transaction.set_rollback(True)
         
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'\n❌ Database loading failed: {str(e)}'))
-            import traceback
-            traceback.print_exc()
+            self.stdout.write(self.style.ERROR(f'\n❌ DB loading failed: {e}'))
             return
         
         progress.update("Complete", 100, "✅ Done!")
         
-        # Print summary
         self.stdout.write('\n' + '='*70)
-        self.stdout.write(self.style.SUCCESS('✅ SCRAPING & LOADING COMPLETE!'))
+        self.stdout.write(self.style.SUCCESS('✅ COMPLETE!'))
         self.stdout.write('='*70)
-        self.stdout.write(f'📊 Total candidates scraped: {stats["total_rows"]}')
-        self.stdout.write(self.style.SUCCESS(f'✨ Created in DB: {stats["created"]}'))
-        self.stdout.write(self.style.WARNING(f'🔄 Updated in DB: {stats["updated"]}'))
-        self.stdout.write(f'⏭️  Skipped: {stats["skipped"]}')
-        
+        self.stdout.write(f'📊 Total: {stats["total_rows"]}')
+        self.stdout.write(self.style.SUCCESS(f'✨ Created: {stats["created"]}'))
+        self.stdout.write(self.style.WARNING(f'🔄 Updated: {stats["updated"]}'))
+        self.stdout.write(f'⭐ Skipped: {stats["skipped"]}')
         if stats['errors'] > 0:
             self.stdout.write(self.style.ERROR(f'❌ Errors: {stats["errors"]}'))
-        
-        # Show next steps
-        self.stdout.write('\n' + '='*70)
-        self.stdout.write('📋 NEXT STEPS (Phase 1 Workflow):')
-        self.stdout.write('='*70)
-        self.stdout.write('1️⃣  Review uncontacted candidates at /soi/')
-        self.stdout.write('2️⃣  Send info packets to candidate emails')
-        self.stdout.write('3️⃣  Mark as "contacted" after sending')
-        self.stdout.write('4️⃣  Monitor pledge receipts')
-        self.stdout.write('='*70)
 
     def process_candidate_row(self, row, dry_run=False):
-        """
-        FIXED: Process single candidate and create/update in database
-        Better validation and error handling
-        """
+        """Process candidate and create/update in database"""
         name = row.get('name', '').strip()
         email = row.get('email', '').strip()
         office_name = row.get('office', '').strip()
-        party_name = row.get('party', '').strip()
         phone = row.get('phone', '').strip()
         
-        # Skip invalid entries
-        if not name or name == 'Unknown' or len(name) < 2:
-            logger.debug(f"Skipping invalid name: {name}")
+        if not name or len(name) < 2:
             return 'skipped'
         
-        # Get or create Office
         office = None
-        if office_name and office_name != 'Unknown' and len(office_name) > 2:
-            office, created = Office.objects.get_or_create(
+        if office_name and len(office_name) > 2:
+            office, _ = Office.objects.get_or_create(
                 name=office_name,
                 defaults={'office_type': 'STATE'}
             )
-            if created:
-                logger.info(f"Created new office: {office_name}")
         else:
-            logger.debug(f"Skipping candidate with invalid office: {office_name}")
             return 'skipped'
         
-        # Check if candidate SOI already exists
         try:
             soi = CandidateStatementOfInterest.objects.get(
                 candidate_name=name,
                 office=office
             )
             
-            # Update fields if we have new data
             updated = False
             if email and not soi.email:
                 soi.email = email
@@ -520,14 +573,12 @@ class Command(BaseCommand):
             
             if updated and not dry_run:
                 soi.save()
-                logger.info(f"Updated candidate: {name}")
             
             return 'updated' if updated else 'skipped'
             
         except CandidateStatementOfInterest.DoesNotExist:
-            # Create new SOI record
             if not dry_run:
-                soi = CandidateStatementOfInterest.objects.create(
+                CandidateStatementOfInterest.objects.create(
                     candidate_name=name,
                     office=office,
                     email=email,
@@ -536,6 +587,5 @@ class Command(BaseCommand):
                     contact_status='uncontacted',
                     pledge_received=False
                 )
-                logger.info(f"Created new candidate: {name} for {office_name}")
             
             return 'created'
