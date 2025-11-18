@@ -32,7 +32,7 @@ import logging
 
 # Initialize logger
 logger = logging.getLogger(__name__)
-NGROK_URL = "https://c23d58d5e91b.ngrok-free.app/run-scraper"
+NGROK_URL = "https://186f4e036b8f.ngrok-free.app/run-scraper"
 SECRET_TOKEN = "MY_SECRET_123"
 
 
