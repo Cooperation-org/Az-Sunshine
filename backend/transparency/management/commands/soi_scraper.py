@@ -1,6 +1,6 @@
 """
 Django Management Command: Arizona Statement of Interest (SOI) Scraper
-VERSION 2: With automatic Cloudflare Turnstile solver
+VERSION 2.1: Fixed Cloudflare Turnstile solver (no multiple clicks)
 Place in: transparency/management/commands/soi_scraper.py
 
 Usage:
@@ -111,68 +111,106 @@ class SOIScraper:
     
     async def _solve_cloudflare_turnstile(self, page: Page) -> bool:
         """
-        🤖 AUTOMATIC CLOUDFLARE TURNSTILE SOLVER
+        🤖 AUTOMATIC CLOUDFLARE TURNSTILE SOLVER (FIXED)
         Automatically clicks the "Verify you are human" checkbox
+        Now prevents multiple clicks!
         """
         try:
             if self.progress:
-                self.progress.log("🤖 Attempting to auto-solve Turnstile challenge...")
+                self.progress.log("🤖 Checking Turnstile status...")
+            
+            # First check if already verified
+            await asyncio.sleep(2)
+            is_already_verified = await page.evaluate("""
+                () => {
+                    const text = document.body.innerText.toLowerCase();
+                    return !text.includes('verify you are human');
+                }
+            """)
+            
+            if is_already_verified:
+                if self.progress:
+                    self.progress.log("✅ Already verified, skipping click")
+                return True
+            
+            if self.progress:
+                self.progress.log("🤖 Attempting to solve Turnstile challenge...")
             
             # Wait for Turnstile iframe to load
-            await asyncio.sleep(3)
+            await asyncio.sleep(random.uniform(2, 4))
+            
+            clicked = False  # Track if we successfully clicked
             
             # Strategy 1: Click the iframe directly at checkbox position
-            try:
-                iframe_element = await page.query_selector('iframe[src*="turnstile"]')
-                if iframe_element:
-                    box = await iframe_element.bounding_box()
-                    if box:
-                        # Turnstile checkbox is typically at these coordinates within iframe
-                        # Click slightly left of center where checkbox usually appears
-                        x = box['x'] + 30  # 30px from left edge
-                        y = box['y'] + box['height'] / 2  # Vertical center
-                        
+            if not clicked:
+                try:
+                    iframe_element = await page.query_selector('iframe[src*="turnstile"]')
+                    if iframe_element:
+                        box = await iframe_element.bounding_box()
+                        if box:
+                            # Add randomness to appear more human-like
+                            x = box['x'] + random.randint(25, 35)
+                            y = box['y'] + box['height'] / 2 + random.randint(-3, 3)
+                            
+                            if self.progress:
+                                self.progress.log(f"🎯 Clicking Turnstile at ({int(x)}, {int(y)})")
+                            
+                            # Human-like mouse movement
+                            await page.mouse.move(x, y)
+                            await asyncio.sleep(random.uniform(0.2, 0.5))
+                            await page.mouse.click(x, y)
+                            await asyncio.sleep(2)
+                            
+                            if self.progress:
+                                self.progress.log("✅ Clicked Turnstile checkbox (Strategy 1)")
+                            clicked = True
+                        else:
+                            if self.progress:
+                                self.progress.log("⚠️ Could not get iframe bounding box")
+                    else:
                         if self.progress:
-                            self.progress.log(f"🎯 Clicking Turnstile at ({int(x)}, {int(y)})")
-                        
-                        # Add human-like mouse movement
-                        await page.mouse.move(x, y)
-                        await asyncio.sleep(0.2)
-                        await page.mouse.click(x, y)
-                        await asyncio.sleep(2)
-                        
-                        if self.progress:
-                            self.progress.log("✅ Clicked Turnstile checkbox")
-            except Exception as e:
-                if self.progress:
-                    self.progress.log(f"⚠️ Click strategy 1 failed: {str(e)[:50]}")
+                            self.progress.log("⚠️ Turnstile iframe not found")
+                except Exception as e:
+                    if self.progress:
+                        self.progress.log(f"⚠️ Strategy 1 failed: {str(e)[:50]}")
             
             # Strategy 2: Try to access iframe content directly
-            try:
-                frames = page.frames
-                for frame in frames:
-                    frame_url = frame.url
-                    if 'turnstile' in frame_url or 'cloudflare' in frame_url:
-                        # Try to find and click checkbox in frame
-                        try:
-                            await frame.click('input[type="checkbox"]', timeout=2000)
-                            if self.progress:
-                                self.progress.log("✅ Clicked checkbox via frame access")
-                            await asyncio.sleep(2)
-                            break
-                        except:
-                            pass
-            except Exception as e:
-                pass
+            if not clicked:
+                try:
+                    frames = page.frames
+                    for frame in frames:
+                        frame_url = frame.url
+                        if 'turnstile' in frame_url or 'cloudflare' in frame_url:
+                            try:
+                                await frame.click('input[type="checkbox"]', timeout=2000)
+                                if self.progress:
+                                    self.progress.log("✅ Clicked checkbox via frame access (Strategy 2)")
+                                await asyncio.sleep(2)
+                                clicked = True
+                                break
+                            except:
+                                pass
+                except Exception as e:
+                    if self.progress:
+                        self.progress.log(f"⚠️ Strategy 2 failed: {str(e)[:50]}")
             
             # Strategy 3: Click by visible text
-            try:
-                await page.click('text="Verify you are human"', timeout=3000)
+            if not clicked:
+                try:
+                    await page.click('text="Verify you are human"', timeout=3000)
+                    if self.progress:
+                        self.progress.log("✅ Clicked via text selector (Strategy 3)")
+                    await asyncio.sleep(2)
+                    clicked = True
+                except Exception as e:
+                    if self.progress:
+                        self.progress.log(f"⚠️ Strategy 3 failed: {str(e)[:50]}")
+            
+            # If none of the strategies worked, return False early
+            if not clicked:
                 if self.progress:
-                    self.progress.log("✅ Clicked via text selector")
-                await asyncio.sleep(2)
-            except:
-                pass
+                    self.progress.log("❌ All click strategies failed")
+                return False
             
             # Wait for verification to complete
             if self.progress:
@@ -201,7 +239,7 @@ class SOIScraper:
                     self.progress.log(f"⏳ Verifying... ({i}s)")
             
             if self.progress:
-                self.progress.log("⚠️ Auto-solve may have failed")
+                self.progress.log("⚠️ Verification timeout - challenge may have failed")
             return False
             
         except Exception as e:
@@ -472,7 +510,7 @@ class Command(BaseCommand):
         csv_path = options['csv_output']
         
         self.stdout.write(self.style.SUCCESS('='*70))
-        self.stdout.write(self.style.SUCCESS('🗳️ Arizona SOI Scraper v2 (Auto Cloudflare Solver)'))
+        self.stdout.write(self.style.SUCCESS('🗳️ Arizona SOI Scraper v2.1 (Fixed Cloudflare Solver)'))
         self.stdout.write(self.style.SUCCESS('='*70))
         
         progress = ProgressReporter(self.stdout)
@@ -497,7 +535,7 @@ class Command(BaseCommand):
             traceback.print_exc()
             return
         
-        # Database loading logic (same as before)
+        # Database loading logic
         progress.update("Loading", 70, "Processing candidates...")
         
         stats = {'total_rows': 0, 'created': 0, 'updated': 0, 'skipped': 0, 'errors': 0}
@@ -534,7 +572,7 @@ class Command(BaseCommand):
         self.stdout.write(f'📊 Total: {stats["total_rows"]}')
         self.stdout.write(self.style.SUCCESS(f'✨ Created: {stats["created"]}'))
         self.stdout.write(self.style.WARNING(f'🔄 Updated: {stats["updated"]}'))
-        self.stdout.write(f'⭐ Skipped: {stats["skipped"]}')
+        self.stdout.write(f'⏭ Skipped: {stats["skipped"]}')
         if stats['errors'] > 0:
             self.stdout.write(self.style.ERROR(f'❌ Errors: {stats["errors"]}'))
 
