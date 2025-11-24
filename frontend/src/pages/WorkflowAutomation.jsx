@@ -9,7 +9,7 @@ export default function WorkflowAutomation() {
   const [showN8n, setShowN8n] = useState(false);
   const [apiError, setApiError] = useState(null);
 
-  // n8n server URL - using IP address
+  // n8n server URL - using IP
   const N8N_URL = "http://167.172.30.134:5678";
   const N8N_USER = "admin";
   const N8N_PASS = "AZSunshine2024!";
