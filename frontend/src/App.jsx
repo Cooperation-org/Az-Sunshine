@@ -7,6 +7,7 @@ import Candidates from "./pages/Candidates";
 import Expenditures from "./pages/Expenditures";
 import SOIManagement from "./pages/SOIManagement";
 import RaceAnalysis from "./pages/RaceAnalysis";
+import EmailCampaign from "./pages/EmailCampaign";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
       <Route path="/races" element={<RaceAnalysis />} />
       <Route path="/donors" element={<Donors />} />
       <Route path="/expenditures" element={<Expenditures />} />
+      <Route path="/email-campaign" element={<EmailCampaign />} />
     </Routes>
   );
 }

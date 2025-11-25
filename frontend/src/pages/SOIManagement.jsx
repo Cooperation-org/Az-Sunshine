@@ -291,10 +291,13 @@ export default function SOIManagement() {
                 placeholder="Search candidates..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64 lg:w-80 focus:outline-none focus:ring-2 focus:ring-purple-500 transition text-sm sm:text-base"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64 lg:w-80 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm sm:text-base hover:border-gray-400"
               />
             </div>
-            <button className="p-2 rounded-lg bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] hover:bg-purple-700 transition flex-shrink-0">
+            <button 
+              className="p-2 rounded-lg bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] hover:from-[#7C6BA6] hover:to-[#5B4D7D] transition-all duration-200 flex-shrink-0 hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              aria-label="Notifications"
+            >
               <Bell className="w-5 h-5 text-white" />
             </button>
           </div>
@@ -411,13 +414,13 @@ export default function SOIManagement() {
                   <button
                     key={tab.id}
                     onClick={() => handleTabChange(tab.id)}
-                    className={`px-4 py-2.5 rounded-lg font-medium transition-all ${
+                    className={`px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
                       activeTab === tab.id
                         ? tab.color === "purple" ? "bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white shadow-md" :
                           tab.color === "rose" ? "bg-rose-600 text-white shadow-md" :
                           tab.color === "amber" ? "bg-amber-600 text-white shadow-md" :
                           "bg-emerald-600 text-white shadow-md"
-                        : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                        : "bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm active:scale-95"
                     }`}
                   >
                     <span>{tab.label}</span>
@@ -475,7 +478,7 @@ export default function SOIManagement() {
                     </tr>
                   ) : (
                     candidates.map((candidate) => (
-                      <tr key={candidate.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={candidate.id} className="hover:bg-purple-50/50 transition-colors duration-150">
                         <td className="px-6 py-5">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">

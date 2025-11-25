@@ -324,7 +324,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* SOI Card - Responsive padding and text sizes */}
-                <Link to="/soi" className="bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] rounded-2xl p-4 sm:p-6 shadow-lg text-white relative overflow-hidden hover:shadow-xl transition">
+                <Link to="/soi" className="bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] rounded-2xl p-4 sm:p-6 shadow-lg text-white relative overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-200 active:scale-100">
                   <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-white/10 rounded-bl-full"></div>
                   <p className="text-white/90 text-xs sm:text-sm mb-1">SOI Uncontacted</p>
                   <p className="text-2xl sm:text-3xl font-bold">{metrics.soi_stats?.uncontacted || 0}</p>
@@ -369,7 +369,7 @@ export default function Dashboard() {
                         </tr>
                       ) : (
                         recentExpenditures.map((exp, idx) => (
-                          <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                          <tr key={idx} className="border-b border-gray-100 hover:bg-purple-50/50 transition-colors duration-150">
                             {/* Table Cells - Responsive padding and text sizes */}
                             <td className="py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">
                               {exp.transaction_date ? new Date(exp.transaction_date).toLocaleDateString() : "N/A"}

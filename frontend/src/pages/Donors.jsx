@@ -94,12 +94,12 @@ export default function Donors() {
                         </tr>
                       ) : (
                         donors.map((donor, idx) => (
-                        <tr key={donor.name_id || idx} className="hover:bg-gray-50 transition">
+                        <tr key={donor.name_id || idx} className="hover:bg-purple-50/50 transition-colors duration-150">
                           {/* Table Cells - Responsive padding and text sizes */}
                           <td className="py-3 sm:py-5 px-3 sm:px-6">
                             <div className="flex items-center gap-2 sm:gap-4">
                               {/* Avatar - Responsive size */}
-                              <div className="w-8 h-8 sm:w-10 sm:h-12 rounded-lg bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] flex items-center justify-center text-white text-xs sm:text-sm lg:text-lg font-semibold flex-shrink-0">
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-[#7C6BA6] to-[#5B4D7D] flex items-center justify-center text-white text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm">
                                 {(donor.full_name || donor.name || "?").charAt(0).toUpperCase()}
                               </div>
                               <span className="text-xs sm:text-sm lg:text-base text-gray-900 font-medium truncate">{donor.full_name || donor.name || "Unknown"}</span>
@@ -130,10 +130,10 @@ export default function Donors() {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                         currentPage === page
-                          ? "bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white"
-                          : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                          ? "bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white shadow-md"
+                          : "bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm border border-gray-300 active:scale-95"
                       }`}
                     >
                       {page}
