@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Bell, Search, ChevronRight } from "lucide-react";
+import { Bell, Search, ChevronRight, Download, Loader } from "lucide-react";
 import { getCandidates } from "../api/api";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Preloader from "../components/Preloader";
+import { exportToCSV } from "../utils/csvExport";
+
 export default function Candidates() {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     loadCandidates(currentPage);
@@ -40,6 +43,45 @@ export default function Candidates() {
     return { label: "Active", color: "bg-green-100 text-green-700" };
   };
 
+  // Export candidates to CSV
+  const handleExportCSV = async () => {
+    try {
+      setExporting(true);
+      
+      // Load all candidates for export (not just current page)
+      const allCandidatesData = await getCandidates({ page_size: totalCount || 1000 });
+      const allCandidates = allCandidatesData.results || [];
+      
+      // Define CSV columns
+      const columns = [
+        { key: 'candidate.full_name', label: 'Candidate Name' },
+        { key: 'name.full_name', label: 'Candidate Name (Alt)' },
+        { key: 'candidate_office.name', label: 'Race' },
+        { key: 'candidate_party.name', label: 'Party' },
+        { key: 'election_cycle.name', label: 'Election Cycle' },
+        { key: 'is_incumbent', label: 'Status' },
+      ];
+      
+      // Transform data for CSV
+      const csvData = allCandidates.map(candidate => ({
+        ...candidate,
+        'is_incumbent': candidate.is_incumbent ? 'Incumbent' : 'Challenger',
+      }));
+      
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `candidates_${timestamp}.csv`;
+      
+      // Export to CSV
+      await exportToCSV(csvData, columns, filename, setExporting);
+      
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      alert("Failed to export CSV. Please try again.");
+      setExporting(false);
+    }
+  };
+
   // Show preloader while initial data is loading
   if (loading && currentPage === 1) {
     return <Preloader message="Loading candidates..." />;
@@ -63,6 +105,27 @@ export default function Candidates() {
             </div>
           ) : (
             <>
+              {/* === Export Button - Responsive === */}
+              <div className="mb-4 sm:mb-6 flex justify-end">
+                <button
+                  onClick={handleExportCSV}
+                  disabled={exporting || candidates.length === 0}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white rounded-lg hover:from-[#7C6BA6] hover:to-[#5B4D7D] transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md active:scale-95 text-sm sm:text-base"
+                >
+                  {exporting ? (
+                    <>
+                      <Loader className="w-4 h-4 animate-spin" />
+                      <span>Exporting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      <span>Export CSV</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               {/* === Candidates Table - Responsive: Horizontal scroll on mobile === */}
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
                 {/* Table Container - Horizontal scroll on mobile */}
