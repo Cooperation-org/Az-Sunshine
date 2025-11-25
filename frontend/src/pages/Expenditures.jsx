@@ -1,49 +1,239 @@
 import React, { useEffect, useState } from "react";
 import { Bell, Search, ChevronRight, ChevronLeft, Download, Loader } from "lucide-react";
-import { getExpenditures } from "../api/api";
+import { getExpenditures, getOffices, getParties } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Preloader from "../components/Preloader";
+import FilterPanel from "../components/FilterPanel";
 import { exportToCSV } from "../utils/csvExport";
 
 export default function Expenditures() {
   const [expenditures, setExpenditures] = useState([]);
+  const [allExpenditures, setAllExpenditures] = useState([]); // Store all data for filtering
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [exporting, setExporting] = useState(false);
+  
+  // Filter state
+  const [filters, setFilters] = useState({
+    dateFrom: "",
+    dateTo: "",
+    amountMin: 0,
+    amountMax: 1000000,
+    selectedOffices: [],
+    selectedParties: [],
+  });
+  
+  // Offices and parties for filter
+  const [offices, setOffices] = useState([]);
+  const [isLoadingOffices, setIsLoadingOffices] = useState(false);
+  const [parties, setParties] = useState([]);
 
+  // Load offices and parties on mount
+  useEffect(() => {
+    loadOffices();
+    loadParties();
+  }, []);
+
+  async function loadParties() {
+    try {
+      const partiesData = await getParties();
+      // Handle both array and object response
+      const partiesList = Array.isArray(partiesData) 
+        ? partiesData 
+        : (partiesData.results || []);
+      // Extract party names
+      const partyNames = partiesList.map(p => p.name || p.abbreviation || p).filter(Boolean);
+      setParties(partyNames.sort());
+    } catch (err) {
+      console.error("Error loading parties:", err);
+      // If parties endpoint doesn't exist, try to extract from expenditures data
+      // This is a fallback - ideally parties should come from API
+      if (allExpenditures.length > 0) {
+        // Extract unique parties from expenditures if available
+        // Note: This requires party data in expenditure response
+        setParties([]);
+      } else {
+        setParties([]);
+      }
+    }
+  }
+
+  // Load expenditures when page changes
   useEffect(() => {
     loadExpenditures(currentPage);
   }, [currentPage]);
 
+  // Apply filters when filters or search term changes
+  useEffect(() => {
+    applyFilters();
+  }, [filters, searchTerm, allExpenditures]);
+
+  async function loadOffices() {
+    setIsLoadingOffices(true);
+    try {
+      const officesData = await getOffices();
+      // Handle both array and object response
+      const officesList = Array.isArray(officesData) 
+        ? officesData 
+        : (officesData.results || []);
+      setOffices(officesList);
+    } catch (err) {
+      console.error("Error loading offices:", err);
+      setOffices([]);
+    } finally {
+      setIsLoadingOffices(false);
+    }
+  }
+
   async function loadExpenditures(page) {
     setLoading(true);
     try {
-      const data = await getExpenditures({ page, page_size: 25 });
-      setExpenditures(data.results || []);
-      setTotalCount(data.count || 0);
-      setTotalPages(Math.ceil((data.count || 0) / 25));
+      // Load more data for filtering (load all or large page size)
+      const data = await getExpenditures({ page_size: 1000 });
+      const allData = data.results || [];
+      setAllExpenditures(allData);
+      
+      // Set paginated data
+      const pageSize = 25;
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      setExpenditures(allData.slice(startIndex, endIndex));
+      setTotalCount(data.count || allData.length);
+      setTotalPages(Math.ceil((data.count || allData.length) / pageSize));
+      
+      // Extract unique parties and offices from expenditures data
+      // Parties and offices come from subject_committee data in the backend
+      // Since the frontend receives simplified data, we'll extract from what's available
+      const uniqueParties = new Set();
+      const uniqueOffices = new Set();
+      
+      allData.forEach((exp) => {
+        // Extract party if available in candidate_name or other fields
+        // Note: The backend may need to include party in the response
+        // For now, we'll keep parties empty and let user add via API later
+      });
+      
+      setParties(Array.from(uniqueParties).sort());
     } catch (err) {
       console.error("Error loading expenditures:", err);
       setExpenditures([]);
+      setAllExpenditures([]);
     } finally {
       setLoading(false);
     }
   }
 
-  // Filter expenditures based on search term
-  const filteredExpenditures = expenditures.filter((exp) => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      (exp.ie_committee?.name || "").toLowerCase().includes(searchLower) ||
-      (exp.candidate_name || "").toLowerCase().includes(searchLower) ||
-      (exp.support_oppose || "").toLowerCase().includes(searchLower)
-    );
-  });
+  // Apply filters to expenditures
+  const applyFilters = () => {
+    let filtered = [...allExpenditures];
+
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter((exp) => {
+        return (
+          (exp.ie_committee?.name || "").toLowerCase().includes(searchLower) ||
+          (exp.candidate_name || "").toLowerCase().includes(searchLower) ||
+          (exp.support_oppose || "").toLowerCase().includes(searchLower)
+        );
+      });
+    }
+
+    // Date range filter
+    if (filters.dateFrom) {
+      filtered = filtered.filter((exp) => {
+        if (!exp.date) return false;
+        return new Date(exp.date) >= new Date(filters.dateFrom);
+      });
+    }
+
+    if (filters.dateTo) {
+      filtered = filtered.filter((exp) => {
+        if (!exp.date) return false;
+        const expDate = new Date(exp.date);
+        const toDate = new Date(filters.dateTo);
+        toDate.setHours(23, 59, 59, 999); // Include entire end date
+        return expDate <= toDate;
+      });
+    }
+
+    // Amount range filter
+    filtered = filtered.filter((exp) => {
+      const amount = parseFloat(exp.amount || 0);
+      return amount >= filters.amountMin && amount <= filters.amountMax;
+    });
+
+    // Office filter (if offices are available in expenditure data)
+    // Note: Office filtering requires office data in expenditure response
+    // This is a placeholder - implement when office data is available
+    if (filters.selectedOffices.length > 0) {
+      // If expenditure has office information, filter by selected offices
+      // For now, this filter is disabled until office data is in response
+      // filtered = filtered.filter((exp) => {
+      //   const expOfficeId = exp.office_id || exp.office?.office_id;
+      //   return filters.selectedOffices.includes(expOfficeId);
+      // });
+    }
+
+    // Party filter (if parties are available in expenditure data)
+    // Note: Party filtering requires party data in expenditure response
+    // This is a placeholder - implement when party data is available
+    if (filters.selectedParties.length > 0) {
+      // If expenditure has party information, filter by selected parties
+      // For now, this filter is disabled until party data is in response
+      // filtered = filtered.filter((exp) => {
+      //   const expParty = exp.party || exp.subject_committee?.party;
+      //   return filters.selectedParties.includes(expParty);
+      // });
+    }
+
+    // Update displayed expenditures with pagination
+    const pageSize = 25;
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setExpenditures(filtered.slice(startIndex, endIndex));
+    setTotalCount(filtered.length);
+    setTotalPages(Math.ceil(filtered.length / pageSize));
+  };
+
+  // Handle filter changes
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  // Calculate min/max amounts from data
+  const calculateAmountRange = () => {
+    if (allExpenditures.length === 0) return { min: 0, max: 1000000 };
+    
+    const amounts = allExpenditures
+      .map((exp) => parseFloat(exp.amount || 0))
+      .filter((amt) => amt > 0);
+    
+    if (amounts.length === 0) return { min: 0, max: 1000000 };
+    
+    const min = Math.floor(Math.min(...amounts));
+    const max = Math.ceil(Math.max(...amounts));
+    
+    return { min, max };
+  };
+
+  const amountRange = calculateAmountRange();
+  
+  // Initialize filters with calculated amount range
+  useEffect(() => {
+    if (amountRange.min !== 0 || amountRange.max !== 1000000) {
+      setFilters(prev => ({
+        ...prev,
+        amountMin: prev.amountMin === 0 ? amountRange.min : prev.amountMin,
+        amountMax: prev.amountMax === 1000000 ? amountRange.max : prev.amountMax,
+      }));
+    }
+  }, [amountRange]);
 
   // Show preloader while initial data is loading
   if (loading && currentPage === 1) {
@@ -73,17 +263,43 @@ export default function Expenditures() {
       const allExpendituresData = await getExpenditures({ page_size: totalCount || 1000 });
       const allExpenditures = allExpendituresData.results || [];
       
-      // Filter if search term exists
-      const dataToExport = searchTerm
-        ? allExpenditures.filter((exp) => {
-            const searchLower = searchTerm.toLowerCase();
-            return (
-              (exp.ie_committee?.name || "").toLowerCase().includes(searchLower) ||
-              (exp.candidate_name || "").toLowerCase().includes(searchLower) ||
-              (exp.support_oppose || "").toLowerCase().includes(searchLower)
-            );
-          })
-        : allExpenditures;
+      // Apply all filters for export
+      let dataToExport = [...allExpenditures];
+      
+      // Search filter
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        dataToExport = dataToExport.filter((exp) => {
+          return (
+            (exp.ie_committee?.name || "").toLowerCase().includes(searchLower) ||
+            (exp.candidate_name || "").toLowerCase().includes(searchLower) ||
+            (exp.support_oppose || "").toLowerCase().includes(searchLower)
+          );
+        });
+      }
+      
+      // Date filters
+      if (filters.dateFrom) {
+        dataToExport = dataToExport.filter((exp) => {
+          if (!exp.date) return false;
+          return new Date(exp.date) >= new Date(filters.dateFrom);
+        });
+      }
+      if (filters.dateTo) {
+        dataToExport = dataToExport.filter((exp) => {
+          if (!exp.date) return false;
+          const expDate = new Date(exp.date);
+          const toDate = new Date(filters.dateTo);
+          toDate.setHours(23, 59, 59, 999);
+          return expDate <= toDate;
+        });
+      }
+      
+      // Amount filters
+      dataToExport = dataToExport.filter((exp) => {
+        const amount = parseFloat(exp.amount || 0);
+        return amount >= filters.amountMin && amount <= filters.amountMax;
+      });
       
       // Define CSV columns
       const columns = [
@@ -135,11 +351,22 @@ export default function Expenditures() {
             </div>
           ) : (
             <>
+              {/* === Filter Panel === */}
+              <FilterPanel
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                offices={offices}
+                parties={parties}
+                minAmount={amountRange.min}
+                maxAmount={amountRange.max}
+                isLoadingOffices={isLoadingOffices}
+              />
+
               {/* === Export Button - Responsive === */}
               <div className="mb-4 sm:mb-6 flex justify-end">
                 <button
                   onClick={handleExportCSV}
-                  disabled={exporting || filteredExpenditures.length === 0}
+                  disabled={exporting || expenditures.length === 0}
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white rounded-lg hover:from-[#7C6BA6] hover:to-[#5B4D7D] transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md active:scale-95 text-sm sm:text-base"
                 >
                   {exporting ? (
@@ -168,7 +395,7 @@ export default function Expenditures() {
                 <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
                   <p className="text-gray-500 text-xs sm:text-sm mb-1">Total Amount</p>
                   <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    ${filteredExpenditures
+                    ${expenditures
                       .reduce((sum, exp) => sum + parseFloat(exp.amount || 0), 0)
                       .toLocaleString("en-US", {
                         minimumFractionDigits: 2,
@@ -179,7 +406,7 @@ export default function Expenditures() {
                 <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
                   <p className="text-gray-500 text-xs sm:text-sm mb-1">Showing</p>
                   <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {filteredExpenditures.length} {filteredExpenditures.length === 1 ? "result" : "results"}
+                    {expenditures.length} {expenditures.length === 1 ? "result" : "results"}
                   </p>
                 </div>
               </div>
@@ -210,16 +437,20 @@ export default function Expenditures() {
                       </tr>
                     </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {filteredExpenditures.length === 0 ? (
+                    {expenditures.length === 0 ? (
                       <tr>
                         <td colSpan="5" className="py-12 text-center text-gray-500">
-                          {searchTerm
-                            ? "No expenditures found matching your search."
+                          {searchTerm || Object.values(filters).some(v => 
+                            (Array.isArray(v) && v.length > 0) || 
+                            (typeof v === 'string' && v) ||
+                            (typeof v === 'number' && (v !== amountRange.min && v !== amountRange.max))
+                          )
+                            ? "No expenditures found matching your filters."
                             : "No expenditures found."}
                         </td>
                       </tr>
                     ) : (
-                      filteredExpenditures.map((exp, idx) => (
+                      expenditures.map((exp, idx) => (
                         <tr key={idx} className="hover:bg-purple-50/50 transition-colors duration-150">
                           {/* Table Cells - Responsive padding and text sizes */}
                           <td className="py-3 sm:py-5 px-3 sm:px-6 text-xs sm:text-sm text-gray-700 whitespace-nowrap">

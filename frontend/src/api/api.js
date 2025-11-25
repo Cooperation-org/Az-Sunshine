@@ -449,6 +449,20 @@ export async function getCycles() {
   }
 }
 
+/**
+ * Get all parties
+ * GET /api/v1/parties/
+ */
+export async function getParties() {
+  try {
+    const res = await api.get("parties/");
+    return res.data;
+  } catch (error) {
+    console.error("Failed to get parties:", error);
+    throw error;
+  }
+}
+
 //
 // ==================== DASHBOARD ====================
 //
