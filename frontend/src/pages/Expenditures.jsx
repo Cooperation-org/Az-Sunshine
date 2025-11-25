@@ -91,7 +91,7 @@ export default function Expenditures() {
                 <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
                   <p className="text-gray-500 text-xs sm:text-sm mb-1">Total Amount</p>
                   <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    ${expenditures
+                    ${filteredExpenditures
                       .reduce((sum, exp) => sum + parseFloat(exp.amount || 0), 0)
                       .toLocaleString("en-US", {
                         minimumFractionDigits: 2,
@@ -143,7 +143,7 @@ export default function Expenditures() {
                       </tr>
                     ) : (
                       filteredExpenditures.map((exp, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50 transition">
+                        <tr key={idx} className="hover:bg-purple-50/50 transition-colors duration-150">
                           {/* Table Cells - Responsive padding and text sizes */}
                           <td className="py-3 sm:py-5 px-3 sm:px-6 text-xs sm:text-sm text-gray-700 whitespace-nowrap">
                             {formatDate(exp.date)}
@@ -207,10 +207,10 @@ export default function Expenditures() {
                     <button
                       onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
-                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${
                         currentPage === 1
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                          : "bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm border border-gray-300 active:scale-95"
                       }`}
                     >
                       <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -234,10 +234,10 @@ export default function Expenditures() {
                       <button
                         key={page}
                         onClick={() => setCurrentPage(page)}
-                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition ${
+                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                           currentPage === page
-                            ? "bg-purple-600 text-white"
-                            : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                            ? "bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white shadow-md"
+                            : "bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm border border-gray-300 active:scale-95"
                         }`}
                       >
                         {page}

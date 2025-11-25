@@ -17,10 +17,13 @@ export default function Header({ title, subtitle }) {
           <input
             type="text"
             placeholder="Search"
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64 lg:w-80 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64 lg:w-80 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm sm:text-base hover:border-gray-400"
           />
         </div>
-        <button className="p-2 rounded-lg bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] transition flex-shrink-0">
+        <button 
+          className="p-2 rounded-lg bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] hover:from-[#7C6BA6] hover:to-[#5B4D7D] transition-all duration-200 flex-shrink-0 hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+          aria-label="Notifications"
+        >
           <Bell className="w-5 h-5 text-white" />
         </button>
       </div>

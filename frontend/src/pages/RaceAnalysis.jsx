@@ -121,7 +121,7 @@ export default function RaceAnalysis() {
                 <select
                   value={selectedOffice}
                   onChange={(e) => setSelectedOffice(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 hover:border-gray-400"
                 >
                   <option value="">Select Office</option>
                   {offices.map(office => (
@@ -136,7 +136,7 @@ export default function RaceAnalysis() {
                 <select
                   value={selectedCycle}
                   onChange={(e) => setSelectedCycle(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 hover:border-gray-400"
                 >
                   <option value="">Select Cycle</option>
                   {cycles.map(cycle => (
@@ -234,7 +234,7 @@ export default function RaceAnalysis() {
                       const netIE = ieFor - ieAgainst;
                       
                       return (
-                        <tr key={idx} className="hover:bg-gray-50">
+                        <tr key={idx} className="hover:bg-purple-50/50 transition-colors duration-150">
                           {/* Table Cells - Responsive padding and text sizes */}
                           <td className="py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-medium text-gray-900 whitespace-nowrap">
                             {candidate.subject_committee__name__first_name} {candidate.subject_committee__name__last_name}
