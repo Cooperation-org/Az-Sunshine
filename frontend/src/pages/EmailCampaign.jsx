@@ -547,9 +547,9 @@ export default function EmailCampaign() {
                   </div>
                 ) : (
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-gray-700 border-b border-gray-200 text-white">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 w-12">
+                        <th className="px-4  py-3 text-left text-xs font-semibold text-gray-700 w-12">
                           <input
                             type="checkbox"
                             checked={
