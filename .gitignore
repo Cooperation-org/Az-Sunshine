@@ -41,3 +41,6 @@ Analyser/
 scraper_service.log
 logs/
 *.log
+
+backend/transparency/migrations/0002_add_materialized_views.py
+backend/transparency/migrations/0012_merge_20251124_2357.py
