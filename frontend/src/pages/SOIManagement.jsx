@@ -1,4 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
 import {
   Play,
   CheckCircle,
@@ -19,12 +30,26 @@ import {
   CheckSquare,
   Square,
   ChevronDown,
-  MoreVertical
+  MoreVertical,
+  Calendar,
+  TrendingUp,
+  BarChart3
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Preloader from "../components/Preloader";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { ToastContainer, useToast } from "../components/Toast";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 // REAL API CALLS
 const API_BASE_URL = "http://167.172.30.134/api/v1/";
@@ -75,6 +100,108 @@ const bulkMarkContacted = async (ids) => {
 const bulkMarkAcknowledged = async (ids) => {
   const promises = ids.map(id => markPledgeReceived(id));
   return Promise.allSettled(promises);
+};
+
+// Email stats API calls (mock data for now - replace with real API)
+const getEmailStats = async (dateFrom, dateTo) => {
+  // TODO: Replace with real API call
+  // const response = await fetch(`${API_BASE_URL}email-campaigns/stats/?date_from=${dateFrom}&date_to=${dateTo}`);
+  // return response.json();
+  
+  // Mock data - generate realistic time series data
+  const days = [];
+  const openRates = [];
+  const clickRates = [];
+  const dates = [];
+  
+  const startDate = dateFrom ? new Date(dateFrom) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const endDate = dateTo ? new Date(dateTo) : new Date();
+  
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    dates.push(new Date(d));
+    days.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    
+    // Generate realistic open rates (60-85%)
+    const baseOpenRate = 70 + Math.random() * 15;
+    openRates.push(parseFloat(baseOpenRate.toFixed(1)));
+    
+    // Generate realistic click rates (15-35%)
+    const baseClickRate = 20 + Math.random() * 15;
+    clickRates.push(parseFloat(baseClickRate.toFixed(1)));
+  }
+  
+  // Mock top performing emails
+  const topEmails = [
+    {
+      id: 1,
+      subject: "Statement of Interest Request - Initial Outreach",
+      sent: 145,
+      opened: 118,
+      clicked: 42,
+      open_rate: 81.4,
+      click_rate: 29.0,
+      date: "2024-11-05",
+    },
+    {
+      id: 2,
+      subject: "Follow-up: SOI Pledge Reminder",
+      sent: 98,
+      opened: 82,
+      clicked: 31,
+      open_rate: 83.7,
+      click_rate: 31.6,
+      date: "2024-11-03",
+    },
+    {
+      id: 3,
+      subject: "Welcome to Arizona Sunshine Program",
+      sent: 67,
+      opened: 54,
+      clicked: 19,
+      open_rate: 80.6,
+      click_rate: 28.4,
+      date: "2024-11-01",
+    },
+    {
+      id: 4,
+      subject: "SOI Deadline Reminder - Action Required",
+      sent: 89,
+      opened: 71,
+      clicked: 25,
+      open_rate: 79.8,
+      click_rate: 28.1,
+      date: "2024-10-28",
+    },
+    {
+      id: 5,
+      subject: "Thank You for Your SOI Submission",
+      sent: 56,
+      opened: 48,
+      clicked: 18,
+      open_rate: 85.7,
+      click_rate: 32.1,
+      date: "2024-10-25",
+    },
+  ];
+  
+  return {
+    open_rate_over_time: {
+      labels: days,
+      data: openRates,
+    },
+    click_rate_over_time: {
+      labels: days,
+      data: clickRates,
+    },
+    top_performing_emails: topEmails,
+    summary: {
+      total_sent: topEmails.reduce((sum, e) => sum + e.sent, 0),
+      total_opened: topEmails.reduce((sum, e) => sum + e.opened, 0),
+      total_clicked: topEmails.reduce((sum, e) => sum + e.clicked, 0),
+      avg_open_rate: openRates.reduce((a, b) => a + b, 0) / openRates.length,
+      avg_click_rate: clickRates.reduce((a, b) => a + b, 0) / clickRates.length,
+    },
+  };
 };
 
 // Scraping Modal
@@ -187,6 +314,14 @@ export default function SOIManagement() {
   
   // Toast notifications
   const { toasts, success, error, removeToast } = useToast();
+
+  // Email stats state
+  const [emailStats, setEmailStats] = useState(null);
+  const [emailStatsLoading, setEmailStatsLoading] = useState(false);
+  const [emailDateRange, setEmailDateRange] = useState({
+    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    to: new Date().toISOString().split('T')[0],
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -377,6 +512,24 @@ export default function SOIManagement() {
   useEffect(() => {
     setSelectedIds(new Set());
   }, [activeTab, currentPage]);
+
+  // Load email stats
+  useEffect(() => {
+    loadEmailStats();
+  }, [emailDateRange]);
+
+  async function loadEmailStats() {
+    setEmailStatsLoading(true);
+    try {
+      const stats = await getEmailStats(emailDateRange.from, emailDateRange.to);
+      setEmailStats(stats);
+    } catch (err) {
+      console.error("Error loading email stats:", err);
+      setEmailStats(null);
+    } finally {
+      setEmailStatsLoading(false);
+    }
+  }
 
   const getStatusBadge = (candidate) => {
     if (candidate.pledge_received) {
@@ -569,6 +722,316 @@ export default function SOIManagement() {
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* Email Stats Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 sm:p-6">
+              {/* Header with Date Range Filter */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-50 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">Email Campaign Statistics</h3>
+                    <p className="text-sm text-gray-500">Track email performance and engagement</p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <input
+                      type="date"
+                      value={emailDateRange.from}
+                      onChange={(e) => setEmailDateRange({ ...emailDateRange, from: e.target.value })}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    />
+                    <span className="text-gray-500 text-sm">to</span>
+                    <input
+                      type="date"
+                      value={emailDateRange.to}
+                      onChange={(e) => setEmailDateRange({ ...emailDateRange, to: e.target.value })}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {emailStatsLoading ? (
+                <div className="flex items-center justify-center h-64">
+                  <Loader className="w-8 h-8 animate-spin text-purple-600" />
+                </div>
+              ) : emailStats ? (
+                <>
+                  {/* Summary Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4">
+                      <p className="text-xs text-purple-600 font-medium mb-1">Total Sent</p>
+                      <p className="text-2xl font-bold text-purple-900">{emailStats.summary.total_sent}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
+                      <p className="text-xs text-blue-600 font-medium mb-1">Total Opened</p>
+                      <p className="text-2xl font-bold text-blue-900">{emailStats.summary.total_opened}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
+                      <p className="text-xs text-green-600 font-medium mb-1">Total Clicked</p>
+                      <p className="text-2xl font-bold text-green-900">{emailStats.summary.total_clicked}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4">
+                      <p className="text-xs text-amber-600 font-medium mb-1">Avg Open Rate</p>
+                      <p className="text-2xl font-bold text-amber-900">{emailStats.summary.avg_open_rate.toFixed(1)}%</p>
+                    </div>
+                  </div>
+
+                  {/* Charts Grid - Responsive */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                    {/* Open Rate Chart */}
+                    <div className="bg-gray-50 rounded-xl p-4 sm:p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h4 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                            Email Open Rate
+                          </h4>
+                          <p className="text-xs sm:text-sm text-gray-500">Percentage of emails opened over time</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl sm:text-3xl font-bold text-purple-600">
+                            {emailStats.summary.avg_open_rate.toFixed(1)}%
+                          </p>
+                          <p className="text-xs text-gray-500">Average</p>
+                        </div>
+                      </div>
+                      <div className="h-[200px] sm:h-[240px]">
+                        <Line
+                          data={{
+                            labels: emailStats.open_rate_over_time.labels,
+                            datasets: [
+                              {
+                                label: "Open Rate (%)",
+                                data: emailStats.open_rate_over_time.data,
+                                borderColor: "rgb(107, 91, 149)",
+                                backgroundColor: "rgba(107, 91, 149, 0.1)",
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 3,
+                                pointHoverRadius: 5,
+                                pointBackgroundColor: "rgb(107, 91, 149)",
+                                pointBorderColor: "#fff",
+                                pointBorderWidth: 2,
+                              },
+                            ],
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: {
+                                display: false,
+                              },
+                              tooltip: {
+                                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                                titleColor: "#1F2937",
+                                bodyColor: "#1F2937",
+                                borderColor: "#E5E7EB",
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: true,
+                                callbacks: {
+                                  label: (context) => `${context.parsed.y}%`,
+                                },
+                              },
+                            },
+                            scales: {
+                              y: {
+                                beginAtZero: false,
+                                min: 50,
+                                max: 100,
+                                ticks: {
+                                  callback: (value) => `${value}%`,
+                                },
+                                grid: {
+                                  color: "rgba(0, 0, 0, 0.05)",
+                                },
+                              },
+                              x: {
+                                grid: {
+                                  display: false,
+                                },
+                                ticks: {
+                                  maxRotation: 45,
+                                  minRotation: 45,
+                                },
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Click-Through Rate Chart */}
+                    <div className="bg-gray-50 rounded-xl p-4 sm:p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h4 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                            Click-Through Rate
+                          </h4>
+                          <p className="text-xs sm:text-sm text-gray-500">Percentage of emails with clicks</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl sm:text-3xl font-bold text-blue-600">
+                            {emailStats.summary.avg_click_rate.toFixed(1)}%
+                          </p>
+                          <p className="text-xs text-gray-500">Average</p>
+                        </div>
+                      </div>
+                      <div className="h-[200px] sm:h-[240px]">
+                        <Line
+                          data={{
+                            labels: emailStats.click_rate_over_time.labels,
+                            datasets: [
+                              {
+                                label: "Click Rate (%)",
+                                data: emailStats.click_rate_over_time.data,
+                                borderColor: "rgb(59, 130, 246)",
+                                backgroundColor: "rgba(59, 130, 246, 0.1)",
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 3,
+                                pointHoverRadius: 5,
+                                pointBackgroundColor: "rgb(59, 130, 246)",
+                                pointBorderColor: "#fff",
+                                pointBorderWidth: 2,
+                              },
+                            ],
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: {
+                                display: false,
+                              },
+                              tooltip: {
+                                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                                titleColor: "#1F2937",
+                                bodyColor: "#1F2937",
+                                borderColor: "#E5E7EB",
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: true,
+                                callbacks: {
+                                  label: (context) => `${context.parsed.y}%`,
+                                },
+                              },
+                            },
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                                min: 0,
+                                max: 50,
+                                ticks: {
+                                  callback: (value) => `${value}%`,
+                                },
+                                grid: {
+                                  color: "rgba(0, 0, 0, 0.05)",
+                                },
+                              },
+                              x: {
+                                grid: {
+                                  display: false,
+                                },
+                                ticks: {
+                                  maxRotation: 45,
+                                  minRotation: 45,
+                                },
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Top Performing Emails Table */}
+                  <div>
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Award className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+                      Top Performing Emails
+                    </h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                              Subject
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                              Sent
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                              Opened
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                              Clicked
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                              Open Rate
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                              Click Rate
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                              Date
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {emailStats.top_performing_emails.map((email) => (
+                            <tr key={email.id} className="hover:bg-purple-50/50 transition-colors duration-150">
+                              <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                {email.subject}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{email.sent}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{email.opened}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{email.clicked}</td>
+                              <td className="px-4 py-3 text-sm">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  {email.open_rate}%
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  {email.click_rate}%
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-700">
+                                {new Date(email.date).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-64 text-gray-500">
+                  <div className="text-center">
+                    <Mail className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No email statistics available</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
