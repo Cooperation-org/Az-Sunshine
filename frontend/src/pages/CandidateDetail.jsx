@@ -157,7 +157,7 @@ export default function CandidateDetail() {
             </div>
             <Link 
               to="/candidates" 
-              className="text-sm sm:text-base text-purple-600 hover:text-purple-700 font-medium"
+              className="text-sm sm:text-base text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200 hover:underline"
             >
               ← Back to Candidates
             </Link>
@@ -231,7 +231,7 @@ export default function CandidateDetail() {
                     </tr>
                   ) : (
                     expenditures.map((e, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
+                      <tr key={idx} className="hover:bg-purple-50/50 transition-colors duration-150">
                         <td className="py-4 px-6 text-gray-700">
                           {e.date ? new Date(e.date).toLocaleDateString("en-US", {
                             year: "numeric",

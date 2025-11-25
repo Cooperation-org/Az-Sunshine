@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Menu,
   X,
+  Mail,
 } from 'lucide-react';
 
 function SideBar() {
@@ -23,12 +24,39 @@ function SideBar() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // Prevent body scroll when mobile menu is open
+  React.useEffect(() => {
+    if (isMobileMenuOpen) {
+      // Store original styles
+      const originalOverflow = document.body.style.overflow;
+      const originalPosition = document.body.style.position;
+      const originalWidth = document.body.style.width;
+      
+      // Lock body scroll
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      
+      // Cleanup: Restore original styles when menu closes
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.position = originalPosition;
+        document.body.style.width = originalWidth;
+      };
+    } else {
+      // Restore scroll when menu is closed
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+  }, [isMobileMenuOpen]);
+
   return (
     <>
       {/* Mobile Menu Button - Only visible on small screens */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 right-4  z-30 p-2 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white rounded-lg shadow-lg"
+        className="lg:hidden fixed top-4 left-4 z-30 p-2.5 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
         aria-label="Toggle menu"
       >
         {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -48,7 +76,7 @@ function SideBar() {
           fixed lg:static
           top-0 left-0
           w-64 lg:w-20
-          h-100
+          h-100%
           rounded-none lg:rounded-3xl
           bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D]
           flex flex-col items-center
@@ -112,10 +140,10 @@ function SideBar() {
         <nav className="flex flex-col items-center lg:items-center space-y-6 w-full px-4 lg:px-0">
           <Link
             to="/"
-            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition-all duration-200 ${
               isActive('/')
-                ? 'bg-white/20'
-                : 'hover:bg-white/10'
+                ? 'bg-white/20 shadow-md'
+                : 'hover:bg-white/10 hover:shadow-sm'
             }`}
             title="Dashboard"
           >
@@ -125,10 +153,10 @@ function SideBar() {
 
           <Link
             to="/soi"
-            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition-all duration-200 ${
               isActive('/soi')
-                ? 'bg-white/20'
-                : 'hover:bg-white/10'
+                ? 'bg-white/20 shadow-md'
+                : 'hover:bg-white/10 hover:shadow-sm'
             }`}
             title="SOI Tracking"
           >
@@ -137,11 +165,24 @@ function SideBar() {
           </Link>
 
           <Link
+            to="/email-campaign"
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition-all duration-200 ${
+              isActive('/email-campaign')
+                ? 'bg-white/20 shadow-md'
+                : 'hover:bg-white/10 hover:shadow-sm'
+            }`}
+            title="Email Campaign"
+          >
+            <Mail className="w-6 h-6 text-white flex-shrink-0" />
+            <span className="lg:hidden text-white font-medium">Email Campaign</span>
+          </Link>
+
+          <Link
             to="/candidates"
-            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition-all duration-200 ${
               isActive('/candidates')
-                ? 'bg-white/20'
-                : 'hover:bg-white/10'
+                ? 'bg-white/20 shadow-md'
+                : 'hover:bg-white/10 hover:shadow-sm'
             }`}
             title="Candidates"
           >
@@ -151,10 +192,10 @@ function SideBar() {
 
           <Link
             to="/races"
-            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition-all duration-200 ${
               isActive('/races')
-                ? 'bg-white/20'
-                : 'hover:bg-white/10'
+                ? 'bg-white/20 shadow-md'
+                : 'hover:bg-white/10 hover:shadow-sm'
             }`}
             title="Race Analysis"
           >
@@ -164,10 +205,10 @@ function SideBar() {
 
           <Link
             to="/donors"
-            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition-all duration-200 ${
               isActive('/donors')
-                ? 'bg-white/20'
-                : 'hover:bg-white/10'
+                ? 'bg-white/20 shadow-md'
+                : 'hover:bg-white/10 hover:shadow-sm'
             }`}
             title="Donors"
           >
@@ -177,10 +218,10 @@ function SideBar() {
 
           <Link
             to="/expenditures"
-            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition ${
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition-all duration-200 ${
               isActive('/expenditures')
-                ? 'bg-white/20'
-                : 'hover:bg-white/10'
+                ? 'bg-white/20 shadow-md'
+                : 'hover:bg-white/10 hover:shadow-sm'
             }`}
             title="Expenditures"
           >
@@ -195,7 +236,7 @@ function SideBar() {
       {/* Logout - Responsive: Show text on mobile/tablet */}
       <button
         onClick={() => console.log('Logout clicked')}
-        className="w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 transition bg-white/20 rounded-xl hover:bg-white/30"
+        className="w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 transition-all duration-200 bg-white/20 rounded-xl hover:bg-white/30 hover:shadow-md active:scale-95"
         title="Logout"
       >
         <LogOut className="w-6 h-6 text-white flex-shrink-0" />
