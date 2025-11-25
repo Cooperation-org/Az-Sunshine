@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Bell, Search, ChevronRight } from "lucide-react";
+import { Bell, Search, ChevronRight, Download, Loader } from "lucide-react";
 import { getDonors } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Preloader from "../components/Preloader";
+import { exportToCSV } from "../utils/csvExport";
+
 export default function Donors() {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,6 +13,7 @@ export default function Donors() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     loadDonors(currentPage);
@@ -41,6 +44,49 @@ export default function Donors() {
     loadDonors(1);
   };
 
+  // Export donors to CSV
+  const handleExportCSV = async () => {
+    try {
+      setExporting(true);
+      
+      // Load all donors for export (not just current page)
+      const params = { page_size: totalCount || 1000 };
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+      const allDonorsData = await getDonors(params);
+      const allDonors = allDonorsData.results || [];
+      
+      // Define CSV columns
+      const columns = [
+        { key: 'full_name', label: 'Donor/Entity Name' },
+        { key: 'name', label: 'Name (Alt)' },
+        { key: 'entity_type.name', label: 'Entity Type' },
+        { key: 'city', label: 'City' },
+        { key: 'state', label: 'State' },
+        { key: 'location', label: 'Location' },
+      ];
+      
+      // Transform data for CSV (combine city and state into location)
+      const csvData = allDonors.map(donor => ({
+        ...donor,
+        location: donor.city && donor.state ? `${donor.city}, ${donor.state}` : (donor.city || donor.state || 'N/A'),
+      }));
+      
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `donors_${timestamp}.csv`;
+      
+      // Export to CSV
+      await exportToCSV(csvData, columns, filename, setExporting);
+      
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      alert("Failed to export CSV. Please try again.");
+      setExporting(false);
+    }
+  };
+
   // Show preloader while initial data is loading
   if (loading && currentPage === 1) {
     return <Preloader message="Loading donors..." />;
@@ -64,6 +110,27 @@ export default function Donors() {
             </div>
           ) : (
             <>
+              {/* === Export Button - Responsive === */}
+              <div className="mb-4 sm:mb-6 flex justify-end">
+                <button
+                  onClick={handleExportCSV}
+                  disabled={exporting || donors.length === 0}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white rounded-lg hover:from-[#7C6BA6] hover:to-[#5B4D7D] transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md active:scale-95 text-sm sm:text-base"
+                >
+                  {exporting ? (
+                    <>
+                      <Loader className="w-4 h-4 animate-spin" />
+                      <span>Exporting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      <span>Export CSV</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               {/* === Donors Table - Responsive: Horizontal scroll on mobile === */}
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
                 {/* Table Container - Horizontal scroll on mobile */}
