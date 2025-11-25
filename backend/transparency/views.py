@@ -19,7 +19,7 @@ from .serializers import (
     CommitteeSerializer, CommitteeDetailSerializer,
     EntitySerializer, EntityDetailSerializer,
     TransactionSerializer, CandidateSOISerializer,
-    OfficeSerializer, CycleSerializer, RaceAggregationSerializer
+    OfficeSerializer, CycleSerializer, PartySerializer, RaceAggregationSerializer
 )
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -797,6 +797,14 @@ class CycleViewSet(viewsets.ReadOnlyModelViewSet):
     """Available election cycles"""
     queryset = Cycle.objects.all().order_by('-begin_date')
     serializer_class = CycleSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
+
+
+class PartyViewSet(viewsets.ReadOnlyModelViewSet):
+    """Available parties for filtering"""
+    queryset = Party.objects.all().order_by('name')
+    serializer_class = PartySerializer
     permission_classes = [AllowAny]
     pagination_class = None
 

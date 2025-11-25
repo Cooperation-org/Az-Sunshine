@@ -17,6 +17,7 @@ router.register(r'entities', EntityViewSet, basename='entity')
 router.register(r'transactions', TransactionViewSet, basename='transaction')
 router.register(r'offices', OfficeViewSet, basename='office')
 router.register(r'cycles', CycleViewSet, basename='cycle')
+router.register(r'parties', PartyViewSet, basename='party')
 
 urlpatterns = [
     # === SOI ENDPOINTS ===

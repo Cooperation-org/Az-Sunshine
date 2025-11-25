@@ -76,7 +76,7 @@ function SideBar() {
           fixed lg:static
           top-0 left-0
           w-64 lg:w-20
-          h-100%
+          h-full
           rounded-none lg:rounded-3xl
           bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D]
           flex flex-col items-center
