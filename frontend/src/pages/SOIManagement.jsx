@@ -15,10 +15,16 @@ import {
   Bell,
   ChevronRight,
   ChevronLeft,
-  Filter
+  Filter,
+  CheckSquare,
+  Square,
+  ChevronDown,
+  MoreVertical
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Preloader from "../components/Preloader";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { ToastContainer, useToast } from "../components/Toast";
 
 // REAL API CALLS
 const API_BASE_URL = "http://167.172.30.134/api/v1/";
@@ -58,6 +64,17 @@ const markPledgeReceived = async (id) => {
     body: JSON.stringify({})
   });
   return response.json();
+};
+
+// Bulk actions API calls
+const bulkMarkContacted = async (ids) => {
+  const promises = ids.map(id => markCandidateContacted(id));
+  return Promise.allSettled(promises);
+};
+
+const bulkMarkAcknowledged = async (ids) => {
+  const promises = ids.map(id => markPledgeReceived(id));
+  return Promise.allSettled(promises);
 };
 
 // Scraping Modal
@@ -161,6 +178,16 @@ export default function SOIManagement() {
   const [totalCount, setTotalCount] = useState(0);
   const pageSize = 10;
 
+  // Bulk actions state
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingBulkAction, setPendingBulkAction] = useState(null);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  
+  // Toast notifications
+  const { toasts, success, error, removeToast } = useToast();
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -240,6 +267,116 @@ export default function SOIManagement() {
       console.error("Error:", error);
     }
   };
+
+  // Bulk selection handlers
+  const handleSelectAll = () => {
+    if (selectedIds.size === candidates.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(candidates.map(c => c.id)));
+    }
+  };
+
+  const handleSelectCandidate = (id) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const isAllSelected = candidates.length > 0 && selectedIds.size === candidates.length;
+  const isIndeterminate = selectedIds.size > 0 && selectedIds.size < candidates.length;
+
+  // Bulk action handlers
+  const handleBulkAction = (action) => {
+    if (selectedIds.size === 0) {
+      error("Please select at least one candidate");
+      return;
+    }
+
+    setPendingBulkAction(action);
+    setShowConfirmModal(true);
+  };
+
+  const executeBulkAction = async () => {
+    if (!pendingBulkAction || selectedIds.size === 0) return;
+
+    setBulkActionLoading(true);
+    const ids = Array.from(selectedIds);
+    const actionName = pendingBulkAction === "contacted" ? "Mark as Contacted" : "Mark as Acknowledged";
+
+    try {
+      let results;
+      if (pendingBulkAction === "contacted") {
+        results = await bulkMarkContacted(ids);
+      } else {
+        results = await bulkMarkAcknowledged(ids);
+      }
+
+      // Count successes and failures
+      const successful = results.filter(r => r.status === "fulfilled").length;
+      const failed = results.filter(r => r.status === "rejected").length;
+
+      // Update state efficiently - only update selected candidates
+      setCandidates(prevCandidates => 
+        prevCandidates.map(candidate => {
+          if (selectedIds.has(candidate.id)) {
+            if (pendingBulkAction === "contacted") {
+              return { ...candidate, contacted: true, contact_status: "contacted" };
+            } else {
+              return { ...candidate, pledge_received: true, contact_status: "acknowledged", contacted: true };
+            }
+          }
+          return candidate;
+        })
+      );
+
+      // Update stats if available
+      if (stats) {
+        if (pendingBulkAction === "contacted") {
+          setStats(prev => ({
+            ...prev,
+            uncontacted: Math.max(0, (prev.uncontacted || 0) - successful),
+            pending_pledge: (prev.pending_pledge || 0) + successful,
+          }));
+        } else {
+          setStats(prev => ({
+            ...prev,
+            pending_pledge: Math.max(0, (prev.pending_pledge || 0) - successful),
+            pledged: (prev.pledged || 0) + successful,
+          }));
+        }
+      }
+
+      // Show toast notifications
+      if (failed === 0) {
+        success(`Successfully ${actionName.toLowerCase()} ${successful} candidate(s)`);
+      } else if (successful > 0) {
+        success(`Successfully ${actionName.toLowerCase()} ${successful} candidate(s)`, 4000);
+        error(`Failed to ${actionName.toLowerCase()} ${failed} candidate(s)`, 4000);
+      } else {
+        error(`Failed to ${actionName.toLowerCase()} candidates. Please try again.`);
+      }
+
+      // Clear selection
+      setSelectedIds(new Set());
+      setShowBulkActions(false);
+    } catch (err) {
+      console.error("Bulk action error:", err);
+      error(`Failed to ${actionName.toLowerCase()}. Please try again.`);
+    } finally {
+      setBulkActionLoading(false);
+      setPendingBulkAction(null);
+    }
+  };
+
+  // Clear selection when tab or page changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [activeTab, currentPage]);
 
   const getStatusBadge = (candidate) => {
     if (candidate.pledge_received) {
@@ -435,12 +572,94 @@ export default function SOIManagement() {
             </div>
           </div>
 
+          {/* Bulk Actions Bar */}
+          {selectedIds.size > 0 && (
+            <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl shadow-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-white font-semibold">
+                  {selectedIds.size} candidate{selectedIds.size !== 1 ? "s" : ""} selected
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-200 font-medium text-sm"
+                >
+                  Clear Selection
+                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowBulkActions(!showBulkActions)}
+                    disabled={bulkActionLoading}
+                    className="px-4 py-2 bg-white text-purple-700 rounded-lg hover:bg-purple-50 transition-all duration-200 font-medium text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {bulkActionLoading ? (
+                      <>
+                        <Loader className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        Bulk Actions
+                        <ChevronDown className={`w-4 h-4 transition-transform ${showBulkActions ? "rotate-180" : ""}`} />
+                      </>
+                    )}
+                  </button>
+                  {showBulkActions && !bulkActionLoading && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setShowBulkActions(false)}
+                      />
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-20 py-1">
+                        <button
+                          onClick={() => handleBulkAction("contacted")}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 bg-gray-100  transition-colors flex items-center gap-2"
+                        >
+                          <Mail className="w-4 h-4" />
+                          Mark as Contacted
+                        </button>
+                        <button
+                          onClick={() => handleBulkAction("acknowledged")}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 bg-gray-100 transition-colors flex items-center gap-2"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          Mark as Acknowledged
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Candidates Table */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
+                    <th className="px-6 py-4 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider w-12">
+                      <button
+                        onClick={handleSelectAll}
+                        className="flex items-center justify-center bg-gray-100"
+                        title={isAllSelected ? "Deselect All" : "Select All"}
+                      >
+                        {isAllSelected ? (
+                          <CheckSquare className="w-5 h-5 text-gray-400 bg-gray-100" />
+                        ) : isIndeterminate ? (
+                          <div className="relative">
+                            <Square className="w-5 h-5 text-gray-400 bg-gray-100" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-3 h-0.5 bg-purple-600" />
+                            </div>
+                          </div>
+                        ) : (
+                          <Square className="w-5 h-5 text-gray-400 bg-gray-100" />
+                        )}
+                      </button>
+                    </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Candidate
                     </th>
@@ -461,14 +680,14 @@ export default function SOIManagement() {
                 <tbody className="divide-y divide-gray-100">
                   {loading ? (
                     <tr>
-                      <td colSpan="5" className="py-12 text-center">
+                      <td colSpan="6" className="py-12 text-center">
                         <Loader className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-2" />
                         <p className="text-gray-500 text-sm">Loading candidates...</p>
                       </td>
                     </tr>
                   ) : candidates.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="py-16 text-center">
+                      <td colSpan="6" className="py-16 text-center">
                         <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                         <div className="text-lg font-semibold text-gray-900 mb-1">No candidates found</div>
                         <div className="text-sm text-gray-500">
@@ -478,7 +697,25 @@ export default function SOIManagement() {
                     </tr>
                   ) : (
                     candidates.map((candidate) => (
-                      <tr key={candidate.id} className="hover:bg-purple-50/50 transition-colors duration-150">
+                      <tr 
+                        key={candidate.id} 
+                        className={`hover:bg-purple-50/50 transition-colors duration-150 ${
+                          selectedIds.has(candidate.id) ? "bg-purple-50" : ""
+                        }`}
+                      >
+                        <td className="px-6 py-5">
+                          <button
+                            onClick={() => handleSelectCandidate(candidate.id)}
+                            className="flex items-center justify-center bg-gray-100"
+                            title={selectedIds.has(candidate.id) ? "Deselect" : "Select"}
+                          >
+                            {selectedIds.has(candidate.id) ? (
+                              <CheckSquare className="w-5 h-5 text-purple-600" />
+                            ) : (
+                              <Square className="w-5 h-5 text-gray-400 hover:text-purple-400" />
+                            )}
+                          </button>
+                        </td>
                         <td className="px-6 py-5">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
@@ -615,6 +852,33 @@ export default function SOIManagement() {
           loadData();
         }}
       />
+
+      {/* Confirmation Modal for Bulk Actions */}
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => {
+          setShowConfirmModal(false);
+          setPendingBulkAction(null);
+        }}
+        onConfirm={executeBulkAction}
+        title={
+          pendingBulkAction === "contacted"
+            ? "Mark as Contacted"
+            : "Mark as Acknowledged"
+        }
+        message={
+          pendingBulkAction === "contacted"
+            ? `Are you sure you want to mark ${selectedIds.size} candidate${selectedIds.size !== 1 ? "s" : ""} as contacted? This action cannot be undone.`
+            : `Are you sure you want to mark ${selectedIds.size} candidate${selectedIds.size !== 1 ? "s" : ""} as acknowledged? This will mark their pledge as received.`
+        }
+        confirmText={
+          bulkActionLoading ? "Processing..." : "Confirm"
+        }
+        type="warning"
+      />
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 }
