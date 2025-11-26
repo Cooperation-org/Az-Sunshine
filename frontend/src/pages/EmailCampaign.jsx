@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import Preloader from "../components/Preloader";
+import { StatsGridSkeleton, TableSkeleton, CardSkeleton } from "../components/SkeletonLoader";
 import { getSOICandidates } from "../api/api";
 
 // API Base URL
@@ -290,11 +290,6 @@ export default function EmailCampaign() {
     return name.includes(searchLower) || office.includes(searchLower);
   });
 
-  // Show preloader on initial load
-  if (loading && currentPage === 1) {
-    return <Preloader message="Loading email campaign..." />;
-  }
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -305,6 +300,10 @@ export default function EmailCampaign() {
         <div className="p-4 sm:p-6 lg:p-8">
           {/* Email Statistics Cards - Responsive: 1 column on mobile, 4 on desktop */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
+            {loading && currentPage === 1 ? (
+              <StatsGridSkeleton count={4} />
+            ) : (
+              <>
             <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-gray-500 text-xs sm:text-sm">Total Sent</p>
@@ -351,6 +350,8 @@ export default function EmailCampaign() {
               </p>
               <p className="text-xs text-gray-500 mt-1">Selected</p>
             </div>
+              </>
+            )}
           </div>
 
           {/* Main Content Grid - Responsive: 1 column on mobile, 2 on desktop */}
