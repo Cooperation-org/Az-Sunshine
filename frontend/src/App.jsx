@@ -8,6 +8,7 @@ import Expenditures from "./pages/Expenditures";
 import SOIManagement from "./pages/SOIManagement";
 import RaceAnalysis from "./pages/RaceAnalysis";
 import EmailCampaign from "./pages/EmailCampaign";
+import DataValidation from "./pages/DataValidation";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
       <Route path="/donors" element={<Donors />} />
       <Route path="/expenditures" element={<Expenditures />} />
       <Route path="/email-campaign" element={<EmailCampaign />} />
+      <Route path="/data-validation" element={<DataValidation />} />
     </Routes>
   );
 }

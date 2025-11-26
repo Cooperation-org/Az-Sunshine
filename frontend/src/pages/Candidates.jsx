@@ -171,7 +171,7 @@ export default function Candidates() {
                             <td className="py-3 sm:py-5 px-3 sm:px-6">
                               <div className="flex items-center gap-2 sm:gap-4">
                                 {/* Avatar - Responsive size */}
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center text-white text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D]  flex items-center justify-center text-white text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm">
                                   {candidateName.charAt(0).toUpperCase()}
                                 </div>
                                 <Link 
