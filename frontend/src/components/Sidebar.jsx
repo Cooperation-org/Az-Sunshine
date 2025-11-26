@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   Mail,
+  Shield,
 } from 'lucide-react';
 
 function SideBar() {
@@ -175,6 +176,19 @@ function SideBar() {
           >
             <Mail className="w-6 h-6 text-white flex-shrink-0" />
             <span className="lg:hidden text-white font-medium">Email Campaign</span>
+          </Link>
+
+          <Link
+            to="/data-validation"
+            className={`w-full lg:w-auto flex items-center gap-3 lg:justify-center p-3 rounded-xl transition-all duration-200 ${
+              isActive('/data-validation')
+                ? 'bg-white/20 shadow-md'
+                : 'hover:bg-white/10 hover:shadow-sm'
+            }`}
+            title="Data Validation"
+          >
+            <Shield className="w-6 h-6 text-white flex-shrink-0" />
+            <span className="lg:hidden text-white font-medium">Data Validation</span>
           </Link>
 
           <Link
