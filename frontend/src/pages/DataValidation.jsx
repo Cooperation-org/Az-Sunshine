@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import Preloader from "../components/Preloader";
+import { StatsGridSkeleton, TableSkeleton, CardSkeleton } from "../components/SkeletonLoader";
 import ConfirmationModal from "../components/ConfirmationModal";
 
 // API Base URL
@@ -273,10 +273,6 @@ export default function DataValidation() {
     currentPage * pageSize
   );
 
-  if (loading && !metrics) {
-    return <Preloader message="Loading data validation..." />;
-  }
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -285,7 +281,9 @@ export default function DataValidation() {
 
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
           {/* Data Quality Metrics */}
-          {metrics && (
+          {loading && !metrics ? (
+            <StatsGridSkeleton count={4} />
+          ) : metrics ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Overall Quality Score */}
               <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
@@ -354,7 +352,7 @@ export default function DataValidation() {
                 <div className="text-sm text-gray-600">Total Entities</div>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Data Issues Alerts */}
           {metrics && (
@@ -450,9 +448,11 @@ export default function DataValidation() {
               </button>
             </div>
 
-            {loading ? (
-              <div className="flex items-center justify-center h-64">
-                <Loader className="w-8 h-8 animate-spin text-purple-600" />
+            {loading && currentPage === 1 ? (
+              <div className="p-4 sm:p-6 space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <CardSkeleton key={i} lines={3} />
+                ))}
               </div>
             ) : paginatedDuplicates.length === 0 ? (
               <div className="flex items-center justify-center h-64 text-center">

@@ -18,7 +18,7 @@ import {
   Legend,
 } from "chart.js";
 import Sidebar from "../components/Sidebar";
-import Preloader from "../components/Preloader";
+import { CardSkeleton, ChartSkeleton } from "../components/SkeletonLoader";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -62,12 +62,7 @@ export default function CandidateDetail() {
     }
   }, [id]);
 
-  // Show preloader while candidate data is loading
-  if (loading) {
-    return <Preloader message="Loading candidate details..." />;
-  }
-
-  if (!candidate) {
+  if (!candidate && !loading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
@@ -165,8 +160,18 @@ export default function CandidateDetail() {
         </header>
 
         <div className="p-4 sm:p-6 lg:p-8">
-          {/* Candidate Information - Responsive: 1 column on mobile, 2 on desktop */}
-          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+          {loading ? (
+            <>
+              <CardSkeleton lines={4} className="mb-6" />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ChartSkeleton height="300px" />
+                <ChartSkeleton height="300px" />
+              </div>
+            </>
+          ) : candidate ? (
+            <>
+              {/* Candidate Information - Responsive: 1 column on mobile, 2 on desktop */}
+              <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
             <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Candidate Information</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {infoPairs.map(([label, val]) => (
@@ -269,6 +274,16 @@ export default function CandidateDetail() {
               </table>
             </div>
           </div>
+            </>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Candidate Not Found</h2>
+              <p className="text-gray-600 mb-4">The candidate you're looking for doesn't exist.</p>
+              <Link to="/candidates" className="text-purple-600 hover:text-purple-700">
+                ← Back to Candidates
+              </Link>
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -42,7 +42,7 @@ import {
   AtSign
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
-import Preloader from "../components/Preloader";
+import { TableSkeleton, CardSkeleton, StatsGridSkeleton, ChartSkeleton } from "../components/SkeletonLoader";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { ToastContainer, useToast } from "../components/Toast";
 import { 
@@ -589,11 +589,6 @@ export default function SOIManagement() {
       </span>
     );
   };
-
-  // Show preloader on initial page load (same as original SOI implementation)
-  if (loading && currentPage === 1) {
-    return <Preloader message="Loading candidate data..." />;
-  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
