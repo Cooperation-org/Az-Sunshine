@@ -33,12 +33,25 @@ import {
   MoreVertical,
   Calendar,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  X,
+  History,
+  Filter as FilterIcon,
+  User,
+  Building,
+  AtSign
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Preloader from "../components/Preloader";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { ToastContainer, useToast } from "../components/Toast";
+import { 
+  highlightText, 
+  getRecentSearches, 
+  saveRecentSearch, 
+  clearRecentSearches,
+  generateSearchSuggestions 
+} from "../utils/searchUtils.jsx";
 
 // Register Chart.js components
 ChartJS.register(
@@ -298,6 +311,10 @@ export default function SOIManagement() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [searchFilter, setSearchFilter] = useState("all"); // "all", "name", "email", "office"
+  const [showRecentSearches, setShowRecentSearches] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([]);
   const [showScrapingModal, setShowScrapingModal] = useState(false);
   const [scraping, setScraping] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -323,11 +340,24 @@ export default function SOIManagement() {
     to: new Date().toISOString().split('T')[0],
   });
 
+  // Load recent searches on mount
+  useEffect(() => {
+    setRecentSearches(getRecentSearches());
+  }, []);
+
+  // Improved debounced search with useMemo
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
       setCurrentPage(1);
-    }, 500);
+      
+      // Save to recent searches if search term is valid
+      if (searchTerm.trim().length > 0) {
+        saveRecentSearch(searchTerm);
+        setRecentSearches(getRecentSearches());
+      }
+    }, 300); // Reduced from 500ms for better responsiveness
+    
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
@@ -354,6 +384,10 @@ export default function SOIManagement() {
 
       if (debouncedSearch) {
         params.search = debouncedSearch;
+        // Add search filter if not "all"
+        if (searchFilter !== "all") {
+          params.search_field = searchFilter; // "name", "email", or "office"
+        }
       }
 
       const [candidatesData, statsData] = await Promise.all([
@@ -574,15 +608,137 @@ export default function SOIManagement() {
             <p className="text-xs sm:text-sm text-gray-500">Statement of Interest Tracking</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-            <div className="relative flex-1 sm:flex-initial">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search candidates..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64 lg:w-80 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm sm:text-base hover:border-gray-400"
-              />
+            <div className="relative flex-1 sm:flex-initial flex items-center gap-2">
+              {/* Search Filter Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setShowRecentSearches(false);
+                    setShowFilterDropdown(!showFilterDropdown);
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowFilterDropdown(false), 200);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+                  title="Search filter"
+                >
+                  <FilterIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">
+                    {searchFilter === "all" ? "All" : 
+                     searchFilter === "name" ? "Name" :
+                     searchFilter === "email" ? "Email" : "Office"}
+                  </span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${showFilterDropdown ? "rotate-180" : ""}`} />
+                </button>
+                {showFilterDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowFilterDropdown(false)}
+                    />
+                    <div className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-20 py-1">
+                      {[
+                        { value: "all", label: "All Fields", icon: Search },
+                        { value: "name", label: "Name", icon: User },
+                        { value: "email", label: "Email", icon: AtSign },
+                        { value: "office", label: "Office", icon: Building },
+                      ].map((filter) => {
+                        const Icon = filter.icon;
+                        return (
+                          <button
+                            key={filter.value}
+                            onClick={() => {
+                              setSearchFilter(filter.value);
+                              setCurrentPage(1);
+                              setShowFilterDropdown(false);
+                            }}
+                            className={` bg-purple-50 w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-purple-50 transition-colors ${
+                              searchFilter === filter.value
+                                ? "bg-purple-50 text-purple-700 font-medium"
+                                : "text-gray-700 hover:bg-purple-50 transition-colors"
+                            }`}
+                          >
+                            <Icon className="w-4 h-4" />
+                            {filter.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Enhanced Search Input */}
+              <div className="relative flex-1 sm:flex-initial min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search candidates..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowRecentSearches(e.target.value.length === 0 && recentSearches.length > 0);
+                  }}
+                  onFocus={() => {
+                    if (searchTerm.length === 0 && recentSearches.length > 0) {
+                      setShowRecentSearches(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    // Delay to allow click on recent search item
+                    setTimeout(() => setShowRecentSearches(false), 200);
+                  }}
+                  className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg w-full sm:w-64 lg:w-80 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm sm:text-base hover:border-gray-400"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      setDebouncedSearch("");
+                      setShowRecentSearches(false);
+                    }}
+                    className="absolute right-3 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white rounded-full p-1 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+
+                {/* Recent Searches Dropdown */}
+                {showRecentSearches && recentSearches.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-30 max-h-60 overflow-y-auto">
+                    <div className="p-2 border-b border-gray-200 flex items-center justify-between">
+                      <div className="flex bg-purple-50 rounded-lg p-2  items-center gap-2 text-xs font-semibold text-gray-600">
+                        <History className="w-3 h-3" />
+                        Recent Searches
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearRecentSearches();
+                          setRecentSearches([]);
+                        }}
+                        className="text-xs text-gray-500 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white hover:text-gray-700 transition-colors"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                    {recentSearches.map((recent, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setSearchTerm(recent);
+                          setShowRecentSearches(false);
+                        }}
+                        className="w-full px-4 bg-purple-50 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 transition-colors flex items-center gap-2"
+                      >
+                        <Search className="w-3 h-3 text-gray-400" />
+                        {recent}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <button 
               className="p-2 rounded-lg bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] hover:from-[#7C6BA6] hover:to-[#5B4D7D] transition-all duration-200 flex-shrink-0 hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
@@ -1150,11 +1306,58 @@ export default function SOIManagement() {
                     </tr>
                   ) : candidates.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="py-16 text-center">
-                        <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                        <div className="text-lg font-semibold text-gray-900 mb-1">No candidates found</div>
-                        <div className="text-sm text-gray-500">
-                          {searchTerm ? "Try a different search term" : "Run an update to sync latest filings"}
+                      <td colSpan="6" className="py-16">
+                        <div className="text-center max-w-md mx-auto">
+                          <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                          <div className="text-lg font-semibold text-gray-900 mb-2">
+                            {searchTerm ? "No candidates found" : "No candidates available"}
+                          </div>
+                          <div className="text-sm text-gray-500 mb-6">
+                            {searchTerm ? (
+                              <>
+                                No candidates match your search for <span className="font-medium text-gray-700">"{searchTerm}"</span>
+                              </>
+                            ) : (
+                              "Run an update to sync latest filings"
+                            )}
+                          </div>
+                          
+                          {searchTerm && (
+                            <div className="bg-purple-50 rounded-lg p-4 text-left">
+                              <div className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-purple-600" />
+                                Suggestions:
+                              </div>
+                              <ul className="space-y-2 text-sm text-gray-700">
+                                <li className="flex items-start gap-2">
+                                  <span className="text-purple-600 mt-0.5">•</span>
+                                  <span>Check your spelling or try different keywords</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-purple-600 mt-0.5">•</span>
+                                  <span>Try searching by name, email, or office</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-purple-600 mt-0.5">•</span>
+                                  <span>Clear filters or try a different tab</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-purple-600 mt-0.5">•</span>
+                                  <span>Use the filter dropdown to search specific fields</span>
+                                </li>
+                              </ul>
+                              <button
+                                onClick={() => {
+                                  setSearchTerm("");
+                                  setDebouncedSearch("");
+                                  setSearchFilter("all");
+                                }}
+                                className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                              >
+                                Clear Search & Filters
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1186,7 +1389,9 @@ export default function SOIManagement() {
                             </div>
                             <div>
                               <div className="font-semibold text-gray-900">
-                                {candidate.name || candidate.candidate_name || 'Unknown'}
+                                {debouncedSearch && (searchFilter === "all" || searchFilter === "name")
+                                  ? highlightText(candidate.name || candidate.candidate_name || 'Unknown', debouncedSearch)
+                                  : (candidate.name || candidate.candidate_name || 'Unknown')}
                               </div>
                               {candidate.party && (
                                 <div className="text-sm text-gray-500 flex items-center gap-1">
@@ -1198,7 +1403,9 @@ export default function SOIManagement() {
                         </td>
                         <td className="px-6 py-5">
                           <div className="text-sm font-medium text-gray-900">
-                            {candidate.office || 'Not specified'}
+                            {debouncedSearch && (searchFilter === "all" || searchFilter === "office")
+                              ? highlightText(candidate.office || 'Not specified', debouncedSearch)
+                              : (candidate.office || 'Not specified')}
                           </div>
                         </td>
                         <td className="px-6 py-5">
@@ -1206,7 +1413,11 @@ export default function SOIManagement() {
                             {candidate.email && (
                               <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <Mail className="w-4 h-4 text-gray-400" />
-                                <span className="truncate max-w-xs">{candidate.email}</span>
+                                <span className="truncate max-w-xs">
+                                  {debouncedSearch && (searchFilter === "all" || searchFilter === "email")
+                                    ? highlightText(candidate.email, debouncedSearch)
+                                    : candidate.email}
+                                </span>
                               </div>
                             )}
                             {candidate.phone && (
