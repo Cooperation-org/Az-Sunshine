@@ -4,7 +4,7 @@ import { getOffices, getCycles, getRaceIESpending, getRaceTopDonors } from "../a
 import Sidebar from "../components/Sidebar";
 import { Bar } from "react-chartjs-2";
 import Header from "../components/Header";
-import Preloader from "../components/Preloader";
+import { ChartSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 export default function RaceAnalysis() {
   const [offices, setOffices] = useState([]);
   const [cycles, setCycles] = useState([]);
@@ -97,12 +97,6 @@ export default function RaceAnalysis() {
     ]
   } : null;
 
-  // Show preloader ONLY on initial page load (while dropdowns are loading)
-  // Once dropdowns are loaded, show the page even if race data is still loading
-  if (initialLoad) {
-    return <Preloader message="Loading race analysis..." />;
-  }
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -149,8 +143,29 @@ export default function RaceAnalysis() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="text-center py-12 text-gray-500">Loading race data...</div>
+          {initialLoad ? (
+            <>
+              <div className="mb-6">
+                <div className="h-12 w-48 rounded animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] mb-4"></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="h-10 rounded animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]"></div>
+                  <div className="h-10 rounded animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]"></div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <ChartSkeleton height="300px" className="lg:col-span-2" />
+                <ChartSkeleton height="300px" />
+              </div>
+              <TableSkeleton rows={8} columns={5} />
+            </>
+          ) : loading && selectedOffice && selectedCycle ? (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <ChartSkeleton height="300px" className="lg:col-span-2" />
+                <ChartSkeleton height="300px" />
+              </div>
+              <TableSkeleton rows={5} columns={5} />
+            </>
           ) : raceData ? (
             <>
               {/* Charts Section - Responsive: 1 column on mobile, 3 on desktop */}

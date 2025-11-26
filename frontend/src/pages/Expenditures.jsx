@@ -3,7 +3,7 @@ import { Bell, Search, ChevronRight, ChevronLeft, Download, Loader } from "lucid
 import { getExpenditures, getOffices, getParties } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import Preloader from "../components/Preloader";
+import { TableSkeleton, CardSkeleton } from "../components/SkeletonLoader";
 import FilterPanel from "../components/FilterPanel";
 import { exportToCSV } from "../utils/csvExport";
 
@@ -235,11 +235,6 @@ export default function Expenditures() {
     }
   }, [amountRange]);
 
-  // Show preloader while initial data is loading
-  if (loading && currentPage === 1) {
-    return <Preloader message="Loading expenditures..." />;
-  }
-
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     try {
@@ -345,10 +340,18 @@ export default function Expenditures() {
 
         {/* === Content - Responsive padding === */}
         <div className="p-4 sm:p-6 lg:p-8">
-          {loading ? (
-            <div className="flex items-center justify-center h-64 text-gray-500">
-              Loading expenditures...
-            </div>
+          {loading && currentPage === 1 ? (
+            <>
+              <div className="mb-4 sm:mb-6">
+                <div className="h-64 rounded-xl animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]"></div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                <CardSkeleton />
+                <CardSkeleton />
+                <CardSkeleton />
+              </div>
+              <TableSkeleton rows={8} columns={5} />
+            </>
           ) : (
             <>
               {/* === Filter Panel === */}

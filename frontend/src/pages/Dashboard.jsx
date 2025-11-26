@@ -14,41 +14,14 @@ import { Bell, Search } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import api from "../api/api";
 import Header from "../components/Header";
-import Preloader from "../components/Preloader";
+import {
+  CardSkeleton,
+  ChartSkeleton,
+  ListItemSkeleton,
+  StatsGridSkeleton,
+} from "../components/SkeletonLoader";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
-
-// Skeleton components
-const ChartSkeleton = () => (
-  <div className="h-full w-full bg-gray-200 animate-pulse rounded-xl"></div>
-);
-
-const MetricCardSkeleton = () => (
-  <div className="bg-white rounded-2xl p-6 shadow-lg">
-    <div className="h-4 bg-gray-200 rounded w-2/3 mb-3 animate-pulse"></div>
-    <div className="h-8 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-  </div>
-);
-
-const TableRowSkeleton = () => (
-  <tr className="border-b border-gray-100">
-    {[1, 2, 3, 4, 5].map((i) => (
-      <td key={i} className="py-4 px-2">
-        <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-      </td>
-    ))}
-  </tr>
-);
-
-const CommitteeItemSkeleton = () => (
-  <div className="flex items-center gap-3">
-    <div className="w-10 h-10 rounded-lg bg-gray-200 animate-pulse flex-shrink-0"></div>
-    <div className="flex-1">
-      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 animate-pulse"></div>
-      <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-    </div>
-  </div>
-);
 
 export default function Dashboard() {
   // Separate loading states for progressive loading
@@ -164,13 +137,7 @@ export default function Dashboard() {
     }],
   };
 
-  // Show preloader while initial data is loading
-  // Check if all critical data sections are still loading
-  const isInitialLoading = loading.summary && loading.charts && loading.expenditures;
-  if (isInitialLoading) {
-    return <Preloader message="Loading dashboard data..." />;
-  }
-
+  // No longer using full-page preloader - show skeleton loaders inline
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -189,10 +156,13 @@ export default function Dashboard() {
               {/* Chart Container - Responsive height */}
               <div className="h-[200px] sm:h-[240px] lg:h-[280px] bg-white/5 rounded-xl p-2 sm:p-4">
                 {loading.charts ? (
-                  <ChartSkeleton />
-                ) : !donorData ? (
-                  <div className="flex items-center justify-center h-full text-white/50">
-                    No donor data available
+                  <div className="h-full w-full">
+                    <ChartSkeleton height="100%" className="bg-transparent" />
+                  </div>
+                ) : !donorData || (donorData.labels && donorData.labels.length === 0) ? (
+                  <div className="flex flex-col items-center justify-center h-full text-white/50">
+                    <div className="text-sm mb-2">No donor data available</div>
+                    <div className="text-xs opacity-75">Chart will appear when data is loaded</div>
                   </div>
                 ) : (
                   <Bar 
@@ -243,11 +213,14 @@ export default function Dashboard() {
               {/* Chart Container - Responsive height and size */}
               <div className="flex justify-center items-center h-[200px] sm:h-[240px] lg:h-[280px]">
                 {loading.charts ? (
-                  <div className="w-52 h-52">
-                    <ChartSkeleton />
+                  <div className="w-40 h-40 sm:w-48 sm:h-48 lg:w-52 lg:h-52 rounded-full">
+                    <ChartSkeleton height="100%" />
                   </div>
                 ) : (supportAmount === 0 && opposeAmount === 0) ? (
-                  <div className="text-gray-400">No expenditure data</div>
+                  <div className="flex flex-col items-center justify-center text-gray-400">
+                    <div className="text-sm mb-2">No expenditure data</div>
+                    <div className="text-xs opacity-75">Chart will appear when data is loaded</div>
+                  </div>
                 ) : (
                   // Doughnut Chart - Responsive size
                   <div className="relative w-40 h-40 sm:w-48 sm:h-48 lg:w-52 lg:h-52">
@@ -296,12 +269,7 @@ export default function Dashboard() {
           {/* Metrics Cards - Responsive: 1 column on mobile, 2 on tablet, 4 on desktop */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
             {loading.summary ? (
-              <>
-                <MetricCardSkeleton />
-                <MetricCardSkeleton />
-                <MetricCardSkeleton />
-                <MetricCardSkeleton />
-              </>
+              <StatsGridSkeleton count={4} />
             ) : (
               <>
                 {/* Metric Cards - Responsive padding and text sizes */}
@@ -356,10 +324,15 @@ export default function Dashboard() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {loading.expenditures ? (
                         <>
-                          <TableRowSkeleton />
-                          <TableRowSkeleton />
-                          <TableRowSkeleton />
-                          <TableRowSkeleton />
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <tr key={i} className="border-b border-gray-100">
+                              {[1, 2, 3, 4, 5].map((j) => (
+                                <td key={j} className="py-4 px-2 sm:px-4">
+                                  <div className="h-4 w-full rounded animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]"></div>
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
                         </>
                       ) : recentExpenditures.length === 0 ? (
                         <tr>
@@ -407,7 +380,7 @@ export default function Dashboard() {
                 {loading.charts ? (
                   <>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-                      <CommitteeItemSkeleton key={i} />
+                      <ListItemSkeleton key={i} />
                     ))}
                   </>
                 ) : !chartsData?.top_committees || chartsData.top_committees.length === 0 ? (
