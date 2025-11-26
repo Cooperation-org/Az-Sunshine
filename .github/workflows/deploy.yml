@@ -20,7 +20,7 @@ jobs:
 
       - name: 🚀 Deploy to server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash /opt/deploy_az_sunshine.sh'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'sudo bash /opt/deploy_az_sunshine.sh'
 
       - name: ✅ Deployment successful
         if: success()
