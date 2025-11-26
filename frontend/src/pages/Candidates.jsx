@@ -4,7 +4,7 @@ import { getCandidates } from "../api/api";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import Preloader from "../components/Preloader";
+import { TableSkeleton } from "../components/SkeletonLoader";
 import { exportToCSV } from "../utils/csvExport";
 
 export default function Candidates() {
@@ -82,11 +82,6 @@ export default function Candidates() {
     }
   };
 
-  // Show preloader while initial data is loading
-  if (loading && currentPage === 1) {
-    return <Preloader message="Loading candidates..." />;
-  }
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* === Sidebar === */}
@@ -99,10 +94,13 @@ export default function Candidates() {
 
         {/* === Content - Responsive padding === */}
         <div className="p-4 sm:p-6 lg:p-8">
-          {loading ? (
-            <div className="flex items-center justify-center h-64 text-gray-500">
-              Loading candidates...
-            </div>
+          {loading && currentPage === 1 ? (
+            <>
+              <div className="mb-4 sm:mb-6 flex justify-end">
+                <div className="h-10 w-32 rounded-lg animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]"></div>
+              </div>
+              <TableSkeleton rows={8} columns={6} />
+            </>
           ) : (
             <>
               {/* === Export Button - Responsive === */}
