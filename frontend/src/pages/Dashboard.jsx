@@ -55,7 +55,7 @@ export default function Dashboard() {
 
   async function loadChartsData() {
     try {
-      const data = await api.get('dashboard/charts-data-mv/');
+      const data = await api.get('dashboard/charts-data/');
       console.log("Charts data received:", data.data);
       setChartsData(data.data);
     } catch (error) {
@@ -65,7 +65,7 @@ export default function Dashboard() {
 
   async function loadRecentExpenditures() {
     try {
-      const data = await api.get('dashboard/recent-expenditures-mv/');
+      const data = await api.get('dashboard/recent-expenditures/');
       setRecentExpenditures(data.data.results || []);
     } catch (error) {
       console.error("Error loading expenditures:", error);
