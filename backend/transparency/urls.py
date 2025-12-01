@@ -5,7 +5,6 @@ from .views import *
 from .views_soi import *
 from .views_email import *
 from .views_dashboard_optimized import *
-from . import views_soi
 
 app_name = 'transparency'
 
@@ -34,21 +33,23 @@ urlpatterns = [
     path('email-tracking/open/<str:tracking_id>/', track_email_open, name='email-track-open'),
     path('email-tracking/click/<str:tracking_id>/', track_email_click, name='email-track-click'),
     
-    # === DASHBOARD - OPTIMIZED ENDPOINTS ===
-    path('dashboard/summary/', dashboard_summary, name='dashboard-summary'),
+    # === DASHBOARD - OPTIMIZED ENDPOINTS (Use MV versions for performance) ===
     path('dashboard/summary-optimized/', dashboard_summary_optimized, name='dashboard-summary-optimized'),
-    path('dashboard/charts-data/', dashboard_charts_data, name='dashboard-charts-data'),
-    path('dashboard/recent-expenditures/', dashboard_recent_expenditures, name='dashboard-recent-expenditures'),
-    path('dashboard/clear-cache/', clear_dashboard_cache, name='clear-dashboard-cache'),
-    path('dashboard/charts-data-mv/', dashboard_charts_data_mv, name='dashboard-charts-mv'),
-    path('dashboard/recent-expenditures-mv/', dashboard_recent_expenditures_mv, name='dashboard-recent-exp-mv'),
+    path('dashboard/charts-data/', dashboard_charts_data_mv, name='dashboard-charts-data'),
+    path('dashboard/recent-expenditures/', dashboard_recent_expenditures_mv, name='dashboard-recent-expenditures'),
     path('dashboard/refresh-mv/', refresh_dashboard_materialized_views, name='dashboard-refresh-mv'),
     
-    # SOI Management URLs (Phase 1)
-    path('soi/dashboard-stats/', views_soi.soi_dashboard_stats, name='soi_dashboard_stats'),
-    path('soi/candidates/', views_soi.soi_candidates_list, name='soi_candidates_list'),
-    path('candidate-soi/<int:pk>/mark_contacted/', views_soi.mark_candidate_contacted, name='mark_candidate_contacted'),
-    path('candidate-soi/<int:pk>/mark_pledge_received/', views_soi.mark_pledge_received, name='mark_pledge_received'),
+    # === DASHBOARD - Legacy endpoints (slower, non-optimized) ===
+    path('dashboard/summary/', dashboard_summary, name='dashboard-summary'),
+    path('dashboard/charts-data-old/', dashboard_charts_data, name='dashboard-charts-data-old'),
+    path('dashboard/recent-expenditures-old/', dashboard_recent_expenditures, name='dashboard-recent-expenditures-old'),
+    path('dashboard/clear-cache/', clear_dashboard_cache, name='clear-dashboard-cache'),
+    
+    # === SOI Management URLs (Phase 1) ===
+    path('soi/dashboard-stats/', soi_dashboard_stats, name='soi-dashboard-stats'),
+    path('soi/candidates/', soi_candidates_list, name='soi-candidates-list'),
+    path('candidate-soi/<int:pk>/mark_contacted/', mark_candidate_contacted, name='mark-candidate-contacted'),
+    path('candidate-soi/<int:pk>/mark_pledge_received/', mark_pledge_received, name='mark-pledge-received'),
     
     # === DATA VALIDATION ===
     path('validation/phase1/', validate_phase1_data, name='validate-phase1'),

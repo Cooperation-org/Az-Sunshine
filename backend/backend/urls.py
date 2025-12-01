@@ -58,4 +58,3 @@ if settings.DEBUG:
 admin.site.site_header = "Arizona Sunshine Transparency Admin"
 admin.site.site_title = "AZ Sunshine Admin"
 admin.site.index_title = "Campaign Finance Transparency Dashboard"
-
