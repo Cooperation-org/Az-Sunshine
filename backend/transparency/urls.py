@@ -43,6 +43,12 @@ urlpatterns = [
     path('dashboard/recent-expenditures-mv/', dashboard_recent_expenditures_mv, name='dashboard-recent-exp-mv'),
     path('dashboard/refresh-mv/', refresh_dashboard_materialized_views, name='dashboard-refresh-mv'),
     
+    # SOI Management URLs (Phase 1)
+    path('soi/dashboard-stats/', views_soi.soi_dashboard_stats, name='soi_dashboard_stats'),
+    path('soi/candidates/', views_soi.soi_candidates_list, name='soi_candidates_list'),
+    path('candidate-soi/<int:pk>/mark_contacted/', views_soi.mark_candidate_contacted, name='mark_candidate_contacted'),
+    path('candidate-soi/<int:pk>/mark_pledge_received/', views_soi.mark_pledge_received, name='mark_pledge_received'),
+    
     # === DATA VALIDATION ===
     path('validation/phase1/', validate_phase1_data, name='validate-phase1'),
     
