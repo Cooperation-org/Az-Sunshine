@@ -5,6 +5,7 @@ from .views import *
 from .views_soi import *
 from .views_email import *
 from .views_dashboard_optimized import *
+from . import views_soi
 
 app_name = 'transparency'
 
