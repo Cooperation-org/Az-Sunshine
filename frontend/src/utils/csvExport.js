@@ -1,11 +1,13 @@
+// frontend/src/utils/csvExport.js
 /**
- * Utility functions for CSV export
+ * CSV Export Utility
+ * Handles client-side CSV generation and download
  */
 
 /**
  * Convert array of objects to CSV string
- * @param {Array} data - Array of objects to convert
- * @param {Array} columns - Array of column definitions [{key: 'field', label: 'Header'}]
+ * @param {Array} data - Array of objects to export
+ * @param {Array} columns - Array of column definitions: [{ key: 'name', label: 'Name' }]
  * @returns {string} CSV string
  */
 export function convertToCSV(data, columns) {
@@ -14,77 +16,63 @@ export function convertToCSV(data, columns) {
   }
 
   // Create header row
-  const headers = columns.map(col => escapeCSVValue(col.label)).join(',');
+  const headers = columns.map(col => `"${col.label}"`).join(',');
   
   // Create data rows
   const rows = data.map(item => {
     return columns.map(col => {
+      // Get value using dot notation (e.g., 'user.name')
       const value = getNestedValue(item, col.key);
-      return escapeCSVValue(value);
+      
+      // Escape and format value
+      return formatCSVValue(value);
     }).join(',');
   });
-
+  
   // Combine header and rows
   return [headers, ...rows].join('\n');
 }
 
 /**
- * Get nested value from object using dot notation
+ * Get nested object value using dot notation
  * @param {Object} obj - Object to get value from
- * @param {string} path - Dot notation path (e.g., 'user.name')
- * @returns {string} Value or empty string
+ * @param {string} path - Path to value (e.g., 'user.name.first')
+ * @returns {*} Value at path
  */
 function getNestedValue(obj, path) {
-  if (!path) return '';
-  
-  const keys = path.split('.');
-  let value = obj;
-  
-  for (const key of keys) {
-    if (value && typeof value === 'object' && key in value) {
-      value = value[key];
-    } else {
-      return '';
-    }
-  }
-  
-  // Handle null, undefined, or empty values
-  if (value === null || value === undefined) {
-    return '';
-  }
-  
-  return String(value);
+  return path.split('.').reduce((current, key) => {
+    return current?.[key];
+  }, obj);
 }
 
 /**
- * Escape CSV value (handle commas, quotes, newlines)
- * @param {string} value - Value to escape
- * @returns {string} Escaped value
+ * Format value for CSV (escape quotes, handle nulls, etc.)
+ * @param {*} value - Value to format
+ * @returns {string} Formatted value
  */
-function escapeCSVValue(value) {
+function formatCSVValue(value) {
   if (value === null || value === undefined) {
-    return '';
+    return '""';
   }
   
-  const stringValue = String(value);
+  // Convert to string
+  let stringValue = String(value);
   
-  // If value contains comma, quote, or newline, wrap in quotes and escape quotes
-  if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-    return `"${stringValue.replace(/"/g, '""')}"`;
-  }
+  // Escape quotes
+  stringValue = stringValue.replace(/"/g, '""');
   
-  return stringValue;
+  // Wrap in quotes
+  return `"${stringValue}"`;
 }
 
 /**
- * Download CSV file
- * @param {string} csvContent - CSV string content
- * @param {string} filename - Filename for download
+ * Trigger browser download of CSV file
+ * @param {string} csvContent - CSV content
+ * @param {string} filename - Name for downloaded file
  */
 export function downloadCSV(csvContent, filename) {
-  // Add BOM for UTF-8 to ensure Excel opens it correctly
-  const BOM = '\uFEFF';
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+  // Create blob
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   
   // Create download link
   const link = document.createElement('a');
@@ -97,26 +85,22 @@ export function downloadCSV(csvContent, filename) {
   // Trigger download
   document.body.appendChild(link);
   link.click();
-  
-  // Cleanup
   document.body.removeChild(link);
+  
+  // Clean up
   URL.revokeObjectURL(url);
 }
 
 /**
- * Export data to CSV with loading state
+ * Main export function - handles full export process
  * @param {Array} data - Data to export
  * @param {Array} columns - Column definitions
- * @param {string} filename - Filename for download
- * @param {Function} setExporting - Function to set exporting state
- * @returns {Promise} Promise that resolves when export is complete
+ * @param {string} filename - Output filename
+ * @param {Function} setLoading - Optional loading state setter
  */
-export async function exportToCSV(data, columns, filename, setExporting) {
+export async function exportToCSV(data, columns, filename, setLoading = null) {
   try {
-    setExporting(true);
-    
-    // Simulate processing delay for large datasets
-    await new Promise(resolve => setTimeout(resolve, 100));
+    if (setLoading) setLoading(true);
     
     // Convert to CSV
     const csvContent = convertToCSV(data, columns);
@@ -125,15 +109,35 @@ export async function exportToCSV(data, columns, filename, setExporting) {
       throw new Error('No data to export');
     }
     
-    // Download file
+    // Trigger download
     downloadCSV(csvContent, filename);
     
-    return { success: true };
+    return true;
   } catch (error) {
-    console.error('CSV Export Error:', error);
+    console.error('CSV export error:', error);
     throw error;
   } finally {
-    setExporting(false);
+    if (setLoading) {
+      // Small delay so user sees the loading state
+      setTimeout(() => setLoading(false), 500);
+    }
   }
 }
 
+/**
+ * Export with custom formatting
+ * @param {Array} data - Data to export
+ * @param {Function} formatter - Custom formatter function
+ * @param {string} filename - Output filename
+ */
+export async function exportWithFormatter(data, formatter, filename) {
+  try {
+    const formattedData = data.map(formatter);
+    const csvContent = convertToCSV(formattedData, Object.keys(formattedData[0] || {}));
+    downloadCSV(csvContent, filename);
+    return true;
+  } catch (error) {
+    console.error('CSV export error:', error);
+    throw error;
+  }
+}

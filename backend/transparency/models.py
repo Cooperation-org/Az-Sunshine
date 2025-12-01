@@ -941,3 +941,102 @@ class Phase1DataValidator:
         
         return issues if issues else ["No data integrity issues found"]
 
+
+
+# Add to models.py after CandidateStatementOfInterest
+class EmailTemplate(models.Model):
+    """Email templates for SOI outreach"""
+    name = models.CharField(max_length=200)
+    category = models.CharField(
+        max_length=50,
+        choices=[
+            ('soi_initial', 'Initial SOI Request'),
+            ('soi_followup', 'SOI Follow-up'),
+            ('pledge_reminder', 'Pledge Reminder'),
+            ('general', 'General'),
+        ],
+        default='general',
+        db_index=True
+    )
+    subject = models.TextField()
+    body = models.TextField()
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'email_templates'
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['category', 'is_active'], name='idx_template_cat_active'),
+        ]
+    
+    def __str__(self):
+        return self.name
+
+class EmailCampaign(models.Model):
+    """Email campaign tracking"""
+    name = models.CharField(max_length=200)
+    template = models.ForeignKey(EmailTemplate, on_delete=models.CASCADE)
+    candidates = models.ManyToManyField(CandidateStatementOfInterest, through='EmailLog')
+    scheduled_for = models.DateTimeField(null=True, blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('draft', 'Draft'),
+            ('scheduled', 'Scheduled'),
+            ('sending', 'Sending'),
+            ('sent', 'Sent'),
+            ('cancelled', 'Cancelled'),
+        ],
+        default='draft'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'email_campaigns'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.name
+    
+    
+    
+    
+class EmailLog(models.Model):
+    """Individual email sending logs"""
+    campaign = models.ForeignKey(EmailCampaign, on_delete=models.CASCADE, null=True, blank=True)
+    candidate = models.ForeignKey(CandidateStatementOfInterest, on_delete=models.CASCADE)
+    template = models.ForeignKey(EmailTemplate, on_delete=models.CASCADE)
+    tracking_id = models.CharField(max_length=64, unique=True, db_index=True, null=True, blank=True)
+    subject = models.TextField()
+    body = models.TextField()
+    sent_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('sending', 'Sending'),
+            ('sent', 'Sent'),
+            ('failed', 'Failed'),
+            ('bounced', 'Bounced'),
+        ],
+        default='sending',
+        db_index=True
+    )
+    error_message = models.TextField(blank=True)
+    opened_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    clicked_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    
+    class Meta:
+        db_table = 'email_logs'
+        ordering = ['-sent_at']
+        indexes = [
+            models.Index(fields=['tracking_id'], name='idx_emaillog_tracking'),
+            models.Index(fields=['status', 'sent_at'], name='idx_emaillog_status_sent'),
+            models.Index(fields=['campaign', 'status'], name='idx_emaillog_campaign_status'),
+        ]
+    
+    def __str__(self):
+        return f"Email to {self.candidate.candidate_name}"
+

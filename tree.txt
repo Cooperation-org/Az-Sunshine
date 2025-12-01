@@ -1,0 +1,59 @@
+
+# Output file
+OUTPUT_FILE="allcode.txt"
+
+# Empty or create the output file
+> "$OUTPUT_FILE"
+
+# List of files to include
+files=(
+backend/agent.py
+backend/backend/settings.py
+backend/backend/urls.py
+backend/transparency/admin.py
+backend/transparency/models.py
+backend/transparency/serializers.py
+backend/transparency/urls.py
+backend/transparency/views.py
+backend/transparency/management/commands/soi_scraper.py
+backend/transparency/utils/materialized_views.py
+frontend/src/api/api.js
+frontend/src/pages/CandidateDetail.jsx
+frontend/src/pages/Candidates.jsx
+frontend/src/pages/Dashboard.jsx
+frontend/src/pages/DataValidation.jsx
+frontend/src/pages/Donors.jsx
+frontend/src/pages/EmailCampaign.jsx
+frontend/src/pages/Expenditures.jsx
+frontend/src/pages/RaceAnalysis.jsx
+frontend/src/pages/SOIManagement.jsx
+frontend/src/pages/WorkflowAutomation.jsx
+frontend/src/components/ConfirmationModal.jsx
+frontend/src/components/FilterPanel.jsx
+frontend/src/components/Header.jsx
+frontend/src/components/LoadingSpinner.jsx
+frontend/src/components/MetricCards.jsx
+frontend/src/components/Preloader.jsx
+frontend/src/components/RecentActivityTable.jsx
+frontend/src/components/Sidebar.jsx
+frontend/src/components/SkeletonLoader.jsx
+frontend/src/components/Toast.jsx
+frontend/src/components/TopEntities.jsx
+)
+
+# Loop through files, print to terminal and save to allcode.txt
+for file in "${files[@]}"; do
+    echo "===== $file =====" | tee -a "$OUTPUT_FILE"
+    cat "$file" | tee -a "$OUTPUT_FILE"
+    echo -e "\n\n" | tee -a "$OUTPUT_FILE"
+done
+
+
+
+
+
+
+
+tree -I "venv|node_modules|__pycache__|.git|chrome_profile|migrations"
+
+

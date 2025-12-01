@@ -1,744 +1,782 @@
-import axios from "axios";
+// frontend/src/api/api.js
+/**
+ * API Client for Arizona Sunshine Transparency Project
+ * Centralized API calls with error handling and token management
+ */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://167.172.30.134/api/v1/";
+import axios from 'axios';
 
+const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
+
+// Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 80000,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: false, // Set to true if you need cookies/sessions
+  timeout: 30000, // 30 seconds
 });
 
-console.log('🔗 API Base URL:', API_BASE_URL);
-
-// Request interceptor for debugging
+// Request interceptor for adding auth token
 api.interceptors.request.use(
-  config => {
-    console.log(`📤 ${config.method.toUpperCase()} ${config.url}`, config.params || config.data);
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
-  error => {
-    console.error('Request Error:', error);
+  (error) => {
     return Promise.reject(error);
   }
 );
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  response => {
-    console.log(`✅ Response from ${response.config.url}:`, response.data);
-    return response;
-  },
-  error => {
-    console.error('❌ API Error:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
-    });
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      // Server responded with error status
+      console.error('API Error:', error.response.data);
+      
+      // Handle 401 Unauthorized
+      if (error.response.status === 401) {
+        localStorage.removeItem('auth_token');
+        // Optional: redirect to login
+        // window.location.href = '/login';
+      }
+    } else if (error.request) {
+      // Request made but no response
+      console.error('Network Error:', error.request);
+    } else {
+      // Something else happened
+      console.error('Error:', error.message);
+    }
     return Promise.reject(error);
   }
 );
 
-//
-// ==================== NEW: WEBHOOK-BASED SOI SCRAPING ====================
-//
+// ==================== HELPER FUNCTIONS ====================
 
 /**
- * Trigger scraping on home machine via webhook
- * POST /api/v1/soi/trigger-local/
- * 
- * This is the NEW preferred method that:
- * 1. Sends trigger to home machine
- * 2. Home machine runs scraper
- * 3. Progress updates sent via webhook
- * 4. Frontend polls for status
+ * Handle API errors with user-friendly messages
  */
-export async function triggerWebhookScraping() {
-  try {
-    const res = await api.post("soi/trigger-local/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to trigger webhook scraping:", error);
-    throw error;
+function handleError(error, defaultMessage = 'An error occurred') {
+  if (error.response?.data?.detail) {
+    throw new Error(error.response.data.detail);
+  } else if (error.response?.data?.message) {
+    throw new Error(error.response.data.message);
+  } else if (error.message) {
+    throw new Error(error.message);
+  } else {
+    throw new Error(defaultMessage);
   }
 }
 
 /**
- * Get webhook scraping status (for real-time updates)
- * GET /api/v1/soi/webhook/status/
- * 
- * Frontend should poll this endpoint every 2-3 seconds
- * during active scraping to get real-time progress
+ * Build query string from params object
  */
-export async function getWebhookScrapingStatus() {
-  try {
-    const res = await api.get("soi/webhook/status/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get webhook status:", error);
-    throw error;
-  }
-}
-
-/**
- * Get webhook scraping history
- * GET /api/v1/soi/webhook/history/
- */
-export async function getWebhookScrapingHistory() {
-  try {
-    const res = await api.get("soi/webhook/history/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get webhook history:", error);
-    throw error;
-  }
-}
-
-//
-// ==================== LEGACY: DIRECT SOI SCRAPING (VPS) ====================
-// These endpoints run scraping directly on VPS (not recommended due to Cloudflare)
-//
-
-/**
- * LEGACY: Trigger SOI scraping directly on VPS
- * POST /api/v1/soi/scrape/trigger/
- * 
- * NOTE: This may fail due to Cloudflare blocking datacenter IPs
- * Use triggerWebhookScraping() instead for production
- */
-export async function triggerScraping() {
-  try {
-    const res = await api.post("soi/scrape/trigger/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to trigger scraping:", error);
-    throw error;
-  }
-}
-
-/**
- * LEGACY: Get current scraping status (direct VPS scraping)
- * GET /api/v1/soi/scrape/status/
- */
-export async function getScrapingStatus() {
-  try {
-    const res = await api.get("soi/scrape/status/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get scraping status:", error);
-    throw error;
-  }
-}
-
-/**
- * LEGACY: Get scraping history (direct VPS scraping)
- * GET /api/v1/soi/scrape/history/
- */
-export async function getScrapingHistory() {
-  try {
-    const res = await api.get("soi/scrape/history/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get scraping history:", error);
-    throw error;
-  }
-}
-
-//
-// ==================== SOI DASHBOARD & CANDIDATES ====================
-//
-
-/**
- * Get SOI dashboard statistics
- * GET /api/v1/soi/dashboard-stats/
- */
-export async function getSOIDashboardStats() {
-  try {
-    const res = await api.get("soi/dashboard-stats/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get SOI dashboard stats:", error);
-    throw error;
-  }
-}
-
-/**
- * Get SOI candidates list
- * GET /api/v1/soi/candidates/
- */
-export async function getSOICandidates(params = {}) {
-  try {
-    console.log("📡 Fetching SOI candidates with params:", params);
-    const res = await api.get("soi/candidates/", { params });
-    
-    console.log("📥 Raw response:", res);
-    console.log("📥 Response data type:", Array.isArray(res.data) ? "Array" : typeof res.data);
-    
-    // Handle both array response and paginated response
-    if (Array.isArray(res.data)) {
-      console.log("✅ Received array response with", res.data.length, "candidates");
-      return res.data;
+function buildQueryString(params) {
+  const query = new URLSearchParams();
+  Object.keys(params).forEach(key => {
+    if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+      query.append(key, params[key]);
     }
-    
-    // Fallback to paginated response format
-    const data = res.data.results || res.data;
-    console.log("✅ Received paginated/object response with", Array.isArray(data) ? data.length : 0, "candidates");
-    return Array.isArray(data) ? data : [];
-    
-  } catch (error) {
-    console.error("❌ Failed to fetch SOI candidates:", error);
-    console.error("Error details:", {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data
-    });
-    throw error;
-  }
+  });
+  return query.toString();
 }
 
-/**
- * Get uncontacted candidates
- * GET /api/v1/candidate-soi/uncontacted/
- */
-export async function getUncontactedCandidates() {
-  try {
-    const res = await api.get("candidate-soi/uncontacted/");
-    return res.data.results || res.data;
-  } catch (error) {
-    console.error("Failed to get uncontacted candidates:", error);
-    throw error;
-  }
-}
+
+// ==================== DASHBOARD ENDPOINTS ====================
 
 /**
- * Get pending pledges
- * GET /api/v1/candidate-soi/pending_pledges/
- */
-export async function getPendingPledges() {
-  try {
-    const res = await api.get("candidate-soi/pending_pledges/");
-    return res.data.results || res.data;
-  } catch (error) {
-    console.error("Failed to get pending pledges:", error);
-    throw error;
-  }
-}
-
-/**
- * Get SOI summary statistics
- * GET /api/v1/candidate-soi/summary_stats/
- */
-export async function getSOISummaryStats() {
-  try {
-    const res = await api.get("candidate-soi/summary_stats/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get SOI summary stats:", error);
-    throw error;
-  }
-}
-
-/**
- * Mark candidate as contacted
- * POST /api/v1/candidate-soi/{id}/mark_contacted/
- */
-export async function markCandidateContacted(id, contactedBy = "") {
-  try {
-    const res = await api.post(`candidate-soi/${id}/mark_contacted/`, { 
-      contacted_by: contactedBy 
-    });
-    return res.data;
-  } catch (error) {
-    console.error("Failed to mark candidate as contacted:", error);
-    throw error;
-  }
-}
-
-/**
- * Mark pledge as received
- * POST /api/v1/candidate-soi/{id}/mark_pledge_received/
- */
-export async function markPledgeReceived(id, notes = "") {
-  try {
-    const res = await api.post(`candidate-soi/${id}/mark_pledge_received/`, { 
-      notes 
-    });
-    return res.data;
-  } catch (error) {
-    console.error("Failed to mark pledge received:", error);
-    throw error;
-  }
-}
-
-//
-// ==================== CANDIDATES (COMMITTEES) ====================
-//
-
-/**
- * Get candidates list (committee data with candidates_only filter)
- * GET /api/v1/committees/?candidates_only=true
- */
-export async function getCandidates(params = {}) {
-  try {
-    const res = await api.get("committees/", { 
-      params: { ...params, candidates_only: 'true' } 
-    });
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get candidates:", error);
-    throw error;
-  }
-}
-
-/**
- * Get single candidate details
- * GET /api/v1/committees/{id}/
- */
-export async function getCandidate(id) {
-  try {
-    const res = await api.get(`committees/${id}/`);
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get candidate details:", error);
-    throw error;
-  }
-}
-
-/**
- * Get candidate IE spending summary
- * GET /api/v1/committees/{id}/ie_spending_summary/
- */
-export async function getCandidateIESpending(id) {
-  try {
-    const res = await api.get(`committees/${id}/ie_spending_summary/`);
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get candidate IE spending:", error);
-    throw error;
-  }
-}
-
-/**
- * Get candidate IE spending by committee
- * GET /api/v1/committees/{id}/ie_spending_by_committee/
- */
-export async function getCandidateIEByCommittee(id) {
-  try {
-    const res = await api.get(`committees/${id}/ie_spending_by_committee/`);
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get candidate IE by committee:", error);
-    throw error;
-  }
-}
-
-/**
- * Get candidate IE donors
- * GET /api/v1/committees/{id}/ie_donors/
- */
-export async function getCandidateIEDonors(id) {
-  try {
-    const res = await api.get(`committees/${id}/ie_donors/`);
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get candidate IE donors:", error);
-    throw error;
-  }
-}
-
-/**
- * Get candidate grassroots threshold comparison
- * GET /api/v1/committees/{id}/grassroots_threshold/?threshold={threshold}
- */
-export async function getCandidateGrassrootsComparison(id, threshold = 5000) {
-  try {
-    const res = await api.get(`committees/${id}/grassroots_threshold/`, { 
-      params: { threshold } 
-    });
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get grassroots comparison:", error);
-    throw error;
-  }
-}
-
-/**
- * Get candidate financial summary
- * GET /api/v1/committees/{id}/financial_summary/
- */
-export async function getCandidateFinancialSummary(id) {
-  try {
-    const res = await api.get(`committees/${id}/financial_summary/`);
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get financial summary:", error);
-    throw error;
-  }
-}
-
-//
-// ==================== RACES ====================
-//
-
-/**
- * Get race IE spending
- * GET /api/v1/races/ie-spending/?office={officeId}&cycle={cycleId}&party={partyId}
- */
-export async function getRaceIESpending(officeId, cycleId, partyId = null) {
-  try {
-    const params = { office: officeId, cycle: cycleId };
-    if (partyId) params.party = partyId;
-    const res = await api.get("races/ie-spending/", { params });
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get race IE spending:", error);
-    throw error;
-  }
-}
-
-/**
- * Get race top donors
- * GET /api/v1/races/top-donors/?office={officeId}&cycle={cycleId}&limit={limit}
- */
-export async function getRaceTopDonors(officeId, cycleId, limit = 20) {
-  try {
-    const res = await api.get("races/top-donors/", { 
-      params: { office: officeId, cycle: cycleId, limit } 
-    });
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get race top donors:", error);
-    throw error;
-  }
-}
-
-//
-// ==================== OFFICES & CYCLES ====================
-//
-
-/**
- * Get all offices
- * GET /api/v1/offices/
- */
-export async function getOffices() {
-  try {
-    const res = await api.get("offices/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get offices:", error);
-    throw error;
-  }
-}
-
-/**
- * Get all cycles
- * GET /api/v1/cycles/
- */
-export async function getCycles() {
-  try {
-    const res = await api.get("cycles/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get cycles:", error);
-    throw error;
-  }
-}
-
-/**
- * Get all parties
- * GET /api/v1/parties/
- */
-export async function getParties() {
-  try {
-    const res = await api.get("parties/");
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get parties:", error);
-    throw error;
-  }
-}
-
-//
-// ==================== DASHBOARD ====================
-//
-
-/**
- * Get dashboard summary
- * GET /api/v1/dashboard/summary/
+ * Get dashboard summary statistics
  */
 export async function getDashboardSummary() {
   try {
-    const res = await api.get("dashboard/summary/");
+    const res = await api.get('/dashboard/summary-optimized/');
     return res.data;
   } catch (error) {
-    console.error("Failed to get dashboard summary:", error);
-    throw error;
+    handleError(error, 'Failed to load dashboard summary');
   }
 }
 
 /**
- * Get metrics (frontend adapter)
- * GET /api/v1/metrics/
+ * Get dashboard charts data
  */
-export async function getMetrics() {
+export async function getDashboardCharts() {
   try {
-    const res = await api.get("metrics/");
+    const res = await api.get('/dashboard/charts-data/');
     return res.data;
   } catch (error) {
-    console.error("Failed to get metrics:", error);
-    throw error;
+    handleError(error, 'Failed to load dashboard charts');
   }
 }
 
-//
-// ==================== VALIDATION ====================
-//
-
 /**
- * Validate Phase 1 data
- * GET /api/v1/validation/phase1/
+ * Get recent expenditures
  */
-export async function validatePhase1Data() {
+export async function getRecentExpenditures(limit = 10) {
   try {
-    const res = await api.get("validation/phase1/");
+    const res = await api.get(`/dashboard/recent-expenditures/?limit=${limit}`);
     return res.data;
   } catch (error) {
-    console.error("Failed to validate phase1 data:", error);
-    throw error;
+    handleError(error, 'Failed to load recent expenditures');
   }
 }
 
-//
-// ==================== DONORS ====================
-//
+
+// ==================== CANDIDATE ENDPOINTS ====================
 
 /**
- * Get donors (entities)
- * GET /api/v1/entities/
+ * Get all candidates with filters
+ */
+export async function getCandidates(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/candidates/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load candidates');
+  }
+}
+
+/**
+ * Get single candidate by ID
+ */
+export async function getCandidateById(candidateId) {
+  try {
+    const res = await api.get(`/committees/${candidateId}/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load candidate details');
+  }
+}
+
+/**
+ * Get candidate IE spending breakdown
+ */
+export async function getCandidateIESpending(candidateId) {
+  try {
+    const res = await api.get(`/committees/${candidateId}/ie_spending/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load candidate IE spending');
+  }
+}
+
+/**
+ * Get top candidates by IE spending
+ */
+export async function getTopCandidatesByIE(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/committees/top_by_ie/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load top candidates');
+  }
+}
+
+
+// ==================== COMMITTEE ENDPOINTS ====================
+
+/**
+ * Get all committees
+ */
+export async function getCommittees(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/committees/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load committees');
+  }
+}
+
+/**
+ * Get committee by ID
+ */
+export async function getCommitteeById(committeeId) {
+  try {
+    const res = await api.get(`/committees/${committeeId}/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load committee details');
+  }
+}
+
+/**
+ * Get top IE committees
+ */
+export async function getTopCommittees(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/committees/top/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load top committees');
+  }
+}
+
+
+// ==================== DONOR ENDPOINTS ====================
+
+/**
+ * Get all donors
  */
 export async function getDonors(params = {}) {
   try {
-    const res = await api.get("entities/", { params });
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/donors/?${queryString}`);
     return res.data;
   } catch (error) {
-    console.error("Failed to get donors:", error);
-    throw error;
+    handleError(error, 'Failed to load donors');
   }
 }
 
 /**
  * Get top donors
- * GET /api/v1/donors/top/?limit={limit}
  */
-export async function getTopDonors(limit = 50) {
+export async function getTopDonors(params = {}) {
   try {
-    const res = await api.get("donors/top/", { params: { limit } });
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/donors/top/?${queryString}`);
     return res.data;
   } catch (error) {
-    console.error("Failed to get top donors:", error);
-    throw error;
+    handleError(error, 'Failed to load top donors');
   }
 }
 
-/**
- * Get donors list (frontend adapter)
- * GET /api/v1/donors/
- */
-export async function getDonorsList(params = {}) {
-  try {
-    const res = await api.get("donors/", { params });
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get donors list:", error);
-    throw error;
-  }
-}
+
+// ==================== EXPENDITURE ENDPOINTS ====================
 
 /**
- * Get entity details
- * GET /api/v1/entities/{id}/
- */
-export async function getEntity(id) {
-  try {
-    const res = await api.get(`entities/${id}/`);
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get entity details:", error);
-    throw error;
-  }
-}
-
-/**
- * Get entity IE impact by candidate
- * GET /api/v1/entities/{id}/ie_impact_by_candidate/
- */
-export async function getEntityIEImpact(id) {
-  try {
-    const res = await api.get(`entities/${id}/ie_impact_by_candidate/`);
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get entity IE impact:", error);
-    throw error;
-  }
-}
-
-/**
- * Get entity contribution summary
- * GET /api/v1/entities/{id}/contribution_summary/
- */
-export async function getEntityContributions(id) {
-  try {
-    const res = await api.get(`entities/${id}/contribution_summary/`);
-    return res.data;
-  } catch (error) {
-    console.error("Failed to get entity contributions:", error);
-    throw error;
-  }
-}
-
-//
-// ==================== EXPENDITURES & TRANSACTIONS ====================
-//
-
-/**
- * Get expenditures (IE transactions)
- * GET /api/v1/expenditures/
+ * Get expenditures with filters
  */
 export async function getExpenditures(params = {}) {
   try {
-    const res = await api.get("expenditures/", { params });
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/expenditures/?${queryString}`);
     return res.data;
   } catch (error) {
-    console.error("Failed to get expenditures:", error);
-    throw error;
+    handleError(error, 'Failed to load expenditures');
   }
 }
+
+
+// ==================== TRANSACTION ENDPOINTS ====================
 
 /**
  * Get transactions
- * GET /api/v1/transactions/
  */
 export async function getTransactions(params = {}) {
   try {
-    const res = await api.get("transactions/", { params });
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/transactions/?${queryString}`);
     return res.data;
   } catch (error) {
-    console.error("Failed to get transactions:", error);
-    throw error;
+    handleError(error, 'Failed to load transactions');
+  }
+}
+
+
+// ==================== RACE ANALYSIS ENDPOINTS ====================
+
+/**
+ * Get IE spending by race
+ */
+export async function getRaceIESpending(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/races/ie-spending/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load race IE spending');
   }
 }
 
 /**
- * Get IE transactions
- * GET /api/v1/transactions/ie_transactions/
+ * Get top donors in race
  */
-export async function getIETransactions(params = {}) {
+export async function getRaceTopDonors(params = {}) {
   try {
-    const res = await api.get("transactions/ie_transactions/", { params });
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/races/top-donors/?${queryString}`);
     return res.data;
   } catch (error) {
-    console.error("Failed to get IE transactions:", error);
-    throw error;
+    handleError(error, 'Failed to load race top donors');
   }
 }
 
 /**
- * Get large contributions
- * GET /api/v1/transactions/large_contributions/?threshold={threshold}
+ * Get money flow for Sankey diagram
  */
-export async function getLargeContributions(threshold = 1000, params = {}) {
+export async function getMoneyFlow(params = {}) {
   try {
-    const res = await api.get("transactions/large_contributions/", { 
-      params: { ...params, threshold } 
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/races/money-flow/?${queryString}`);
+    
+    // If endpoint doesn't exist yet, use getRaceIESpending as fallback
+    if (res.status === 404) {
+      const ieData = await getRaceIESpending(params);
+      const donorsData = await getRaceTopDonors(params);
+      
+      return {
+        candidates: ieData.results || ieData,
+        top_donors: donorsData.results || donorsData,
+      };
+    }
+    
+    return res.data;
+  } catch (error) {
+    // Fallback to combining multiple endpoints
+    try {
+      const ieData = await getRaceIESpending(params);
+      const donorsData = await getRaceTopDonors(params);
+      
+      return {
+        candidates: ieData.results || ieData,
+        top_donors: donorsData.results || donorsData,
+      };
+    } catch (fallbackError) {
+      handleError(error, 'Failed to load money flow data');
+    }
+  }
+}
+
+
+// ==================== OFFICE & CYCLE ENDPOINTS ====================
+
+/**
+ * Get all offices
+ */
+export async function getOffices() {
+  try {
+    const res = await api.get('/offices/');
+    return res.data.results || res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load offices');
+  }
+}
+
+/**
+ * Get all election cycles
+ */
+export async function getCycles() {
+  try {
+    const res = await api.get('/cycles/');
+    return res.data.results || res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load cycles');
+  }
+}
+
+/**
+ * Get all parties
+ */
+export async function getParties() {
+  try {
+    const res = await api.get('/parties/');
+    return res.data.results || res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load parties');
+  }
+}
+
+
+// ==================== SOI (STATEMENT OF INTEREST) ENDPOINTS ====================
+
+/**
+ * Get all SOI candidates
+ */
+export async function getSOICandidates(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/candidate-soi/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load SOI candidates');
+  }
+}
+
+/**
+ * Mark candidate as contacted
+ */
+export async function markCandidateContacted(candidateId) {
+  try {
+    const res = await api.post(`/candidate-soi/${candidateId}/mark_contacted/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to mark candidate as contacted');
+  }
+}
+
+/**
+ * Mark pledge received
+ */
+export async function markPledgeReceived(candidateId) {
+  try {
+    const res = await api.post(`/candidate-soi/${candidateId}/mark_pledge_received/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to mark pledge received');
+  }
+}
+
+/**
+ * Bulk mark candidates as contacted
+ */
+export async function bulkMarkContacted(candidateIds) {
+  try {
+    const res = await api.post('/candidate-soi/bulk_mark_contacted/', {
+      candidate_ids: candidateIds,
     });
     return res.data;
   } catch (error) {
-    console.error("Failed to get large contributions:", error);
-    throw error;
+    handleError(error, 'Failed to bulk mark candidates as contacted');
   }
 }
 
-//
-// ==================== COMMITTEES ====================
-//
-
 /**
- * Get top committees by IE spending
- * GET /api/v1/committees/top/?limit={limit}
+ * Bulk mark pledges received
  */
-export async function getTopCommittees(limit = 10) {
+export async function bulkMarkPledgeReceived(candidateIds) {
   try {
-    const res = await api.get("committees/top/", { params: { limit } });
+    const res = await api.post('/candidate-soi/bulk_mark_pledge_received/', {
+      candidate_ids: candidateIds,
+    });
     return res.data;
   } catch (error) {
-    console.error("Failed to get top committees:", error);
-    throw error;
+    handleError(error, 'Failed to bulk mark pledges received');
   }
 }
 
 /**
- * Get committees list
- * GET /api/v1/committees/
+ * Trigger SOI scraper
  */
-export async function getCommittees(params = {}) {
+export async function triggerSOIScraper() {
   try {
-    const res = await api.get("committees/", { params });
+    const res = await api.post('/candidate-soi/trigger_scraper/');
     return res.data;
   } catch (error) {
-    console.error("Failed to get committees:", error);
-    throw error;
+    handleError(error, 'Failed to trigger SOI scraper');
   }
 }
 
-//
-// ==================== UTILITY FUNCTIONS ====================
-//
+
+// ==================== EMAIL CAMPAIGN ENDPOINTS ====================
 
 /**
- * Check API health
+ * Get email statistics
  */
-export async function checkAPIHealth() {
+export async function getEmailStatistics(dateFrom = null, dateTo = null) {
   try {
-    const res = await api.get("");
-    return { healthy: true, data: res.data };
+    const params = {};
+    if (dateFrom) params.date_from = dateFrom;
+    if (dateTo) params.date_to = dateTo;
+    
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/email/statistics/?${queryString}`);
+    return res.data;
   } catch (error) {
-    return { healthy: false, error: error.message };
+    handleError(error, 'Failed to get email statistics');
   }
 }
 
 /**
- * Format currency for display
+ * Send single email
  */
-export function formatCurrency(amount) {
-  if (amount === null || amount === undefined) return "$0.00";
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(amount);
+export async function sendSingleEmail(candidateId, templateId, customSubject = null, customBody = null) {
+  try {
+    const res = await api.post('/email/send-single/', {
+      candidate_id: candidateId,
+      template_id: templateId,
+      subject: customSubject,
+      body: customBody,
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to send email');
+  }
 }
 
 /**
- * Format date for display
+ * Send bulk emails
  */
-export function formatDate(dateString) {
-  if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+export async function sendBulkEmails(candidateIds, templateId, customSubject = null, customBody = null) {
+  try {
+    const res = await api.post('/email/send-bulk/', {
+      candidate_ids: candidateIds,
+      template_id: templateId,
+      subject: customSubject,
+      body: customBody,
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to send bulk emails');
+  }
 }
 
-//
-// ==================== DEFAULT EXPORT ====================
-//
+/**
+ * Get email templates
+ */
+export async function getEmailTemplates(category = null) {
+  try {
+    const params = {};
+    if (category) params.category = category;
+    
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/email-templates/?${queryString}`);
+    return res.data.results || res.data;
+  } catch (error) {
+    handleError(error, 'Failed to get email templates');
+  }
+}
 
+/**
+ * Create email template
+ */
+export async function createEmailTemplate(templateData) {
+  try {
+    const res = await api.post('/email-templates/', templateData);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to create email template');
+  }
+}
+
+/**
+ * Update email template
+ */
+export async function updateEmailTemplate(templateId, templateData) {
+  try {
+    const res = await api.put(`/email-templates/${templateId}/`, templateData);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to update email template');
+  }
+}
+
+/**
+ * Delete email template
+ */
+export async function deleteEmailTemplate(templateId) {
+  try {
+    const res = await api.delete(`/email-templates/${templateId}/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to delete email template');
+  }
+}
+
+/**
+ * Get email campaigns
+ */
+export async function getEmailCampaigns(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/email-campaigns/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to get email campaigns');
+  }
+}
+
+/**
+ * Create email campaign
+ */
+export async function createEmailCampaign(campaignData) {
+  try {
+    const res = await api.post('/email-campaigns/', campaignData);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to create email campaign');
+  }
+}
+
+/**
+ * Send email campaign
+ */
+export async function sendEmailCampaign(campaignId) {
+  try {
+    const res = await api.post(`/email-campaigns/${campaignId}/send/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to send email campaign');
+  }
+}
+
+/**
+ * Get email logs
+ */
+export async function getEmailLogs(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/email-logs/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to get email logs');
+  }
+}
+
+
+// ==================== DATA VALIDATION ENDPOINTS ====================
+
+/**
+ * Validate Phase 1 data
+ */
+export async function validatePhase1Data() {
+  try {
+    const res = await api.get('/validation/phase1/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to validate Phase 1 data');
+  }
+}
+
+/**
+ * Find duplicate entities
+ */
+export async function findDuplicateEntities() {
+  try {
+    const res = await api.get('/validation/find-duplicates/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to find duplicate entities');
+  }
+}
+
+/**
+ * Merge duplicate entities
+ */
+export async function mergeDuplicateEntities(primaryId, duplicateIds) {
+  try {
+    const res = await api.post('/validation/merge-entities/', {
+      primary_id: primaryId,
+      duplicate_ids: duplicateIds,
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to merge entities');
+  }
+}
+
+
+// ==================== SCRAPER ENDPOINTS ====================
+
+/**
+ * Trigger scraper
+ */
+export async function triggerScraper(scraperType = 'all') {
+  try {
+    const res = await api.post('/trigger-scrape/', {
+      scraper_type: scraperType,
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to trigger scraper');
+  }
+}
+
+/**
+ * Upload scraped data
+ */
+export async function uploadScrapedData(file) {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const res = await api.post('/upload-scraped/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to upload scraped data');
+  }
+}
+
+
+// ==================== EXPORT FUNCTIONS ====================
+
+/**
+ * Export candidates to CSV
+ */
+export async function exportCandidatesCSV(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/candidates/export/?${queryString}`, {
+      responseType: 'blob',
+    });
+    
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `candidates_${new Date().toISOString()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    
+    return true;
+  } catch (error) {
+    handleError(error, 'Failed to export candidates');
+  }
+}
+
+/**
+ * Export donors to CSV
+ */
+export async function exportDonorsCSV(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/donors/export/?${queryString}`, {
+      responseType: 'blob',
+    });
+    
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `donors_${new Date().toISOString()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    
+    return true;
+  } catch (error) {
+    handleError(error, 'Failed to export donors');
+  }
+}
+
+/**
+ * Export expenditures to CSV
+ */
+export async function exportExpendituresCSV(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/expenditures/export/?${queryString}`, {
+      responseType: 'blob',
+    });
+    
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `expenditures_${new Date().toISOString()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    
+    return true;
+  } catch (error) {
+    handleError(error, 'Failed to export expenditures');
+  }
+}
+
+
+// Export the api instance for custom requests
+export { api };
+
+// Default export
 export default api;

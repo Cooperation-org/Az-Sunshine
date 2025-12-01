@@ -2,12 +2,7 @@
 # DRF serializers for API responses
 
 from rest_framework import serializers
-from .models import (
-    Committee, Entity, Transaction, Office, Cycle, Party,
-    County, EntityType, TransactionType, ExpenseCategory,
-    CandidateStatementOfInterest, BallotMeasure, Report,
-    ReportType, ReportName
-)
+from .models import *
 
 
 # ==================== LOOKUP/REFERENCE SERIALIZERS ====================
@@ -371,3 +366,101 @@ class DataValidationSerializer(serializers.Serializer):
     donor_tracking = serializers.DictField()
     integrity_issues = serializers.ListField(child=serializers.CharField())
     validation_timestamp = serializers.DateTimeField()
+    
+
+
+
+# ==================== EMAIL SERIALIZERS ====================
+
+class EmailTemplateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for email templates
+    Phase 1 Requirement 1b: Email template management
+    """
+    class Meta:
+        model = EmailTemplate
+        fields = [
+            'id', 'name', 'category', 'subject', 'body',
+            'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class EmailCampaignSerializer(serializers.ModelSerializer):
+    """
+    Serializer for email campaigns
+    Phase 1: Bulk email campaign tracking
+    """
+    template_name = serializers.CharField(source='template.name', read_only=True)
+    total_sent = serializers.SerializerMethodField()
+    total_opened = serializers.SerializerMethodField()
+    total_clicked = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = EmailCampaign
+        fields = [
+            'id', 'name', 'template', 'template_name',
+            'scheduled_for', 'sent_at', 'status',
+            'total_sent', 'total_opened', 'total_clicked',
+            'created_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'total_sent', 'total_opened', 'total_clicked']
+    
+    def get_total_sent(self, obj):
+        return EmailLog.objects.filter(campaign=obj, status='sent').count()
+    
+    def get_total_opened(self, obj):
+        return EmailLog.objects.filter(campaign=obj, opened_at__isnull=False).count()
+    
+    def get_total_clicked(self, obj):
+        return EmailLog.objects.filter(campaign=obj, clicked_at__isnull=False).count()
+
+
+class EmailLogSerializer(serializers.ModelSerializer):
+    """
+    Serializer for email logs
+    Phase 1: Email tracking and history
+    """
+    candidate_name = serializers.CharField(source='candidate.candidate_name', read_only=True)
+    candidate_email = serializers.CharField(source='candidate.email', read_only=True)
+    template_name = serializers.CharField(source='template.name', read_only=True)
+    campaign_name = serializers.CharField(source='campaign.name', read_only=True, allow_null=True)
+    
+    class Meta:
+        model = EmailLog
+        fields = [
+            'id', 'campaign', 'campaign_name',
+            'candidate', 'candidate_name', 'candidate_email',
+            'template', 'template_name',
+            'subject', 'body', 'tracking_id',
+            'sent_at', 'status', 'error_message',
+            'opened_at', 'clicked_at'
+        ]
+        read_only_fields = [
+            'id', 'sent_at', 'tracking_id',
+            'opened_at', 'clicked_at'
+        ]
+
+
+class EmailLogListSerializer(serializers.ModelSerializer):
+    """
+    Lightweight serializer for email log lists (without body)
+    """
+    candidate_name = serializers.CharField(source='candidate.candidate_name', read_only=True)
+    candidate_email = serializers.CharField(source='candidate.email', read_only=True)
+    template_name = serializers.CharField(source='template.name', read_only=True)
+    campaign_name = serializers.CharField(source='campaign.name', read_only=True, allow_null=True)
+    
+    class Meta:
+        model = EmailLog
+        fields = [
+            'id', 'campaign_name',
+            'candidate_name', 'candidate_email',
+            'template_name', 'subject',
+            'sent_at', 'status',
+            'opened_at', 'clicked_at'
+        ]
+
+
+
+

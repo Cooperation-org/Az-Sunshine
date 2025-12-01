@@ -134,17 +134,29 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
-# Email configuration
-EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+# ==================== EMAIL CONFIGURATION ====================
+# Phase 1 Requirement 1b: Email sending and tracking
 
-# Anthropic API Key
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+# Email Backend
+# For development, use console backend:
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For production, use SMTP:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@arizonasunshine.org')
+
+# Email tracking
+TRACKING_BASE_URL = os.getenv('TRACKING_BASE_URL', 'http://167.172.30.134')
+
+# Email rate limiting (optional, for Phase 2)
+# EMAIL_RATE_LIMIT = 100  # emails per hour
+# EMAIL_BATCH_SIZE = 10   # emails per batch
+
 
 
 # Use memory cache for development (fast but temporary)

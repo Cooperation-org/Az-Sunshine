@@ -146,20 +146,20 @@
 .muted {
   opacity: 0.8;
 }
-button {
-  background: #1f6feb;
-  color: white;
-  border: none;
-  padding: 8px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-button.muted {
-  background: #e5e7eb;
-  color: #111827;
 
 
+
+/* Hide scrollbar for Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  display: none;
 }
 
+/* Hide scrollbar for Firefox */
+* {
+  scrollbar-width: none;
+}
 
-
+/* Prevent layout shift */
+body {
+  overflow-y: scroll; /* keeps scroll but hides bar */
+}

@@ -10,17 +10,9 @@ from decimal import Decimal
 from datetime import datetime, timedelta
 from django.core.cache import cache
 
-from .models import (
-    Committee, Entity, Transaction, Office, Cycle, Party,
-    CandidateStatementOfInterest, BallotMeasure, Report,
-    RaceAggregationManager, Phase1DataValidator
-)
-from .serializers import (
-    CommitteeSerializer, CommitteeDetailSerializer,
-    EntitySerializer, EntityDetailSerializer,
-    TransactionSerializer, CandidateSOISerializer,
-    OfficeSerializer, CycleSerializer, PartySerializer, RaceAggregationSerializer
-)
+from .models import *
+from .services.email_service import EmailService
+from .serializers import *
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -32,7 +24,7 @@ import logging
 
 # Initialize logger
 logger = logging.getLogger(__name__)
-NGROK_URL = "https://b1942a720d48.ngrok-free.app/run-scraper"
+NGROK_URL = "https://modularly-unsoulish-krystle.ngrok-free.dev/run-scraper"
 SECRET_TOKEN = "MY_SECRET_123"
 
 
@@ -1521,4 +1513,50 @@ def soi_dashboard_stats(request):
             'pledged': 0,
         })
         
-        
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def email_templates(request):
+    """Get all email templates"""
+    templates = EmailTemplate.objects.filter(is_active=True)
+    serializer = EmailTemplateSerializer(templates, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def send_bulk_emails(request):
+    """Send bulk emails to candidates"""
+    candidate_ids = request.data.get('candidate_ids', [])
+    template_id = request.data.get('template_id')
+    custom_data = request.data.get('custom_data', {})
+    
+    if not candidate_ids or not template_id:
+        return Response({'error': 'candidate_ids and template_id are required'}, status=400)
+    
+    email_service = EmailService()
+    results = email_service.send_bulk_emails(candidate_ids, template_id)
+    
+    return Response({
+        'success': True,
+        'results': results,
+        'message': f"Sent {results['success']} emails, {results['failed']} failed"
+    })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def email_stats(request):
+    """Get email campaign statistics"""
+    total_sent = EmailLog.objects.filter(status='sent').count()
+    total_opened = EmailLog.objects.filter(opened_at__isnull=False).count()
+    total_clicked = EmailLog.objects.filter(clicked_at__isnull=False).count()
+    
+    open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
+    click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
+    
+    return Response({
+        'total_sent': total_sent,
+        'total_opened': total_opened,
+        'total_clicked': total_clicked,
+        'open_rate': round(open_rate, 1),
+        'click_rate': round(click_rate, 1),
+    })
