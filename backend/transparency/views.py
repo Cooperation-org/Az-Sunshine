@@ -258,6 +258,53 @@ class LargeResultsSetPagination(PageNumberPagination):
     max_page_size = 500
 
 
+class FastPagination(PageNumberPagination):
+    """
+    Pagination without count() for very large datasets.
+    Returns approximate count or None to avoid slow COUNT(*) queries.
+    """
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 500
+
+    def paginate_queryset(self, queryset, request, view=None):
+        """Paginate without calling count()"""
+        page_size = self.get_page_size(request)
+        if not page_size:
+            return None
+
+        paginator = self.django_paginator_class(queryset, page_size)
+        page_number = request.query_params.get(self.page_query_param, 1)
+
+        try:
+            page_number = int(page_number)
+        except (TypeError, ValueError):
+            page_number = 1
+
+        # Don't call paginator.page() which triggers count()
+        # Just slice the queryset directly
+        offset = (page_number - 1) * page_size
+        limit = page_size
+
+        # Get one extra item to know if there's a next page
+        items = list(queryset[offset:offset + limit + 1])
+
+        self.has_next = len(items) > limit
+        self.has_previous = page_number > 1
+        self.page_number = page_number
+
+        # Return only the requested items (not the +1)
+        return items[:limit] if items else []
+
+    def get_paginated_response(self, data):
+        return Response({
+            'next': self.get_next_link() if self.has_next else None,
+            'previous': self.get_previous_link() if self.has_previous else None,
+            'results': data,
+            'count': None,  # Skip expensive count
+        })
+
+
 # ==================== PHASE 1: CANDIDATE TRACKING ====================
 
 class CandidateSOIViewSet(viewsets.ModelViewSet):
@@ -1098,8 +1145,8 @@ def donors_list(request):
     # Order by name_id for consistent pagination (no expensive sorting)
     queryset = queryset.order_by('name_id')
 
-    # Pagination
-    paginator = LargeResultsSetPagination()
+    # Pagination - use FastPagination to skip expensive count()
+    paginator = FastPagination()
     page = paginator.paginate_queryset(queryset, request)
 
     # Get entity IDs for the current page
