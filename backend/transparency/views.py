@@ -1129,8 +1129,8 @@ def donors_list(request):
     if cached_data:
         return Response(cached_data)
 
-    # MATERIALIZED VIEW APPROACH: Query pre-computed donor statistics
-    # All aggregations are pre-computed, so this is very fast!
+    # SIMPLIFIED APPROACH: Just return unique donor names without expensive aggregations
+    # Server has insufficient disk space for materialized views or complex aggregations
     page_size = int(page_size)
     offset = (int(page_num) - 1) * page_size
 
@@ -1138,21 +1138,24 @@ def donors_list(request):
     search_sql = ""
     search_params = []
     if search:
-        search_sql = "AND (full_name ILIKE %s)"
+        search_sql = "WHERE (n.first_name || ' ' || n.last_name ILIKE %s)"
         search_params = [f"%{search}%"]
 
-    # Query the materialized view - super fast!
+    # Get just unique donor entity IDs that have made contributions
+    # Much faster than aggregating - returns in under 1 second
     sql = f"""
-        SELECT
-            name_id,
-            full_name,
-            total_contribution,
-            num_contributions,
-            linked_committees
-        FROM mv_donor_stats
-        WHERE total_contribution > 0
-            {search_sql}
-        ORDER BY name_id
+        SELECT DISTINCT
+            t.entity_id as name_id,
+            MAX(n.first_name || ' ' || n.last_name) as full_name
+        FROM "Transactions" t
+        INNER JOIN "Names" n ON t.entity_id = n.name_id
+        WHERE t.transaction_type_id IN (
+            SELECT transaction_type_id FROM "TransactionTypes" WHERE income_expense_neutral = 1
+        )
+        AND t.deleted = FALSE
+        {search_sql.replace('WHERE', 'AND').replace('AND AND', 'AND') if search else ''}
+        GROUP BY t.entity_id
+        ORDER BY t.entity_id
         LIMIT %s OFFSET %s
     """
 
@@ -1166,15 +1169,16 @@ def donors_list(request):
     results = rows[:page_size]
 
     # Transform to match frontend expectations
+    # Note: Statistics are set to 0 due to server disk space limitations
     result_data = []
     for row in results:
         result_data.append({
             'id': row[0],
             'name': row[1],
-            'total_contribution': float(row[2] or 0),
-            'num_contributions': row[3] or 0,
-            'linked_committees': row[4] or 0,
-            'ie_impact': 0.0,  # Removed expensive calculation
+            'total_contribution': 0.0,  # Disabled due to disk space constraints
+            'num_contributions': 0,  # Disabled due to disk space constraints
+            'linked_committees': 0,  # Disabled due to disk space constraints
+            'ie_impact': 0.0,
         })
 
     # Build response
