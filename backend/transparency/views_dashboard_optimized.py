@@ -121,14 +121,14 @@ def dashboard_charts_data_mv(request):
             benefit_rows = cursor.fetchall()
             
             # Calculate percentages in Python (avoid expensive subquery)
-            total_amount = sum(float(row[2]) for row in benefit_rows)
-            
-            for_benefit_data = {'total': 0, 'count': 0, 'percentage': 0}
-            not_for_benefit_data = {'total': 0, 'count': 0, 'percentage': 0}
-            
+            total_amount = sum(float(row[2]) for row in benefit_rows) if benefit_rows else 0
+
+            for_benefit_data = {'total': 0.0, 'count': 0, 'percentage': 0.0}
+            not_for_benefit_data = {'total': 0.0, 'count': 0, 'percentage': 0.0}
+
             for row in benefit_rows:
                 is_for_benefit, count, amount = row
-                percentage = (float(amount) / total_amount * 100) if total_amount > 0 else 0
+                percentage = (float(amount) / total_amount * 100) if total_amount > 0 else 0.0
                 data = {
                     'total': float(amount),
                     'count': int(count),
@@ -202,8 +202,8 @@ def dashboard_charts_data_mv(request):
         logger.error(f"❌ Charts error: {e}", exc_info=True)
         return Response({
             'is_for_benefit_breakdown': {
-                'for_benefit': {'total': 0, 'count': 0, 'percentage': 0},
-                'not_for_benefit': {'total': 0, 'count': 0, 'percentage': 0}
+                'for_benefit': {'total': 0.0, 'count': 0, 'percentage': 0.0},
+                'not_for_benefit': {'total': 0.0, 'count': 0, 'percentage': 0.0}
             },
             'top_ie_committees': [],
             'top_donors': [],

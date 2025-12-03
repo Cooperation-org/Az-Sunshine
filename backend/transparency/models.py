@@ -577,6 +577,12 @@ class Transaction(models.Model):
             # Date range queries
             models.Index(fields=['transaction_date', 'committee'], name='idx_txn_date_committee'),
             models.Index(fields=['transaction_date', 'entity'], name='idx_txn_date_entity'),
+
+            # Dashboard optimization indexes
+            models.Index(fields=['deleted', 'subject_committee', 'is_for_benefit'],
+                        name='idx_txn_dash_ie_benefit'),
+            models.Index(fields=['transaction_type', 'deleted', 'entity', '-amount'],
+                        name='idx_txn_dash_donors'),
         ]
     
     def __str__(self):

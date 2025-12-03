@@ -622,8 +622,10 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {chartsData?.is_for_benefit_breakdown && 
-               (chartsData.is_for_benefit_breakdown.for_benefit.total > 0 || 
+              {chartsData?.is_for_benefit_breakdown &&
+               chartsData.is_for_benefit_breakdown.for_benefit &&
+               chartsData.is_for_benefit_breakdown.not_for_benefit &&
+               (chartsData.is_for_benefit_breakdown.for_benefit.total > 0 ||
                 chartsData.is_for_benefit_breakdown.not_for_benefit.total > 0) ? (
                 <>
                   <div className="h-64 flex items-center justify-center">
@@ -641,7 +643,7 @@ export default function Dashboard() {
                         <span className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>For Benefit</span>
                       </div>
                       <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {chartsData.is_for_benefit_breakdown.for_benefit.percentage}%
+                        {chartsData?.is_for_benefit_breakdown?.for_benefit?.percentage || 0}%
                       </span>
                     </div>
                     <div className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-[#4a3f66]' : 'bg-purple-50'}`}>
@@ -650,7 +652,7 @@ export default function Dashboard() {
                         <span className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Not For Benefit</span>
                       </div>
                       <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {chartsData.is_for_benefit_breakdown.not_for_benefit.percentage}%
+                        {chartsData?.is_for_benefit_breakdown?.not_for_benefit?.percentage || 0}%
                       </span>
                     </div>
                   </div>
