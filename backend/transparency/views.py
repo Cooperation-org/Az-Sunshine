@@ -431,12 +431,28 @@ class CommitteeViewSet(viewsets.ReadOnlyModelViewSet):
             return CommitteeDetailSerializer
         return CommitteeSerializer
     
+    @action(detail=True, methods=['get'], url_path='ie_spending')
+    def ie_spending(self, request, pk=None):
+        """Get IE spending for/against candidate (used by frontend)"""
+        committee = self.get_object()
+        summary = committee.get_ie_spending_summary()
+
+        return Response({
+            'committee_id': committee.committee_id,
+            'candidate_name': committee.name.full_name if committee.candidate else None,
+            'office': committee.candidate_office.name if committee.candidate_office else None,
+            'party': committee.candidate_party.name if committee.candidate_party else None,
+            'total_for': summary.get('total_for', 0),
+            'total_against': summary.get('total_against', 0),
+            'net_benefit': summary.get('net_benefit', 0),
+        })
+
     @action(detail=True, methods=['get'])
     def ie_spending_summary(self, request, pk=None):
         """Phase 1 Requirement 2a: Aggregate IE spending for/against candidate"""
         committee = self.get_object()
         summary = committee.get_ie_spending_summary()
-        
+
         return Response({
             'committee_id': committee.committee_id,
             'candidate_name': committee.name.full_name if committee.candidate else None,
@@ -1020,10 +1036,23 @@ def candidates_list(request):
             contacted_at = None
         
         result_data.append({
-            'id': committee.committee_id,
-            'name': committee.candidate.full_name if committee.candidate else committee.name.full_name,
-            'race': committee.candidate_office.name if committee.candidate_office else None,
-            'party': committee.candidate_party.name if committee.candidate_party else None,
+            'committee_id': committee.committee_id,
+            'candidate': {
+                'full_name': committee.candidate.full_name if committee.candidate else None,
+            } if committee.candidate else None,
+            'name': {
+                'full_name': committee.name.full_name if committee.name else None,
+            } if committee.name else None,
+            'candidate_office': {
+                'name': committee.candidate_office.name if committee.candidate_office else None,
+            } if committee.candidate_office else None,
+            'candidate_party': {
+                'name': committee.candidate_party.name if committee.candidate_party else None,
+            } if committee.candidate_party else None,
+            'election_cycle': {
+                'name': committee.election_cycle.name if committee.election_cycle else None,
+            } if committee.election_cycle else None,
+            'is_incumbent': committee.candidate.is_incumbent if committee.candidate and hasattr(committee.candidate, 'is_incumbent') else False,
             'contacted': contacted,
             'contacted_at': contacted_at,
             'ie_total_for': float(committee.ie_total_for or 0),
