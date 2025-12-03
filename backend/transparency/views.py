@@ -1141,23 +1141,29 @@ def donors_list(request):
         search_sql = "AND (n.last_name ILIKE %s OR n.first_name ILIKE %s)"
         search_params = [f"%{search}%", f"%{search}%"]
 
-    # Use a subquery that groups by entity first, then limits
+    # Simplified: Just get first N entities from Names table, then aggregate their transactions
+    # This limits the GROUP BY to only 8 entities instead of millions
     sql = f"""
+        WITH page_entities AS (
+            SELECT name_id
+            FROM "Names"
+            WHERE 1=1 {search_sql}
+            ORDER BY name_id
+            LIMIT %s OFFSET %s
+        )
         SELECT
             n.name_id,
             n.first_name || ' ' || n.last_name as full_name,
             COALESCE(SUM(t.amount), 0) as total_contribution,
             COUNT(t.transaction_id) as num_contributions,
             COUNT(DISTINCT t.committee_id) as linked_committees
-        FROM "Names" n
-        INNER JOIN "Transactions" t ON t.entity_id = n.name_id
-        INNER JOIN "TransactionTypes" tt ON t.transaction_type_id = tt.transaction_type_id
-        WHERE tt.income_expense_neutral = 1
+        FROM page_entities pe
+        INNER JOIN "Names" n ON n.name_id = pe.name_id
+        LEFT JOIN "Transactions" t ON t.entity_id = n.name_id
+            AND t.transaction_type_id IN (SELECT transaction_type_id FROM "TransactionTypes" WHERE income_expense_neutral = 1)
             AND t.deleted = FALSE
-            {search_sql}
         GROUP BY n.name_id, n.first_name, n.last_name
         ORDER BY n.name_id
-        LIMIT %s OFFSET %s
     """
 
     from django.db import connection
