@@ -1082,20 +1082,21 @@ def donors_list(request):
     if cached_data:
         return Response(cached_data)
 
+    # ULTRA-SIMPLIFIED: Get entities without expensive aggregations
+    # Just get unique entities that have made contributions
     queryset = Entity.objects.filter(
         transactions__transaction_type__income_expense_neutral=1,
         transactions__deleted=False
-    ).annotate(
-        total_contribution=Sum('transactions__amount'),
-        num_contributions=Count('transactions__transaction_id'),
-        linked_committees=Count('transactions__committee', distinct=True)
-    ).distinct().order_by('-total_contribution')
+    ).distinct()
 
     # Filter by search term if provided
     if search:
         queryset = queryset.filter(
             Q(last_name__icontains=search) | Q(first_name__icontains=search)
         )
+
+    # Order by name_id for consistent pagination (no expensive sorting)
+    queryset = queryset.order_by('name_id')
 
     # Pagination
     paginator = LargeResultsSetPagination()
@@ -1105,21 +1106,32 @@ def donors_list(request):
     page_entities = page if page is not None else queryset
     entity_ids = [e.name_id for e in page_entities]
 
-    # OPTIMIZED: Calculate IE impact efficiently
-    # For now, set IE impact to 0 to make it fast
-    # We can calculate this in background or with materialized view later
-    ie_impacts = {entity_id: 0.0 for entity_id in entity_ids}
+    # Calculate aggregations ONLY for the entities on this page (not all entities)
+    # This is much faster than annotating before pagination
+    entity_stats = Transaction.objects.filter(
+        entity__name_id__in=entity_ids,
+        transaction_type__income_expense_neutral=1,
+        deleted=False
+    ).values('entity__name_id').annotate(
+        total=Sum('amount'),
+        count=Count('transaction_id'),
+        committees=Count('committee', distinct=True)
+    )
+
+    # Create lookup dict for quick access
+    stats_dict = {stat['entity__name_id']: stat for stat in entity_stats}
 
     # Transform to match frontend expectations
     result_data = []
     for entity in page_entities:
+        stats = stats_dict.get(entity.name_id, {})
         result_data.append({
             'id': entity.name_id,
             'name': entity.full_name,
-            'total_contribution': float(entity.total_contribution or 0),
-            'linked_committees': entity.linked_committees or 0,
-            'ie_impact': ie_impacts.get(entity.name_id, 0.0),
-            'num_contributions': entity.num_contributions or 0,
+            'total_contribution': float(stats.get('total', 0) or 0),
+            'linked_committees': stats.get('committees', 0) or 0,
+            'ie_impact': 0.0,  # Removed expensive calculation
+            'num_contributions': stats.get('count', 0) or 0,
         })
 
     response_data = paginator.get_paginated_response(result_data).data if page is not None else {'results': result_data, 'count': len(result_data)}
