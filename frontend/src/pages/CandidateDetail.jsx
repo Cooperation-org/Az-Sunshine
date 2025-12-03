@@ -451,20 +451,20 @@ export default function CandidateDetail() {
             <div className="space-y-6">
               {/* IE Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border-2 border-green-200">
+                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 border-2 shadow-lg hover:shadow-xl transition-all`}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="bg-green-600 p-3 rounded-xl">
                       <TrendingUp className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm text-green-700 font-medium">IE Support</p>
-                      <p className="text-3xl font-black text-green-900">
+                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>IE Support</p>
+                      <p className={`text-3xl font-black text-green-600`}>
                         ${totalIEFor.toLocaleString()}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-green-200">
-                    <p className="text-xs text-green-700">
+                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
+                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {totalIE > 0
                         ? `${((totalIEFor / totalIE) * 100).toFixed(1)}% of total IE`
                         : "0% of total IE"}
@@ -472,20 +472,20 @@ export default function CandidateDetail() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-6 border-2 border-red-200">
+                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 border-2 shadow-lg hover:shadow-xl transition-all`}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="bg-red-600 p-3 rounded-xl">
                       <TrendingDown className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm text-red-700 font-medium">IE Oppose</p>
-                      <p className="text-3xl font-black text-red-900">
+                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>IE Oppose</p>
+                      <p className={`text-3xl font-black text-red-600`}>
                         ${totalIEAgainst.toLocaleString()}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-red-200">
-                    <p className="text-xs text-red-700">
+                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
+                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {totalIE > 0
                         ? `${((totalIEAgainst / totalIE) * 100).toFixed(1)}% of total IE`
                         : "0% of total IE"}
@@ -493,20 +493,20 @@ export default function CandidateDetail() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border-2 border-purple-200">
+                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 border-2 shadow-lg hover:shadow-xl transition-all`}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="bg-purple-600 p-3 rounded-xl">
                       <DollarSign className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm text-purple-700 font-medium">Net IE</p>
-                      <p className="text-3xl font-black text-purple-900">
+                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Net IE</p>
+                      <p className={`text-3xl font-black text-purple-600`}>
                         {netIE >= 0 ? "+" : ""}${netIE.toLocaleString()}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-purple-200">
-                    <p className="text-xs text-purple-700">
+                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
+                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       Support minus Oppose
                     </p>
                   </div>
