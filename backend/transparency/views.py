@@ -1129,59 +1129,65 @@ def donors_list(request):
     if cached_data:
         return Response(cached_data)
 
-    # ULTRA-SIMPLIFIED: Get entities without expensive aggregations
-    # Just get unique entities that have made contributions
-    queryset = Entity.objects.filter(
-        transactions__transaction_type__income_expense_neutral=1,
-        transactions__deleted=False
-    ).distinct()
+    # RAW SQL APPROACH: Use subquery to get entity IDs with aggregations
+    # This avoids expensive DISTINCT on the entire Entity-Transaction join
+    page_size = int(page_size)
+    offset = (int(page_num) - 1) * page_size
 
-    # Filter by search term if provided
+    # Build search filter
+    search_sql = ""
+    search_params = []
     if search:
-        queryset = queryset.filter(
-            Q(last_name__icontains=search) | Q(first_name__icontains=search)
-        )
+        search_sql = "AND (n.last_name ILIKE %s OR n.first_name ILIKE %s)"
+        search_params = [f"%{search}%", f"%{search}%"]
 
-    # Order by name_id for consistent pagination (no expensive sorting)
-    queryset = queryset.order_by('name_id')
+    # Use a subquery that groups by entity first, then limits
+    sql = f"""
+        SELECT
+            n.name_id,
+            n.first_name || ' ' || n.last_name as full_name,
+            COALESCE(SUM(t.amount), 0) as total_contribution,
+            COUNT(t.transaction_id) as num_contributions,
+            COUNT(DISTINCT t.committee_id) as linked_committees
+        FROM "Names" n
+        INNER JOIN "Transactions" t ON t.entity_id = n.name_id
+        INNER JOIN "TransactionTypes" tt ON t.transaction_type_id = tt.transaction_type_id
+        WHERE tt.income_expense_neutral = 1
+            AND t.deleted = FALSE
+            {search_sql}
+        GROUP BY n.name_id, n.first_name, n.last_name
+        ORDER BY n.name_id
+        LIMIT %s OFFSET %s
+    """
 
-    # Pagination - use FastPagination to skip expensive count()
-    paginator = FastPagination()
-    page = paginator.paginate_queryset(queryset, request)
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute(sql, search_params + [page_size + 1, offset])
+        rows = cursor.fetchall()
 
-    # Get entity IDs for the current page
-    page_entities = page if page is not None else queryset
-    entity_ids = [e.name_id for e in page_entities]
-
-    # Calculate aggregations ONLY for the entities on this page (not all entities)
-    # This is much faster than annotating before pagination
-    entity_stats = Transaction.objects.filter(
-        entity__name_id__in=entity_ids,
-        transaction_type__income_expense_neutral=1,
-        deleted=False
-    ).values('entity__name_id').annotate(
-        total=Sum('amount'),
-        count=Count('transaction_id'),
-        committees=Count('committee', distinct=True)
-    )
-
-    # Create lookup dict for quick access
-    stats_dict = {stat['entity__name_id']: stat for stat in entity_stats}
+    # Check if there are more results
+    has_next = len(rows) > page_size
+    results = rows[:page_size]
 
     # Transform to match frontend expectations
     result_data = []
-    for entity in page_entities:
-        stats = stats_dict.get(entity.name_id, {})
+    for row in results:
         result_data.append({
-            'id': entity.name_id,
-            'name': entity.full_name,
-            'total_contribution': float(stats.get('total', 0) or 0),
-            'linked_committees': stats.get('committees', 0) or 0,
+            'id': row[0],
+            'name': row[1],
+            'total_contribution': float(row[2] or 0),
+            'num_contributions': row[3] or 0,
+            'linked_committees': row[4] or 0,
             'ie_impact': 0.0,  # Removed expensive calculation
-            'num_contributions': stats.get('count', 0) or 0,
         })
 
-    response_data = paginator.get_paginated_response(result_data).data if page is not None else {'results': result_data, 'count': len(result_data)}
+    # Build response
+    response_data = {
+        'results': result_data,
+        'count': None,  # Skip expensive count
+        'next': f'/api/v1/donors/?page={int(page_num) + 1}&page_size={page_size}' + (f'&search={search}' if search else '') if has_next else None,
+        'previous': f'/api/v1/donors/?page={int(page_num) - 1}&page_size={page_size}' + (f'&search={search}' if search else '') if int(page_num) > 1 else None,
+    }
 
     # Cache for 10 minutes
     cache.set(cache_key, response_data, timeout=600)
