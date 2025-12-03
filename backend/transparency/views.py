@@ -1129,8 +1129,7 @@ def donors_list(request):
     if cached_data:
         return Response(cached_data)
 
-    # SIMPLIFIED APPROACH: Just return unique donor names without expensive aggregations
-    # Server has insufficient disk space for materialized views or complex aggregations
+    # OPTIMIZED APPROACH: Aggregate donor statistics efficiently with proper indexes
     page_size = int(page_size)
     offset = (int(page_num) - 1) * page_size
 
@@ -1138,25 +1137,37 @@ def donors_list(request):
     search_sql = ""
     search_params = []
     if search:
-        search_sql = "WHERE (n.first_name || ' ' || n.last_name ILIKE %s)"
+        search_sql = "AND (n.first_name || ' ' || n.last_name ILIKE %s)"
         search_params = [f"%{search}%"]
 
-    # Get just unique donor entity IDs that have made contributions
-    # Much faster than aggregating - returns in under 1 second
+    # Optimized query with aggregations in single pass
+    # Uses idx_txn_dash_donors index for performance
     sql = f"""
-        SELECT DISTINCT
-            t.entity_id as name_id,
-            MAX(n.first_name || ' ' || n.last_name) as full_name
-        FROM "Transactions" t
-        INNER JOIN "Names" n ON t.entity_id = n.name_id
-        WHERE t.transaction_type_id IN (
-            SELECT transaction_type_id FROM "TransactionTypes" WHERE income_expense_neutral = 1
+        WITH donor_contributions AS (
+            SELECT
+                t.entity_id as name_id,
+                MAX(n.first_name || ' ' || n.last_name) as full_name,
+                SUM(CASE WHEN t.amount > 0 THEN t.amount ELSE 0 END) as total_contribution,
+                COUNT(*) as num_contributions,
+                COUNT(DISTINCT t.committee_id) as linked_committees
+            FROM "Transactions" t
+            INNER JOIN "Names" n ON t.entity_id = n.name_id
+            WHERE t.transaction_type_id IN (
+                SELECT transaction_type_id FROM "TransactionTypes" WHERE income_expense_neutral = 1
+            )
+            AND t.deleted = FALSE
+            {search_sql}
+            GROUP BY t.entity_id
+            ORDER BY total_contribution DESC
+            LIMIT %s OFFSET %s
         )
-        AND t.deleted = FALSE
-        {search_sql.replace('WHERE', 'AND').replace('AND AND', 'AND') if search else ''}
-        GROUP BY t.entity_id
-        ORDER BY t.entity_id
-        LIMIT %s OFFSET %s
+        SELECT
+            dc.name_id,
+            dc.full_name,
+            dc.total_contribution,
+            dc.num_contributions,
+            dc.linked_committees
+        FROM donor_contributions dc
     """
 
     from django.db import connection
@@ -1169,16 +1180,15 @@ def donors_list(request):
     results = rows[:page_size]
 
     # Transform to match frontend expectations
-    # Note: Statistics are set to 0 due to server disk space limitations
     result_data = []
     for row in results:
         result_data.append({
             'id': row[0],
             'name': row[1],
-            'total_contribution': 0.0,  # Disabled due to disk space constraints
-            'num_contributions': 0,  # Disabled due to disk space constraints
-            'linked_committees': 0,  # Disabled due to disk space constraints
-            'ie_impact': 0.0,
+            'total_contribution': float(row[2]) if row[2] else 0.0,
+            'num_contributions': int(row[3]) if row[3] else 0,
+            'linked_committees': int(row[4]) if row[4] else 0,
+            'ie_impact': 0.0,  # IE impact calculation disabled for performance
         })
 
     # Build response
