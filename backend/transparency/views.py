@@ -1129,8 +1129,8 @@ def donors_list(request):
     if cached_data:
         return Response(cached_data)
 
-    # RAW SQL APPROACH: Use subquery to get entity IDs with aggregations
-    # This avoids expensive DISTINCT on the entire Entity-Transaction join
+    # MATERIALIZED VIEW APPROACH: Query pre-computed donor statistics
+    # All aggregations are pre-computed, so this is very fast!
     page_size = int(page_size)
     offset = (int(page_num) - 1) * page_size
 
@@ -1138,32 +1138,22 @@ def donors_list(request):
     search_sql = ""
     search_params = []
     if search:
-        search_sql = "AND (n.last_name ILIKE %s OR n.first_name ILIKE %s)"
-        search_params = [f"%{search}%", f"%{search}%"]
+        search_sql = "AND (full_name ILIKE %s)"
+        search_params = [f"%{search}%"]
 
-    # Simplified: Just get first N entities from Names table, then aggregate their transactions
-    # This limits the GROUP BY to only 8 entities instead of millions
+    # Query the materialized view - super fast!
     sql = f"""
-        WITH page_entities AS (
-            SELECT name_id
-            FROM "Names"
-            WHERE 1=1 {search_sql}
-            ORDER BY name_id
-            LIMIT %s OFFSET %s
-        )
         SELECT
-            n.name_id,
-            n.first_name || ' ' || n.last_name as full_name,
-            COALESCE(SUM(t.amount), 0) as total_contribution,
-            COUNT(t.transaction_id) as num_contributions,
-            COUNT(DISTINCT t.committee_id) as linked_committees
-        FROM page_entities pe
-        INNER JOIN "Names" n ON n.name_id = pe.name_id
-        LEFT JOIN "Transactions" t ON t.entity_id = n.name_id
-            AND t.transaction_type_id IN (SELECT transaction_type_id FROM "TransactionTypes" WHERE income_expense_neutral = 1)
-            AND t.deleted = FALSE
-        GROUP BY n.name_id, n.first_name, n.last_name
-        ORDER BY n.name_id
+            name_id,
+            full_name,
+            total_contribution,
+            num_contributions,
+            linked_committees
+        FROM mv_donor_stats
+        WHERE total_contribution > 0
+            {search_sql}
+        ORDER BY name_id
+        LIMIT %s OFFSET %s
     """
 
     from django.db import connection
