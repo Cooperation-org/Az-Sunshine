@@ -48,3 +48,11 @@ backend/transparency/migrations/0012_merge_20251124_2357.py
 API_TEST/
 transparency_db_dump.sql.gz
 Transparency Tool Specifications + Data Sources + Design.pdf
+allcode.txt
+CLAUDE.md
+tree.txt
+standup_report.txt
+task_list.txt
+done_list.txt
+
+
