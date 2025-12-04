@@ -89,38 +89,35 @@ def dashboard_summary_optimized(request):
 @permission_classes([AllowAny])
 def dashboard_charts_data_mv(request):
     """
-    FAST VERSION: Simplified queries without subqueries
+    OPTIMIZED: Use materialized views for instant results
     """
     cache_key = 'dashboard_charts_fast_v2'
-    
+
     # Check for refresh param
     force_refresh = request.GET.get('refresh') == '1'
-    
+
     if not force_refresh:
         cached_data = cache.get(cache_key)
         if cached_data:
             logger.info("✅ Returning cached charts")
             return Response(cached_data)
-    
-    logger.info("🔄 Loading fresh dashboard charts...")
-    
+
+    logger.info("🔄 Loading fresh dashboard charts from materialized views...")
+
     try:
         with connection.cursor() as cursor:
-            # Query 1: IE Benefit Breakdown - Simple aggregation
+            # Query 1: IE Benefit Breakdown - FROM MATERIALIZED VIEW
             cursor.execute("""
-                SELECT 
+                SELECT
                     is_for_benefit,
-                    COUNT(*) as transaction_count,
-                    ABS(COALESCE(SUM(amount), 0)) as total_amount
-                FROM "Transactions"
-                WHERE subject_committee_id IS NOT NULL 
-                    AND deleted = false
-                    AND is_for_benefit IS NOT NULL
-                GROUP BY is_for_benefit
+                    transaction_count,
+                    total_amount
+                FROM ie_benefit_breakdown
+                ORDER BY is_for_benefit DESC
             """)
             benefit_rows = cursor.fetchall()
-            
-            # Calculate percentages in Python (avoid expensive subquery)
+
+            # Calculate percentages in Python
             total_amount = sum(float(row[2]) for row in benefit_rows) if benefit_rows else 0
 
             for_benefit_data = {'total': 0.0, 'count': 0, 'percentage': 0.0}
@@ -138,51 +135,41 @@ def dashboard_charts_data_mv(request):
                     for_benefit_data = data
                 else:
                     not_for_benefit_data = data
-            
-            # Query 2: Top 10 IE Committees
+
+            # Query 2: Top 10 IE Committees - FROM MATERIALIZED VIEW
             cursor.execute("""
-                SELECT 
-                    COALESCE(n.last_name || ', ' || n.first_name, n.last_name, 'Unknown') as committee,
-                    c.committee_id,
-                    ABS(COALESCE(SUM(t.amount), 0)) as total_spending
-                FROM "Committees" c
-                INNER JOIN "Names" n ON c.name_id = n.name_id
-                INNER JOIN "Transactions" t ON c.committee_id = t.committee_id
-                WHERE t.subject_committee_id IS NOT NULL 
-                    AND t.deleted = false
-                GROUP BY c.committee_id, n.last_name, n.first_name
-                ORDER BY total_spending DESC
+                SELECT
+                    committee_name as committee,
+                    committee_id,
+                    total_spent as total_spending
+                FROM mv_dashboard_top_ie_committees
+                ORDER BY total_spent DESC
                 LIMIT 10
             """)
-            
+
             top_committees = [{
                 'committee': row[0],
                 'committee_id': row[1],
                 'total_spending': float(row[2])
             } for row in cursor.fetchall()]
-            
-            # Query 3: Top 10 Donors
+
+            # Query 3: Top 10 Donors - FROM MATERIALIZED VIEW
             cursor.execute("""
-                SELECT 
-                    COALESCE(e.last_name || ', ' || e.first_name, e.last_name, 'Unknown') as entity_name,
-                    e.name_id as entity_id,
-                    ABS(COALESCE(SUM(t.amount), 0)) as total_contributed
-                FROM "Names" e
-                INNER JOIN "Transactions" t ON e.name_id = t.entity_id
-                INNER JOIN "TransactionTypes" tt ON t.transaction_type_id = tt.transaction_type_id
-                WHERE tt.income_expense_neutral = 1
-                    AND t.deleted = false
-                GROUP BY e.name_id, e.last_name, e.first_name
+                SELECT
+                    entity_name,
+                    entity_id,
+                    total_contributed
+                FROM mv_dashboard_top_donors
                 ORDER BY total_contributed DESC
                 LIMIT 10
             """)
-            
+
             top_donors = [{
                 'entity_name': row[0],
                 'entity_id': row[1],
                 'total_contributed': float(row[2])
             } for row in cursor.fetchall()]
-            
+
             response_data = {
                 'is_for_benefit_breakdown': {
                     'for_benefit': for_benefit_data,
@@ -191,13 +178,13 @@ def dashboard_charts_data_mv(request):
                 'top_ie_committees': top_committees,
                 'top_donors': top_donors
             }
-            
+
             # Cache for 10 minutes
             cache.set(cache_key, response_data, timeout=600)
-            
-            logger.info(f"✅ Charts loaded: {len(top_committees)} committees, {len(top_donors)} donors")
+
+            logger.info(f"✅ Charts loaded from MV: {len(top_committees)} committees, {len(top_donors)} donors")
             return Response(response_data)
-            
+
     except Exception as e:
         logger.error(f"❌ Charts error: {e}", exc_info=True)
         return Response({
@@ -215,47 +202,43 @@ def dashboard_charts_data_mv(request):
 @permission_classes([AllowAny])
 def dashboard_recent_expenditures_mv(request):
     """
-    Latest 10 expenditures
+    OPTIMIZED: Latest expenditures from materialized view
     """
     cache_key = 'dashboard_recent_exp_v1'
     cached_data = cache.get(cache_key)
-    
+
     if cached_data:
         return Response(cached_data)
-    
+
     try:
         with connection.cursor() as cursor:
+            # Query from materialized view - instant results!
             cursor.execute("""
-                SELECT 
-                    t.transaction_date,
-                    ABS(t.amount) as amount,
-                    t.is_for_benefit,
-                    COALESCE(cn.last_name || ', ' || cn.first_name, cn.last_name, 'Unknown') as committee_name,
-                    COALESCE(sn.last_name || ', ' || sn.first_name, sn.last_name, 'Unknown') as candidate_name
-                FROM "Transactions" t
-                LEFT JOIN "Committees" c ON t.committee_id = c.committee_id
-                LEFT JOIN "Names" cn ON c.name_id = cn.name_id
-                LEFT JOIN "Committees" sc ON t.subject_committee_id = sc.committee_id
-                LEFT JOIN "Names" sn ON sc.name_id = sn.name_id
-                WHERE t.subject_committee_id IS NOT NULL 
-                    AND t.deleted = false
-                ORDER BY t.transaction_date DESC
+                SELECT
+                    expenditure_date,
+                    ABS(amount) as amount,
+                    is_for_benefit,
+                    committee_name,
+                    candidate_name
+                FROM mv_dashboard_recent_expenditures
+                ORDER BY expenditure_date DESC NULLS LAST
                 LIMIT 10
             """)
-            
+
             results = [{
                 'date': row[0].isoformat() if row[0] else None,
                 'amount': float(row[1]),
                 'is_for_benefit': row[2],
-                'committee': row[3],
-                'candidate': row[4]
+                'committee': row[3] or 'Unknown',
+                'candidate': row[4] or 'Unknown'
             } for row in cursor.fetchall()]
-        
+
         response_data = {'results': results}
         cache.set(cache_key, response_data, timeout=300)
-        
+
+        logger.info(f"✅ Recent expenditures loaded from MV: {len(results)} records")
         return Response(response_data)
-        
+
     except Exception as e:
         logger.error(f"Recent expenditures error: {e}", exc_info=True)
         return Response({'results': []})

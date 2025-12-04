@@ -47,3 +47,4 @@ backend/transparency/migrations/0012_merge_20251124_2357.py
 
 API_TEST/
 transparency_db_dump.sql.gz
+Transparency Tool Specifications + Data Sources + Design.pdf

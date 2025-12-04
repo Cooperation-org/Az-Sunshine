@@ -1115,21 +1115,21 @@ def candidates_list(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def donors_list(request):
-    """Adapter endpoint: /api/donors/ -> maps to entities with contribution data"""
+    """OPTIMIZED: Use top_donors_mv materialized view for instant donor list"""
     from django.core.cache import cache
 
     # Build cache key from request parameters
     page_num = request.query_params.get('page', 1)
     page_size = request.query_params.get('page_size', 100)
     search = request.query_params.get('search', '')
-    cache_key = f'donors_list_p{page_num}_s{page_size}_q{search}'
+    cache_key = f'donors_list_mv_p{page_num}_s{page_size}_q{search}'
 
     # Try to get from cache (10 minute cache)
     cached_data = cache.get(cache_key)
     if cached_data:
         return Response(cached_data)
 
-    # OPTIMIZED APPROACH: Aggregate donor statistics efficiently with proper indexes
+    # Use materialized view for blazing fast results!
     page_size = int(page_size)
     offset = (int(page_num) - 1) * page_size
 
@@ -1137,37 +1137,25 @@ def donors_list(request):
     search_sql = ""
     search_params = []
     if search:
-        search_sql = "AND (n.first_name || ' ' || n.last_name ILIKE %s)"
+        search_sql = "WHERE d.entity_name ILIKE %s"
         search_params = [f"%{search}%"]
 
-    # Optimized query with aggregations in single pass
-    # Uses idx_txn_dash_donors index for performance
+    # Query from materialized view + join for display fields
     sql = f"""
-        WITH donor_contributions AS (
-            SELECT
-                t.entity_id as name_id,
-                MAX(n.first_name || ' ' || n.last_name) as full_name,
-                SUM(CASE WHEN t.amount > 0 THEN t.amount ELSE 0 END) as total_contribution,
-                COUNT(*) as num_contributions,
-                COUNT(DISTINCT t.committee_id) as linked_committees
-            FROM "Transactions" t
-            INNER JOIN "Names" n ON t.entity_id = n.name_id
-            WHERE t.transaction_type_id IN (
-                SELECT transaction_type_id FROM "TransactionTypes" WHERE income_expense_neutral = 1
-            )
-            AND t.deleted = FALSE
-            {search_sql}
-            GROUP BY t.entity_id
-            ORDER BY total_contribution DESC
-            LIMIT %s OFFSET %s
-        )
         SELECT
-            dc.name_id,
-            dc.full_name,
-            dc.total_contribution,
-            dc.num_contributions,
-            dc.linked_committees
-        FROM donor_contributions dc
+            d.entity_id,
+            d.entity_name as full_name,
+            n.city,
+            n.state,
+            et.name as entity_type_name,
+            ABS(d.total_contributed) as total_contribution,
+            d.contribution_count as num_contributions
+        FROM top_donors_mv d
+        LEFT JOIN "Names" n ON d.entity_id = n.name_id
+        LEFT JOIN "EntityTypes" et ON n.entity_type_id = et.entity_type_id
+        {search_sql}
+        ORDER BY d.total_contributed DESC
+        LIMIT %s OFFSET %s
     """
 
     from django.db import connection
@@ -1182,12 +1170,16 @@ def donors_list(request):
     # Transform to match frontend expectations
     result_data = []
     for row in results:
+        entity_type = {'name': row[4]} if row[4] else None
         result_data.append({
             'id': row[0],
-            'name': row[1],
-            'total_contribution': float(row[2]) if row[2] else 0.0,
-            'num_contributions': int(row[3]) if row[3] else 0,
-            'linked_committees': int(row[4]) if row[4] else 0,
+            'name': row[1] or 'Unknown',
+            'city': row[2] if row[2] else None,
+            'state': row[3] if row[3] else None,
+            'entity_type': entity_type,
+            'total_contribution': float(row[5]) if row[5] else 0.0,
+            'num_contributions': int(row[6]) if row[6] else 0,
+            'linked_committees': 0,  # Not in MV, could add if needed
             'ie_impact': 0.0,  # IE impact calculation disabled for performance
         })
 
@@ -1202,6 +1194,7 @@ def donors_list(request):
     # Cache for 10 minutes
     cache.set(cache_key, response_data, timeout=600)
 
+    logger.info(f"✅ Donors list loaded from MV: {len(result_data)} donors (page {page_num})")
     return Response(response_data)
 
 
@@ -1227,24 +1220,40 @@ def expenditures_list(request):
         serializer = TransactionSerializer(page, many=True)
         result_data = []
         for item in serializer.data:
+            committee_data = item.get('committee', {})
             subject_comm = item.get('subject_committee', {})
             memo = item.get('memo', '').strip()
             is_for_benefit = item.get('is_for_benefit')
-            candidate_name = subject_comm.get('candidate_name') if subject_comm else 'Candidate'
-            
+
+            # Get committee name
+            committee_name = committee_data.get('name', 'Unknown') if committee_data else 'Unknown'
+
+            # Get candidate/subject committee name
+            candidate_name = subject_comm.get('candidate_name', 'Unknown') if subject_comm else 'Unknown'
+
             # Build purpose: use memo if available, otherwise use Support/Oppose + candidate name
             if memo:
                 purpose = memo
             else:
                 support_type = 'Support' if is_for_benefit else 'Oppose'
                 purpose = f"{support_type} {candidate_name}"
-            
+
+            # Format to match frontend expectations
             result_data.append({
-                'date': item.get('transaction_date'),
+                'transaction_id': item.get('transaction_id'),
+                'transaction_date': item.get('transaction_date'),
                 'amount': item.get('amount'),
-                'support_oppose': 'Support' if is_for_benefit else 'Oppose',
-                'ie_committee': {'name': item.get('committee', {}).get('name', 'Unknown')},
-                'candidate_name': candidate_name,
+                'is_for_benefit': is_for_benefit,
+                'committee': {
+                    'name': {
+                        'full_name': committee_name
+                    }
+                },
+                'subject_committee': {
+                    'name': {
+                        'full_name': candidate_name
+                    }
+                },
                 'purpose': purpose
             })
         return paginator.get_paginated_response(result_data)
@@ -1252,23 +1261,40 @@ def expenditures_list(request):
     serializer = TransactionSerializer(queryset, many=True)
     result_data = []
     for item in serializer.data:
+        committee_data = item.get('committee', {})
         subject_comm = item.get('subject_committee', {})
         memo = item.get('memo', '').strip()
         is_for_benefit = item.get('is_for_benefit')
-        candidate_name = subject_comm.get('candidate_name') if subject_comm else 'Candidate'
-        
+
+        # Get committee name
+        committee_name = committee_data.get('name', 'Unknown') if committee_data else 'Unknown'
+
+        # Get candidate/subject committee name
+        candidate_name = subject_comm.get('candidate_name', 'Unknown') if subject_comm else 'Unknown'
+
+        # Build purpose: use memo if available, otherwise use Support/Oppose + candidate name
         if memo:
             purpose = memo
         else:
             support_type = 'Support' if is_for_benefit else 'Oppose'
             purpose = f"{support_type} {candidate_name}"
-        
+
+        # Format to match frontend expectations
         result_data.append({
-            'date': item.get('transaction_date'),
+            'transaction_id': item.get('transaction_id'),
+            'transaction_date': item.get('transaction_date'),
             'amount': item.get('amount'),
-            'support_oppose': 'Support' if is_for_benefit else 'Oppose',
-            'ie_committee': {'name': item.get('committee', {}).get('name', 'Unknown')},
-            'candidate_name': candidate_name,
+            'is_for_benefit': is_for_benefit,
+            'committee': {
+                'name': {
+                    'full_name': committee_name
+                }
+            },
+            'subject_committee': {
+                'name': {
+                    'full_name': candidate_name
+                }
+            },
             'purpose': purpose
         })
     return Response({'results': result_data})

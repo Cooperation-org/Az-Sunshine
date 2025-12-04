@@ -57,3 +57,18 @@ done
 tree -I "venv|node_modules|__pycache__|.git|chrome_profile|migrations"
 
 
+
+
+
+
+
+
+
+
+
+could you go to race-analysis page and ensure the data in my frontend matches the data in my data base, if it doesnt fix my frontend 
+race-analysis page
+
+make an accessible link using ngrok and use also twin gate free plan to secure it.
+
+make an MCP for claude

@@ -1,13 +1,11 @@
 // frontend/src/pages/Visualizations.jsx
 import React, { useState, useEffect } from "react";
-import { Bar, Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
-  PointElement,
-  LineElement,
   Title,
   Tooltip,
   Legend,
@@ -17,21 +15,40 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import MoneyFlowSankey from "../components/MoneyFlowSankey";
 import { getOffices, getCycles, getTopCandidatesByIE } from "../api/api";
-import { ChartSkeleton, CardSkeleton } from "../components/SkeletonLoader";
+import { useDarkMode } from "../context/DarkModeContext";
+import {
+  SlidersHorizontal,
+  BarChart3,
+  GitMerge,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  ChevronDown,
+  Activity,
+  Box,
+  LayoutGrid
+} from "lucide-react";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
-  PointElement,
-  LineElement,
   Title,
   Tooltip,
   Legend,
   Filler
 );
 
+const ChartSkeleton = ({ className }) => {
+  const { darkMode } = useDarkMode();
+  return (
+    <div className={`rounded-2xl ${darkMode ? 'bg-[#4a3f66]/50' : 'bg-gray-200'} animate-pulse ${className}`}></div>
+  );
+};
+
+
 export default function Visualizations() {
+  const { darkMode } = useDarkMode();
   const [offices, setOffices] = useState([]);
   const [cycles, setCycles] = useState([]);
   const [selectedOffice, setSelectedOffice] = useState("");
@@ -60,7 +77,6 @@ export default function Visualizations() {
       setOffices(officesData);
       setCycles(cyclesData);
       
-      // Auto-select first office and cycle
       if (officesData.length > 0) setSelectedOffice(officesData[0].office_id);
       if (cyclesData.length > 0) setSelectedCycle(cyclesData[0].cycle_id);
     } catch (error) {
@@ -78,7 +94,6 @@ export default function Visualizations() {
         cycle: selectedCycle,
         limit: 10,
       });
-      
       setTopCandidates(candidatesData.results || candidatesData || []);
     } catch (error) {
       console.error("Error loading chart data:", error);
@@ -88,193 +103,212 @@ export default function Visualizations() {
     }
   }
 
-  // Prepare chart data
+  const totalIE = topCandidates.reduce((sum, c) => sum + parseFloat(c.ie_total_for || 0) + parseFloat(c.ie_total_against || 0), 0);
+  const totalSupport = topCandidates.reduce((sum, c) => sum + parseFloat(c.ie_total_for || 0), 0);
+  const totalOppose = topCandidates.reduce((sum, c) => sum + parseFloat(c.ie_total_against || 0), 0);
+
   const barChartData = {
-    labels: topCandidates.map(c => 
-      c.candidate?.full_name || c.name?.full_name || "Unknown"
-    ),
+    labels: topCandidates.map(c => c.candidate?.full_name || c.name?.full_name || "Unknown"),
     datasets: [
       {
-        label: "IE For",
+        label: "Support",
         data: topCandidates.map(c => parseFloat(c.ie_total_for || 0)),
-        backgroundColor: "rgba(34, 197, 94, 0.6)",
-        borderColor: "rgba(34, 197, 94, 1)",
+        backgroundColor: darkMode ? 'rgba(74, 222, 128, 0.4)' : 'rgba(34, 197, 94, 0.6)',
+        borderColor: darkMode ? 'rgba(74, 222, 128, 1)' : 'rgba(34, 197, 94, 1)',
         borderWidth: 1,
+        borderRadius: 4,
       },
       {
-        label: "IE Against",
+        label: "Oppose",
         data: topCandidates.map(c => parseFloat(c.ie_total_against || 0)),
-        backgroundColor: "rgba(239, 68, 68, 0.6)",
-        borderColor: "rgba(239, 68, 68, 1)",
+        backgroundColor: darkMode ? 'rgba(248, 113, 113, 0.4)' : 'rgba(239, 68, 68, 0.6)',
+        borderColor: darkMode ? 'rgba(248, 113, 113, 1)' : 'rgba(239, 68, 68, 1)',
         borderWidth: 1,
+        borderRadius: 4,
       },
     ],
   };
 
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      
-      <main className="flex-1 lg:ml-0 min-w-0">
-        <Header title="Arizona Sunshine" subtitle="IE Spending Visualizations" />
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { 
+        display: true, 
+        position: 'bottom',
+        labels: {
+          color: darkMode ? '#d1d5db' : '#374151',
+          padding: 20,
+          font: {
+            size: 13,
+            family: 'Inter, sans-serif'
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: darkMode ? 'rgba(51, 45, 84, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+        titleColor: darkMode ? '#ffffff' : '#1F2937',
+        bodyColor: darkMode ? '#d1d5db' : '#374151',
+        borderColor: darkMode ? '#4c3e7c' : '#E5E7EB',
+        borderWidth: 1,
+        padding: 12,
+        callbacks: {
+          label: (context) => `${context.dataset.label}: $${context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: darkMode ? '#4a3f66' : '#e5e7eb',
+          drawBorder: false,
+        },
+        ticks: {
+          color: darkMode ? '#b8b3cc' : '#6b7280',
+          callback: (value) => `$${(value/1000)}k`,
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          color: darkMode ? '#b8b3cc' : '#6b7280',
+        },
+      },
+    },
+  };
 
-        <div className="p-4 sm:p-6 lg:p-8">
-          {/* Filter Section */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Select Race</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Office
-                </label>
-                <select
-                  value={selectedOffice}
-                  onChange={(e) => setSelectedOffice(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  disabled={loading}
-                >
-                  <option value="">Select Office</option>
-                  {offices.map((office) => (
-                    <option key={office.office_id} value={office.office_id}>
-                      {office.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Election Cycle
-                </label>
-                <select
-                  value={selectedCycle}
-                  onChange={(e) => setSelectedCycle(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  disabled={loading}
-                >
-                  <option value="">Select Cycle</option>
-                  {cycles.map((cycle) => (
-                    <option key={cycle.cycle_id} value={cycle.cycle_id}>
-                      {cycle.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+  return (
+    <div className={`flex min-h-screen ${darkMode ? 'bg-[#2a2347]' : 'bg-gray-100'}`}>
+      <Sidebar />
+      <main className="flex-1 overflow-auto">
+        <Header />
+        <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          
+          <div>
+            <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Visualizations</h1>
+            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Explore campaign finance data through interactive charts</p>
+          </div>
+
+          {/* Filter Card */}
+          <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-sm`}>
+            <div className="flex items-center gap-3 mb-5">
+              <SlidersHorizontal className={`w-5 h-5 ${darkMode ? 'text-purple-300' : 'text-[#7163BA]'}`} />
+              <h2 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Filter Visualizations</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+              {loading ? (
+                <>
+                  <div className={`w-full h-12 rounded-lg ${darkMode ? 'bg-[#4a3f66]/50' : 'bg-gray-200'} animate-pulse`}></div>
+                  <div className={`w-full h-12 rounded-lg ${darkMode ? 'bg-[#4a3f66]/50' : 'bg-gray-200'} animate-pulse`}></div>
+                </>
+              ) : (
+                <>
+                  <div className="relative">
+                    <label className={`absolute -top-2 left-3 px-1 text-xs font-medium ${darkMode ? 'bg-[#3d3559] text-gray-400' : 'bg-white text-gray-500'}`}>Office</label>
+                    <select
+                      value={selectedOffice}
+                      onChange={(e) => setSelectedOffice(e.target.value)}
+                      className={`w-full appearance-none px-4 py-3 border rounded-xl transition-colors ${darkMode ? 'bg-transparent text-white border-[#5f5482] focus:border-purple-400' : 'bg-white text-gray-900 border-gray-300 focus:border-[#7163BA]'} focus:outline-none focus:ring-0`}
+                      disabled={loading}
+                    >
+                      {offices.map((office) => (
+                        <option key={office.office_id} value={office.office_id} className={darkMode ? 'bg-[#3d3559]' : 'bg-white'}>
+                          {office.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className={`w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  </div>
+                  <div className="relative">
+                    <label className={`absolute -top-2 left-3 px-1 text-xs font-medium ${darkMode ? 'bg-[#3d3559] text-gray-400' : 'bg-white text-gray-500'}`}>Cycle</label>
+                    <select
+                      value={selectedCycle}
+                      onChange={(e) => setSelectedCycle(e.target.value)}
+                      className={`w-full appearance-none px-4 py-3 border rounded-xl transition-colors ${darkMode ? 'bg-transparent text-white border-[#5f5482] focus:border-purple-400' : 'bg-white text-gray-900 border-gray-300 focus:border-[#7163BA]'} focus:outline-none focus:ring-0`}
+                      disabled={loading}
+                    >
+                      {cycles.map((cycle) => (
+                        <option key={cycle.cycle_id} value={cycle.cycle_id} className={darkMode ? 'bg-[#3d3559]' : 'bg-white'}>
+                          {cycle.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className={`w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ChartSkeleton height="400px" />
-              <ChartSkeleton height="400px" />
-            </div>
-          ) : selectedOffice && selectedCycle ? (
-            <>
+          {(loading || (selectedOffice && selectedCycle)) ? (
+            <div className="space-y-8">
+              {/* Stat Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { title: "Total IE Spending", value: totalIE, icon: DollarSign, color: darkMode ? '#c084fc' : '#800080' },
+                  { title: "Total Support", value: totalSupport, icon: TrendingUp, color: darkMode ? '#4ade80' : '#16a34a' },
+                  { title: "Total Oppose", value: totalOppose, icon: TrendingDown, color: darkMode ? '#f87171' : '#ef4444' }
+                ].map((stat, idx) => (
+                  <div key={idx} className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 border shadow-sm`}>
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-xl" style={{ backgroundColor: `${stat.color}20`}}>
+                        <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
+                      </div>
+                      <div>
+                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>{stat.title}</p>
+                        {chartsLoading ? <div className={`h-8 w-32 mt-1 rounded-md ${darkMode ? 'bg-[#4a3f66]/50' : 'bg-gray-200'} animate-pulse`}></div> :
+                          <h3 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>${stat.value.toLocaleString('en-US', { minimumFractionDigits: 0 })}</h3>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               {/* Charts Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
                 {/* Bar Chart */}
-                <div className="bg-white rounded-2xl p-6 shadow-lg">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">
-                    Top 10 Candidates by IE Spending
-                  </h3>
-                  {chartsLoading ? (
-                    <ChartSkeleton height="300px" />
-                  ) : topCandidates.length > 0 ? (
-                    <div className="h-[300px]">
-                      <Bar
-                        data={barChartData}
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: {
-                            legend: { display: true, position: "top" },
-                            tooltip: {
-                              callbacks: {
-                                label: (context) =>
-                                  `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`,
-                              },
-                            },
-                          },
-                          scales: {
-                            y: {
-                              beginAtZero: true,
-                              ticks: {
-                                callback: (value) => `$${value.toLocaleString()}`,
-                              },
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-64 text-gray-500">
-                      No data available
-                    </div>
-                  )}
+                <div className={`xl:col-span-3 ${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 sm:p-8 border shadow-sm`}>
+                  <div className="flex items-center gap-3 mb-6">
+                    <BarChart3 className={`w-5 h-5 ${darkMode ? 'text-purple-300' : 'text-[#7163BA]'}`} />
+                    <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Top 10 Candidates by IE</h3>
+                  </div>
+                  {chartsLoading ? <ChartSkeleton className="h-[400px]" /> :
+                    topCandidates.length > 0 ? (
+                      <div className="h-[400px]">
+                        <Bar data={barChartData} options={chartOptions} />
+                      </div>
+                    ) : (
+                      <div className={`h-[400px] flex items-center justify-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No data available for this selection.</div>
+                    )
+                  }
                 </div>
 
                 {/* Money Flow Sankey */}
-                {chartsLoading ? (
-                  <ChartSkeleton height="400px" />
-                ) : (
-                  <MoneyFlowSankey
-                    officeId={selectedOffice}
-                    cycleId={selectedCycle}
-                    limit={20}
-                  />
-                )}
-              </div>
-
-              {/* Summary Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
-                  <p className="text-sm text-purple-700 font-medium mb-1">
-                    Total IE Spending
-                  </p>
-                  <p className="text-3xl font-bold text-purple-900">
-                    $
-                    {topCandidates
-                      .reduce(
-                        (sum, c) =>
-                          sum +
-                          parseFloat(c.ie_total_for || 0) +
-                          parseFloat(c.ie_total_against || 0),
-                        0
-                      )
-                      .toLocaleString()}
-                  </p>
-                </div>
-                
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
-                  <p className="text-sm text-green-700 font-medium mb-1">
-                    Support
-                  </p>
-                  <p className="text-3xl font-bold text-green-900">
-                    $
-                    {topCandidates
-                      .reduce((sum, c) => sum + parseFloat(c.ie_total_for || 0), 0)
-                      .toLocaleString()}
-                  </p>
-                </div>
-                
-                <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-6 border border-red-200">
-                  <p className="text-sm text-red-700 font-medium mb-1">
-                    Oppose
-                  </p>
-                  <p className="text-3xl font-bold text-red-900">
-                    $
-                    {topCandidates
-                      .reduce(
-                        (sum, c) => sum + parseFloat(c.ie_total_against || 0),
-                        0
-                      )
-                      .toLocaleString()}
-                  </p>
+                <div className={`xl:col-span-2 ${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 sm:p-8 border shadow-sm`}>
+                  <div className="flex items-center gap-3 mb-6">
+                    <GitMerge className={`w-5 h-5 ${darkMode ? 'text-purple-300' : 'text-[#7163BA]'}`} />
+                    <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Money Flow</h3>
+                  </div>
+                  {chartsLoading ? <ChartSkeleton className="h-[400px]" /> :
+                    <MoneyFlowSankey
+                      officeId={selectedOffice}
+                      cycleId={selectedCycle}
+                      limit={12}
+                      height="400px"
+                    />
+                  }
                 </div>
               </div>
-            </>
+            </div>
           ) : (
-            <div className="text-center py-12 text-gray-500">
-              Select an office and cycle to view visualizations
+            <div className={`text-center py-20 rounded-2xl ${darkMode ? 'bg-[#3d3559]' : 'bg-white'}`}>
+              <LayoutGrid className={`w-12 h-12 mx-auto mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+              <h3 className={`text-lg font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>Select an Office and Cycle</h3>
+              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Your visualizations will appear here.</p>
             </div>
           )}
         </div>

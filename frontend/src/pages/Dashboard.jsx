@@ -670,7 +670,7 @@ export default function Dashboard() {
             </div>
 
             {/* Recent Activity Table */}
-            <div className={`lg:col-span-2 ${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm`}>
+            <div className={`lg:col-span-2 ${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm flex flex-col`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Recent Activity</h3>
@@ -683,36 +683,39 @@ export default function Dashboard() {
               </div>
 
               {recentExpenditures.length > 0 ? (
-                <div className="overflow-hidden">
-                  <table className="w-full">
-                    <thead>
-                      <tr className={`border-b-2 ${darkMode ? 'border-[#4a3f66]' : 'border-gray-100'}`}>
-                        <th className={`text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                <div className="flex-1 overflow-x-auto -mx-8">
+                  <table className="min-w-full table-fixed">
+                    <thead className={`border-b ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
+                      <tr>
+                        <th scope="col" className={`w-5/12 px-8 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                           Committee
                         </th>
-                        <th className={`text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                        <th scope="col" className={`w-3/12 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                           Candidate
                         </th>
-                        <th className={`text-center py-3 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                        <th scope="col" className={`w-2/12 px-6 py-3 text-center text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                           Type
                         </th>
-                        <th className={`text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                        <th scope="col" className={`w-2/12 px-8 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                           Amount
                         </th>
                       </tr>
                     </thead>
-                    <tbody className={`divide-y ${darkMode ? 'divide-[#4a3f66]' : 'divide-gray-50'}`}>
+                    <tbody className={`divide-y ${darkMode ? 'divide-[#4a3f66]' : 'divide-gray-100'}`}>
                       {recentExpenditures.slice(0, 5).map((exp, idx) => (
-                        <tr key={idx} className={`transition-colors ${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-purple-50'}`}>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7163BA] to-[#332D54] flex items-center justify-center shadow-sm flex-shrink-0">
-                                <span className="text-white text-xs font-semibold">
+                        <tr key={idx} className={`transition-colors ${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-purple-50/50'}`}>
+                          <td className="px-8 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7163BA] to-[#332D54] flex items-center justify-center shadow-sm flex-shrink-0">
+                                <span className="text-white text-sm font-bold">
                                   {(exp.committee || 'U')[0]}
                                 </span>
                               </div>
                               <div className="min-w-0">
-                                <p className={`text-sm font-medium truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                <p 
+                                  className={`text-sm font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                                  title={exp.committee || 'Unknown Committee'}
+                                >
                                   {exp.committee || 'Unknown Committee'}
                                 </p>
                                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -721,23 +724,26 @@ export default function Dashboard() {
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 px-4">
-                            <p className={`text-sm truncate max-w-[150px] ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                             <p 
+                              className={`text-sm truncate ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}
+                              title={exp.candidate || 'N/A'}
+                            >
                               {exp.candidate || 'N/A'}
                             </p>
                           </td>
-                          <td className="py-4 px-4 text-center">
-                            <span className={`inline-flex px-3 py-1.5 rounded-full text-xs font-semibold ${
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold leading-5 ${
                               exp.is_for_benefit === true 
-                                ? darkMode ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
+                                ? darkMode ? 'bg-green-900/40 text-green-300' : 'bg-green-100 text-green-800'
                                 : exp.is_for_benefit === false
-                                ? darkMode ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800'
-                                : darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
+                                ? darkMode ? 'bg-red-900/40 text-red-300' : 'bg-red-100 text-red-800'
+                                : darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
                             }`}>
                               {exp.is_for_benefit === true ? 'Support' : exp.is_for_benefit === false ? 'Oppose' : 'N/A'}
                             </span>
                           </td>
-                          <td className="py-4 px-4 text-right">
+                          <td className="px-8 py-4 whitespace-nowrap text-right">
                             <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                               ${(exp.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </p>
@@ -748,7 +754,7 @@ export default function Dashboard() {
                   </table>
                 </div>
               ) : (
-                <div className={`h-64 flex items-center justify-center ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>
+                <div className={`flex-1 flex items-center justify-center ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>
                   <div className="text-center">
                     <FileText className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-300'}`} />
                     <p className={`font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>No recent expenditures</p>
