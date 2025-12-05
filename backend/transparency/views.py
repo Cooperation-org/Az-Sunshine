@@ -1140,12 +1140,14 @@ def donors_list(request):
         search_sql = "WHERE d.entity_name ILIKE %s"
         search_params = [f"%{search}%"]
 
-    # Query from materialized view ONLY - blazing fast!
-    # Removed slow JOINs with Names and EntityTypes tables
+    # Query from materialized view ONLY - blazing fast with complete data!
     sql = f"""
         SELECT
             d.entity_id,
             d.entity_name as full_name,
+            d.city,
+            d.state,
+            d.entity_type,
             ABS(d.total_contributed) as total_contribution,
             d.contribution_count as num_contributions
         FROM top_donors_mv d
@@ -1166,14 +1168,15 @@ def donors_list(request):
     # Transform to match frontend expectations
     result_data = []
     for row in results:
+        entity_type = {'name': row[4]} if row[4] else None
         result_data.append({
             'id': row[0],
             'name': row[1] or 'Unknown',
-            'city': None,  # Removed to improve speed
-            'state': None,  # Removed to improve speed
-            'entity_type': None,  # Removed to improve speed
-            'total_contribution': float(row[2]) if row[2] else 0.0,
-            'num_contributions': int(row[3]) if row[3] else 0,
+            'city': row[2],
+            'state': row[3],
+            'entity_type': entity_type,
+            'total_contribution': float(row[5]) if row[5] else 0.0,
+            'num_contributions': int(row[6]) if row[6] else 0,
             'linked_committees': 0,
             'ie_impact': 0.0,
         })
