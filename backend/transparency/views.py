@@ -1178,10 +1178,18 @@ def donors_list(request):
             'ie_impact': 0.0,
         })
 
+    # Get approximate count from materialized view (fast!)
+    with connection.cursor() as cursor:
+        if search:
+            cursor.execute("SELECT COUNT(*) FROM top_donors_mv WHERE entity_name ILIKE %s", [f"%{search}%"])
+        else:
+            cursor.execute("SELECT COUNT(*) FROM top_donors_mv")
+        total_count = cursor.fetchone()[0]
+
     # Build response
     response_data = {
         'results': result_data,
-        'count': None,  # Skip expensive count
+        'count': total_count,  # Fast count from materialized view
         'next': f'/api/v1/donors/?page={int(page_num) + 1}&page_size={page_size}' + (f'&search={search}' if search else '') if has_next else None,
         'previous': f'/api/v1/donors/?page={int(page_num) - 1}&page_size={page_size}' + (f'&search={search}' if search else '') if int(page_num) > 1 else None,
     }
@@ -1272,10 +1280,20 @@ def expenditures_list(request):
             'purpose': purpose
         })
 
+    # Get approximate count (fast query on indexed column)
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM "Transactions"
+            WHERE subject_committee_id IS NOT NULL
+              AND deleted = false
+        """)
+        total_count = cursor.fetchone()[0]
+
     # Build paginated response
     response_data = {
         'results': result_data,
-        'count': None,  # Skip expensive count
+        'count': total_count,  # Fast count with index
         'next': f'/api/v1/expenditures/?page={page_num + 1}&page_size={page_size}' if has_next else None,
         'previous': f'/api/v1/expenditures/?page={page_num - 1}&page_size={page_size}' if page_num > 1 else None,
     }
