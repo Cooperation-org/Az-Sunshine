@@ -117,15 +117,16 @@ def dashboard_charts_data_mv(request):
             """)
             benefit_rows = cursor.fetchall()
 
-            # Calculate percentages in Python
-            total_amount = sum(float(row[2]) for row in benefit_rows) if benefit_rows else 0
+            # Calculate percentages in Python - use ABS() for correct percentage calculation
+            total_amount = sum(abs(float(row[2])) for row in benefit_rows) if benefit_rows else 0
 
             for_benefit_data = {'total': 0.0, 'count': 0, 'percentage': 0.0}
             not_for_benefit_data = {'total': 0.0, 'count': 0, 'percentage': 0.0}
 
             for row in benefit_rows:
                 is_for_benefit, count, amount = row
-                percentage = (float(amount) / total_amount * 100) if total_amount > 0 else 0.0
+                abs_amount = abs(float(amount))
+                percentage = (abs_amount / total_amount * 100) if total_amount > 0 else 0.0
                 data = {
                     'total': float(amount),
                     'count': int(count),

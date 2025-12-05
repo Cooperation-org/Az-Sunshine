@@ -1140,19 +1140,15 @@ def donors_list(request):
         search_sql = "WHERE d.entity_name ILIKE %s"
         search_params = [f"%{search}%"]
 
-    # Query from materialized view + join for display fields
+    # Query from materialized view ONLY - blazing fast!
+    # Removed slow JOINs with Names and EntityTypes tables
     sql = f"""
         SELECT
             d.entity_id,
             d.entity_name as full_name,
-            n.city,
-            n.state,
-            et.name as entity_type_name,
             ABS(d.total_contributed) as total_contribution,
             d.contribution_count as num_contributions
         FROM top_donors_mv d
-        LEFT JOIN "Names" n ON d.entity_id = n.name_id
-        LEFT JOIN "EntityTypes" et ON n.entity_type_id = et.entity_type_id
         {search_sql}
         ORDER BY d.total_contributed DESC
         LIMIT %s OFFSET %s
@@ -1170,17 +1166,16 @@ def donors_list(request):
     # Transform to match frontend expectations
     result_data = []
     for row in results:
-        entity_type = {'name': row[4]} if row[4] else None
         result_data.append({
             'id': row[0],
             'name': row[1] or 'Unknown',
-            'city': row[2] if row[2] else None,
-            'state': row[3] if row[3] else None,
-            'entity_type': entity_type,
-            'total_contribution': float(row[5]) if row[5] else 0.0,
-            'num_contributions': int(row[6]) if row[6] else 0,
-            'linked_committees': 0,  # Not in MV, could add if needed
-            'ie_impact': 0.0,  # IE impact calculation disabled for performance
+            'city': None,  # Removed to improve speed
+            'state': None,  # Removed to improve speed
+            'entity_type': None,  # Removed to improve speed
+            'total_contribution': float(row[2]) if row[2] else 0.0,
+            'num_contributions': int(row[3]) if row[3] else 0,
+            'linked_committees': 0,
+            'ie_impact': 0.0,
         })
 
     # Build response
@@ -1201,7 +1196,101 @@ def donors_list(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def expenditures_list(request):
-    """Adapter endpoint: /api/expenditures/ -> maps to transactions with IE filter"""
+    """OPTIMIZED: Use raw SQL for fast independent expenditure listing"""
+    from django.core.cache import cache
+    from django.db import connection
+
+    # Get pagination params
+    page_num = int(request.query_params.get('page', 1))
+    page_size = int(request.query_params.get('page_size', 10))
+
+    # Build cache key
+    cache_key = f'expenditures_list_p{page_num}_s{page_size}'
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
+    # Calculate offset
+    offset = (page_num - 1) * page_size
+
+    # Optimized SQL query with minimal JOINs
+    sql = """
+        SELECT
+            t.transaction_id,
+            t.transaction_date,
+            t.amount,
+            t.is_for_benefit,
+            t.memo,
+            COALESCE(cn.first_name || ' ' || cn.last_name, cn.last_name, 'Unknown') as committee_name,
+            COALESCE(scn.first_name || ' ' || scn.last_name, scn.last_name, 'Unknown') as candidate_name
+        FROM "Transactions" t
+        LEFT JOIN "Committees" c ON t.committee_id = c.committee_id
+        LEFT JOIN "Names" cn ON c.name_id = cn.name_id
+        LEFT JOIN "Committees" sc ON t.subject_committee_id = sc.committee_id
+        LEFT JOIN "Names" scn ON sc.name_id = scn.name_id
+        WHERE t.subject_committee_id IS NOT NULL
+          AND t.deleted = false
+        ORDER BY t.transaction_date DESC NULLS LAST
+        LIMIT %s OFFSET %s
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [page_size + 1, offset])
+        rows = cursor.fetchall()
+
+    # Check if there are more results
+    has_next = len(rows) > page_size
+    results = rows[:page_size]
+
+    # Format results
+    result_data = []
+    for row in results:
+        transaction_id, transaction_date, amount, is_for_benefit, memo, committee_name, candidate_name = row
+
+        # Build purpose
+        if memo and memo.strip():
+            purpose = memo.strip()
+        else:
+            support_type = 'Support' if is_for_benefit else 'Oppose'
+            purpose = f"{support_type} {candidate_name}"
+
+        result_data.append({
+            'transaction_id': transaction_id,
+            'transaction_date': transaction_date.isoformat() if transaction_date else None,
+            'amount': float(amount) if amount else 0.0,
+            'is_for_benefit': is_for_benefit,
+            'committee': {
+                'name': {
+                    'full_name': committee_name
+                }
+            },
+            'subject_committee': {
+                'name': {
+                    'full_name': candidate_name
+                }
+            },
+            'purpose': purpose
+        })
+
+    # Build paginated response
+    response_data = {
+        'results': result_data,
+        'count': None,  # Skip expensive count
+        'next': f'/api/v1/expenditures/?page={page_num + 1}&page_size={page_size}' if has_next else None,
+        'previous': f'/api/v1/expenditures/?page={page_num - 1}&page_size={page_size}' if page_num > 1 else None,
+    }
+
+    # Cache for 5 minutes
+    cache.set(cache_key, response_data, timeout=300)
+
+    logger.info(f"✅ Expenditures loaded: {len(result_data)} (page {page_num})")
+    return Response(response_data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def expenditures_list_OLD_SLOW(request):
+    """OLD SLOW VERSION - kept for reference"""
     queryset = Transaction.objects.filter(
         subject_committee__isnull=False,
         transaction_type__income_expense_neutral=2,
@@ -1211,7 +1300,7 @@ def expenditures_list(request):
         'subject_committee', 'subject_committee__name',
         'entity', 'transaction_type'
     ).order_by('-transaction_date')
-    
+
     # Pagination
     paginator = LargeResultsSetPagination()
     page = paginator.paginate_queryset(queryset, request)
