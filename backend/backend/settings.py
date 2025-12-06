@@ -63,6 +63,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 MIDDLEWARE = [
+    "django.middleware.gzip.GZipMiddleware",  # 🚀 EXTREME SPEED: Compress responses 70-80%
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

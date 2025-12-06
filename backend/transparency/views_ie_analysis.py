@@ -26,19 +26,29 @@ from .models import (
 @permission_classes([AllowAny])
 def ie_spending_by_race(request):
     """
-    Phase 1 Req 2a: Aggregate IE spending by race
+    Phase 1 Req 2a: Aggregate IE spending by race + Zstd compression
     GET /api/v1/ie-analysis/by-race/?office_id=1&cycle_id=1
-    
+
     Returns IE spending for/against all candidates in a race
     """
+    from transparency.utils.compressed_cache import CompressedCache
+
     office_id = request.GET.get('office_id')
     cycle_id = request.GET.get('cycle_id')
-    
+
     if not office_id or not cycle_id:
         return Response(
             {'error': 'office_id and cycle_id are required'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    # Build cache key
+    cache_key = f'ie_spending_by_race_o{office_id}_c{cycle_id}'
+
+    # Try Zstd-compressed cache first (10 min TTL)
+    cached_data = CompressedCache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
     
     try:
         office = Office.objects.get(office_id=office_id)
@@ -102,8 +112,8 @@ def ie_spending_by_race(request):
     
     # Sort by total IE spending (descending)
     race_summary.sort(key=lambda x: x['ie_total'], reverse=True)
-    
-    return Response({
+
+    response_data = {
         'office': {
             'office_id': office.office_id,
             'name': office.name,
@@ -120,7 +130,12 @@ def ie_spending_by_race(request):
             'num_candidates': len(race_summary)
         },
         'candidates': race_summary
-    })
+    }
+
+    # Cache for 10 minutes with Zstd compression
+    CompressedCache.set(cache_key, response_data, timeout=600)
+
+    return Response(response_data)
 
 
 @api_view(['GET'])
@@ -222,14 +237,24 @@ def ie_donors_by_candidate(request):
 @permission_classes([AllowAny])
 def grassroots_threshold_analysis(request):
     """
-    Phase 1 Req 2d-2e: Grassroots threshold comparison
+    Phase 1 Req 2d-2e: Grassroots threshold comparison + Zstd compression
     GET /api/v1/ie-analysis/grassroots-threshold/?cycle_id=1&office_id=1&threshold=5000
-    
+
     Compares IE spending to grassroots threshold for all candidates
     """
-    cycle_id = request.GET.get('cycle_id')
-    office_id = request.GET.get('office_id')
+    from transparency.utils.compressed_cache import CompressedCache
+
+    cycle_id = request.GET.get('cycle_id', '')
+    office_id = request.GET.get('office_id', '')
     threshold = Decimal(request.GET.get('threshold', '5000'))
+
+    # Build cache key
+    cache_key = f'grassroots_threshold_c{cycle_id}_o{office_id}_t{threshold}'
+
+    # Try Zstd-compressed cache first (10 min TTL)
+    cached_data = CompressedCache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
     
     filters = Q(candidate__isnull=False)
     
@@ -281,14 +306,19 @@ def grassroots_threshold_analysis(request):
     
     # Sort by IE total (descending)
     results.sort(key=lambda x: x['ie_total'], reverse=True)
-    
-    return Response({
+
+    response_data = {
         'threshold': float(threshold),
         'total_candidates': len(results),
         'over_threshold_count': over_threshold_count,
         'under_threshold_count': len(results) - over_threshold_count,
         'candidates': results
-    })
+    }
+
+    # Cache for 10 minutes with Zstd compression
+    CompressedCache.set(cache_key, response_data, timeout=600)
+
+    return Response(response_data)
 
 
 @api_view(['GET'])
@@ -467,19 +497,29 @@ def donor_ie_impact_analysis(request):
 @permission_classes([AllowAny])
 def top_candidates_by_ie(request):
     """
-    Phase 1 Visualization: Top candidates by IE spending
+    Phase 1 Visualization: Top candidates by IE spending + Zstd compression
     GET /api/v1/ie-analysis/top-candidates/
-    
+
     Query params:
     - office_id: Filter by office (optional)
     - cycle_id: Filter by cycle (optional)
     - limit: Number of candidates to return (default 20)
-    
+
     Returns top candidates sorted by total IE spending (for + against)
     """
-    office_id = request.GET.get('office_id')
-    cycle_id = request.GET.get('cycle_id')
+    from transparency.utils.compressed_cache import CompressedCache
+
+    office_id = request.GET.get('office_id', '')
+    cycle_id = request.GET.get('cycle_id', '')
     limit = int(request.GET.get('limit', 20))
+
+    # Build cache key
+    cache_key = f'top_candidates_by_ie_o{office_id}_c{cycle_id}_l{limit}'
+
+    # Try Zstd-compressed cache first (10 min TTL)
+    cached_data = CompressedCache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
     
     # Base queryset - candidate committees only
     committees = Committee.objects.filter(
@@ -543,8 +583,8 @@ def top_candidates_by_ie(request):
     # Sort by total IE spending (descending) and limit
     candidates_data.sort(key=lambda x: x['ie_total'], reverse=True)
     top_candidates = candidates_data[:limit]
-    
-    return Response({
+
+    response_data = {
         'summary': {
             'total_ie_for': float(total_ie_for),
             'total_ie_against': float(total_ie_against),
@@ -553,7 +593,12 @@ def top_candidates_by_ie(request):
             'total_candidates_with_ie': len(candidates_data)
         },
         'candidates': top_candidates
-    })
+    }
+
+    # Cache for 10 minutes with Zstd compression
+    CompressedCache.set(cache_key, response_data, timeout=600)
+
+    return Response(response_data)
     
 
 @api_view(['GET'])

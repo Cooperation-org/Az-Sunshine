@@ -31,51 +31,38 @@ export default function Dashboard() {
 
   async function loadDashboard() {
     setLoading(true);
-    await Promise.all([
-      loadSummary(),
-      loadChartsData(),
-      loadRecentExpenditures()
-    ]);
-    setLoading(false);
-  }
-
-  async function loadSummary() {
     try {
-      const data = await api.get('dashboard/summary-optimized/');
+      // 🚀 EXTREME MODE: Single unified request for everything!
+      const response = await api.get('dashboard/extreme/');
+      const data = response.data;
+
+      console.log("🔥 EXTREME: Dashboard loaded in single request:", data.metadata);
+
+      // Parse summary
       setMetrics({
-        total_expenditures: parseFloat(data.data.total_ie_spending || 0),
-        num_candidates: data.data.candidate_committees || 0,
-        num_expenditures: data.data.num_expenditures || 0,
-        soi_stats: data.data.soi_tracking || {}
+        total_expenditures: parseFloat(data.summary.total_ie_spending || 0),
+        num_candidates: data.summary.candidate_committees || 0,
+        num_expenditures: data.summary.num_expenditures || 0,
+        soi_stats: data.summary.soi_tracking || {}
       });
-    } catch (error) {
-      console.error("Error loading summary:", error);
-    }
-  }
 
-  async function loadChartsData() {
-    try {
-      const data = await api.get('dashboard/charts-data/');
-      console.log("Charts data received:", data.data);
-      setChartsData(data.data);
-    } catch (error) {
-      console.error("Error loading charts:", error);
-    }
-  }
+      // Parse charts
+      setChartsData(data.charts);
 
-  async function loadRecentExpenditures() {
-    try {
-      const data = await api.get('dashboard/recent-expenditures/');
-      setRecentExpenditures(data.data.results || []);
+      // Parse recent expenditures
+      setRecentExpenditures(data.recent_expenditures || []);
+
     } catch (error) {
-      console.error("Error loading expenditures:", error);
+      console.error("Error loading dashboard:", error);
+    } finally {
+      setLoading(false);
     }
   }
 
   async function handleRefresh() {
     setRefreshing(true);
     try {
-      await api.post('dashboard/refresh-mv/');
+      await api.post('dashboard/refresh-extreme/');
       await loadDashboard();
     } catch (error) {
       console.error("Error refreshing:", error);

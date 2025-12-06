@@ -17,7 +17,16 @@ logger = logging.getLogger(__name__)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def soi_dashboard_stats(request):
-    """Get SOI dashboard statistics"""
+    """Get SOI dashboard statistics + Zstd compression"""
+    from transparency.utils.compressed_cache import CompressedCache
+
+    cache_key = 'soi_dashboard_stats_v1'
+
+    # Try Zstd-compressed cache first (5 min TTL)
+    cached_data = CompressedCache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
     try:
         stats = CandidateStatementOfInterest.objects.aggregate(
             total=Count('id'),
@@ -26,15 +35,20 @@ def soi_dashboard_stats(request):
             acknowledged=Count('id', filter=Q(contact_status='acknowledged')),
             pledged=Count('id', filter=Q(pledge_received=True))
         )
-        
-        return Response({
+
+        response_data = {
             'total_candidates': stats['total'],
             'uncontacted': stats['uncontacted'],
             'contacted': stats['contacted'],
             'acknowledged': stats['acknowledged'],
             'pledged': stats['pledged'],
             'pending_pledge': stats['contacted'] - stats['pledged']
-        })
+        }
+
+        # Cache for 5 minutes with Zstd compression
+        CompressedCache.set(cache_key, response_data, timeout=300)
+
+        return Response(response_data)
         
     except Exception as e:
         logger.error(f"Error fetching SOI stats: {e}")
@@ -50,53 +64,67 @@ def soi_dashboard_stats(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def soi_candidates_list(request):
-    """Get SOI candidates list with filtering and pagination"""
+    """Get SOI candidates list with filtering and pagination + Zstd compression"""
+    from transparency.utils.compressed_cache import CompressedCache
+
+    # Build cache key from request parameters
+    status_filter = request.GET.get('status', '')
+    office_id = request.GET.get('office', '')
+    pledge_filter = request.GET.get('pledge_received', '')
+    search_term = request.GET.get('search', '')
+    page_size = int(request.GET.get('page_size', 20))
+    page = int(request.GET.get('page', 1))
+
+    cache_key = f'soi_candidates_list_st{status_filter}_o{office_id}_pf{pledge_filter}_s{search_term}_pg{page}_ps{page_size}'
+
+    # Try Zstd-compressed cache first (5 min TTL)
+    cached_data = CompressedCache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
     try:
         queryset = CandidateStatementOfInterest.objects.select_related('office').all()
-        
+
         # Apply filters
-        status_filter = request.GET.get('status')
         if status_filter:
             queryset = queryset.filter(contact_status=status_filter)
-        
-        office_id = request.GET.get('office')
+
         if office_id:
             queryset = queryset.filter(office_id=office_id)
-        
-        pledge_filter = request.GET.get('pledge_received')
-        if pledge_filter is not None:
+
+        if pledge_filter:
             queryset = queryset.filter(pledge_received=pledge_filter.lower() == 'true')
-        
-        search_term = request.GET.get('search')
+
         if search_term:
             queryset = queryset.filter(
                 Q(candidate_name__icontains=search_term) |
                 Q(email__icontains=search_term) |
                 Q(office__name__icontains=search_term)
             )
-        
+
         # Order by filing date (newest first)
         queryset = queryset.order_by('-filing_date')
-        
-        # Pagination
-        page_size = int(request.GET.get('page_size', 20))
-        page = int(request.GET.get('page', 1))
-        
+
         start_idx = (page - 1) * page_size
         end_idx = start_idx + page_size
-        
+
         total_count = queryset.count()
         candidates = queryset[start_idx:end_idx]
-        
+
         serializer = CandidateSOISerializer(candidates, many=True)
-        
-        return Response({
+
+        response_data = {
             'results': serializer.data,
             'count': total_count,
             'page': page,
             'page_size': page_size,
             'total_pages': (total_count + page_size - 1) // page_size
-        })
+        }
+
+        # Cache for 5 minutes with Zstd compression
+        CompressedCache.set(cache_key, response_data, timeout=300)
+
+        return Response(response_data)
         
     except Exception as e:
         logger.error(f"Error fetching SOI candidates: {e}")

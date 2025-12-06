@@ -96,7 +96,28 @@ export default function Donors() {
               <div className="mb-4 sm:mb-6 flex justify-end">
                 <div className="h-10 w-32 rounded-lg animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]"></div>
               </div>
-              <TableSkeleton rows={8} columns={5} />
+              <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg overflow-hidden`}>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className={`${darkMode ? 'bg-[#4a3f66]' : 'bg-gray-50'} border-b ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
+                      <tr>
+                        <th className={`text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider whitespace-nowrap`}>
+                          Donor/Entity Name
+                        </th>
+                        <th className={`text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider whitespace-nowrap`}>
+                          Entity Type
+                        </th>
+                        <th className={`text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider whitespace-nowrap`}>
+                          Location
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${darkMode ? 'divide-[#4a3f66]' : 'divide-gray-200'}`}>
+                      <TableSkeleton rows={8} cols={3} />
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </>
           ) : (
             <>

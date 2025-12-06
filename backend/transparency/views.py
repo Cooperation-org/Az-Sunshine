@@ -1034,21 +1034,33 @@ def donors_top(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def candidates_list(request):
-    """Adapter endpoint: /api/candidates/ -> maps to committees with candidates"""
+    """Adapter endpoint: /api/candidates/ -> maps to committees with candidates + Zstd compression"""
+    from transparency.utils.compressed_cache import CompressedCache
+
+    # Build cache key from request parameters
+    page_num = request.query_params.get('page', 1)
+    page_size = request.query_params.get('page_size', 100)
+    office_id = request.query_params.get('office', '')
+    party_id = request.query_params.get('party', '')
+    cycle_id = request.query_params.get('cycle', '')
+    cache_key = f'candidates_list_p{page_num}_s{page_size}_o{office_id}_pt{party_id}_c{cycle_id}'
+
+    # Try to get from Zstd-compressed cache (10 minute cache)
+    cached_data = CompressedCache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
     queryset = Committee.objects.filter(candidate__isnull=False).select_related(
         'name', 'candidate', 'candidate_party', 'candidate_office', 'election_cycle'
     )
-    
+
     # Apply filters
-    office_id = request.query_params.get('office', None)
     if office_id:
         queryset = queryset.filter(candidate_office_id=office_id)
-    
-    party_id = request.query_params.get('party', None)
+
     if party_id:
         queryset = queryset.filter(candidate_party_id=party_id)
-    
-    cycle_id = request.query_params.get('cycle', None)
+
     if cycle_id:
         queryset = queryset.filter(election_cycle_id=cycle_id)
     
@@ -1105,18 +1117,35 @@ def candidates_list(request):
             'ie_total_for': float(committee.ie_total_for or 0),
             'ie_total_against': float(committee.ie_total_against or 0),
         })
-    
+
+    # Build response data
+    if page is not None:
+        response_data = {
+            'results': result_data,
+            'count': queryset.count(),
+            'next': None,  # Will be added by paginator
+            'previous': None  # Will be added by paginator
+        }
+    else:
+        response_data = {
+            'results': result_data,
+            'count': len(result_data)
+        }
+
+    # Cache for 10 minutes with Zstd compression
+    CompressedCache.set(cache_key, response_data, timeout=600)
+
     if page is not None:
         return paginator.get_paginated_response(result_data)
-    
-    return Response({'results': result_data, 'count': len(result_data)})
+
+    return Response(response_data)
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def donors_list(request):
-    """OPTIMIZED: Use top_donors_mv materialized view for instant donor list"""
-    from django.core.cache import cache
+    """OPTIMIZED: Use top_donors_mv materialized view + Zstd compression"""
+    from transparency.utils.compressed_cache import CompressedCache
 
     # Build cache key from request parameters
     page_num = request.query_params.get('page', 1)
@@ -1124,8 +1153,8 @@ def donors_list(request):
     search = request.query_params.get('search', '')
     cache_key = f'donors_list_mv_p{page_num}_s{page_size}_q{search}'
 
-    # Try to get from cache (10 minute cache)
-    cached_data = cache.get(cache_key)
+    # Try to get from Zstd-compressed cache (10 minute cache)
+    cached_data = CompressedCache.get(cache_key)
     if cached_data:
         return Response(cached_data)
 
@@ -1197,8 +1226,8 @@ def donors_list(request):
         'previous': f'/api/v1/donors/?page={int(page_num) - 1}&page_size={page_size}' + (f'&search={search}' if search else '') if int(page_num) > 1 else None,
     }
 
-    # Cache for 10 minutes
-    cache.set(cache_key, response_data, timeout=600)
+    # Cache with Zstd compression for 10 minutes
+    CompressedCache.set(cache_key, response_data, timeout=600)
 
     logger.info(f"✅ Donors list loaded from MV: {len(result_data)} donors (page {page_num})")
     return Response(response_data)
@@ -1207,8 +1236,8 @@ def donors_list(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def expenditures_list(request):
-    """OPTIMIZED: Use raw SQL for fast independent expenditure listing"""
-    from django.core.cache import cache
+    """OPTIMIZED: Use raw SQL + Zstd compression for fast independent expenditure listing"""
+    from transparency.utils.compressed_cache import CompressedCache
     from django.db import connection
 
     # Get pagination params
@@ -1217,7 +1246,7 @@ def expenditures_list(request):
 
     # Build cache key
     cache_key = f'expenditures_list_p{page_num}_s{page_size}'
-    cached_data = cache.get(cache_key)
+    cached_data = CompressedCache.get(cache_key)
     if cached_data:
         return Response(cached_data)
 
@@ -1301,8 +1330,8 @@ def expenditures_list(request):
         'previous': f'/api/v1/expenditures/?page={page_num - 1}&page_size={page_size}' if page_num > 1 else None,
     }
 
-    # Cache for 5 minutes
-    cache.set(cache_key, response_data, timeout=300)
+    # Cache for 5 minutes with Zstd compression
+    CompressedCache.set(cache_key, response_data, timeout=300)
 
     logger.info(f"✅ Expenditures loaded: {len(result_data)} (page {page_num})")
     return Response(response_data)

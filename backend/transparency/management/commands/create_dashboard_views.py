@@ -68,22 +68,26 @@ class Command(BaseCommand):
                 self.stdout.write('Creating top_donors_mv...')
                 cursor.execute("""
                     DROP MATERIALIZED VIEW IF EXISTS top_donors_mv CASCADE;
-                    
+
                     CREATE MATERIALIZED VIEW top_donors_mv AS
-                    SELECT 
+                    SELECT
                         e.name_id as entity_id,
                         COALESCE(e.last_name || ', ' || e.first_name, e.last_name, 'Unknown') as entity_name,
+                        e.city,
+                        e.state,
+                        et.name as entity_type,
                         COALESCE(SUM(t.amount), 0) as total_contributed,
                         COUNT(t.transaction_id) as contribution_count
                     FROM "Names" e
                     LEFT JOIN "Transactions" t ON e.name_id = t.entity_id
                     LEFT JOIN "TransactionTypes" tt ON t.transaction_type_id = tt.transaction_type_id
+                    LEFT JOIN "EntityTypes" et ON e.entity_type_id = et.entity_type_id
                     WHERE tt.income_expense_neutral = 1  -- Contributions only
                         AND t.deleted = false
-                    GROUP BY e.name_id, e.last_name, e.first_name
+                    GROUP BY e.name_id, e.last_name, e.first_name, e.city, e.state, et.name
                     HAVING COUNT(t.transaction_id) > 0
                     ORDER BY total_contributed DESC;
-                    
+
                     CREATE UNIQUE INDEX idx_top_donors_unique ON top_donors_mv(entity_id);
                 """)
                 self.stdout.write(self.style.SUCCESS('  ✅ top_donors_mv created'))
