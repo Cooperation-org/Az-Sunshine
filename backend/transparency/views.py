@@ -694,13 +694,13 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet):
 @permission_classes([AllowAny])
 def race_ie_spending(request):
     """Phase 1 Requirement: Aggregate by race"""
-    office_id = request.GET.get('office')
-    cycle_id = request.GET.get('cycle')
-    party_id = request.GET.get('party', None)
-    
+    office_id = request.GET.get('office_id')
+    cycle_id = request.GET.get('cycle_id')
+    party_id = request.GET.get('party_id', None)
+
     if not office_id or not cycle_id:
         return Response(
-            {'error': 'office and cycle parameters are required'},
+            {'error': 'office_id and cycle_id parameters are required'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
@@ -728,13 +728,13 @@ def race_ie_spending(request):
 @permission_classes([AllowAny])
 def race_top_donors(request):
     """Phase 1 Requirement: Top IE donors by race"""
-    office_id = request.GET.get('office')
-    cycle_id = request.GET.get('cycle')
+    office_id = request.GET.get('office_id')
+    cycle_id = request.GET.get('cycle_id')
     limit = int(request.GET.get('limit', 20))
-    
+
     if not office_id or not cycle_id:
         return Response(
-            {'error': 'office and cycle parameters are required'},
+            {'error': 'office_id and cycle_id parameters are required'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
@@ -753,6 +753,86 @@ def race_top_donors(request):
         'office': office.name,
         'cycle': cycle.name,
         'top_donors': list(top_donors)
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def committees_top_by_ie(request):
+    """
+    Get top committees ranked by total IE spending
+    Used by Visualizations page for top candidates chart
+    """
+    office_id = request.GET.get('office_id')
+    cycle_id = request.GET.get('cycle_id')
+    limit = int(request.GET.get('limit', 10))
+
+    if not office_id or not cycle_id:
+        return Response(
+            {'error': 'office_id and cycle_id parameters are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        office = Office.objects.get(office_id=office_id)
+        cycle = Cycle.objects.get(cycle_id=cycle_id)
+    except (Office.DoesNotExist, Cycle.DoesNotExist):
+        return Response(
+            {'error': 'Invalid office or cycle ID'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Get IE spending aggregated by candidate
+    race_spending = RaceAggregationManager.get_race_ie_spending(office, cycle, None)
+
+    # Sort by total IE and limit results
+    sorted_candidates = sorted(
+        race_spending,
+        key=lambda x: abs(float(x.get('total_ie', 0))),
+        reverse=True
+    )[:limit]
+
+    return Response({
+        'results': sorted_candidates,
+        'count': len(sorted_candidates)
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def races_money_flow(request):
+    """
+    Get money flow data for Sankey diagram
+    Combines donor -> IE committee -> candidate flows
+    """
+    office_id = request.GET.get('office_id')
+    cycle_id = request.GET.get('cycle_id')
+    limit = int(request.GET.get('limit', 12))
+
+    if not office_id or not cycle_id:
+        return Response(
+            {'error': 'office_id and cycle_id parameters are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        office = Office.objects.get(office_id=office_id)
+        cycle = Cycle.objects.get(cycle_id=cycle_id)
+    except (Office.DoesNotExist, Cycle.DoesNotExist):
+        return Response(
+            {'error': 'Invalid office or cycle ID'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Get candidates and their IE spending
+    candidates_data = RaceAggregationManager.get_race_ie_spending(office, cycle, None)
+
+    # Get top donors to IE committees
+    donors_data = RaceAggregationManager.get_top_ie_donors_by_race(office, cycle, limit)
+
+    return Response({
+        'candidates': list(candidates_data),
+        'top_donors': list(donors_data)
     })
 
 

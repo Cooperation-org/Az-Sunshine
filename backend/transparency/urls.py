@@ -26,6 +26,10 @@ urlpatterns = [
     # === RACE ANALYSIS ===
     path('races/ie-spending/', race_ie_spending, name='race-ie-spending'),
     path('races/top-donors/', race_top_donors, name='race-top-donors'),
+    path('races/money-flow/', races_money_flow, name='races-money-flow'),
+
+    # === VISUALIZATIONS ===
+    path('committees/top_by_ie/', committees_top_by_ie, name='committees-top-by-ie'),
     
     # === EMAIL CAMPAIGN ENDPOINTS (Phase 1 Requirement 1b) ===
     path('email/statistics/', email_statistics, name='email-statistics'),

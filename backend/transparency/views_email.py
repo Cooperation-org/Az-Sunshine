@@ -7,6 +7,7 @@ Complete implementation with real email sending and tracking
 from django.utils import timezone
 from django.shortcuts import redirect
 from django.http import HttpResponse
+from django.db import models
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response

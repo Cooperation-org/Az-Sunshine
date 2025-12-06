@@ -23,6 +23,8 @@ export default function Dashboard() {
   const [chartsData, setChartsData] = useState(null);
   const [recentExpenditures, setRecentExpenditures] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [metricsLoaded, setMetricsLoaded] = useState(false);
+  const [chartsLoaded, setChartsLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -30,32 +32,40 @@ export default function Dashboard() {
   }, []);
 
   async function loadDashboard() {
-    setLoading(true);
+    // Progressive loading: Show UI skeleton immediately
+    setLoading(false);
+    setMetricsLoaded(false);
+    setChartsLoaded(false);
+
     try {
+      const startTime = performance.now();
+
       // 🚀 EXTREME MODE: Single unified request for everything!
       const response = await api.get('dashboard/extreme/');
       const data = response.data;
 
-      console.log("🔥 EXTREME: Dashboard loaded in single request:", data.metadata);
+      const loadTime = ((performance.now() - startTime) / 1000).toFixed(2);
+      console.log(`🔥 EXTREME: Dashboard loaded in ${loadTime}s:`, data.metadata);
 
-      // Parse summary
+      // Parse summary (show metrics first - most important)
       setMetrics({
         total_expenditures: parseFloat(data.summary.total_ie_spending || 0),
         num_candidates: data.summary.candidate_committees || 0,
         num_expenditures: data.summary.num_expenditures || 0,
         soi_stats: data.summary.soi_tracking || {}
       });
+      setMetricsLoaded(true);
 
-      // Parse charts
+      // Parse charts (show charts after metrics)
       setChartsData(data.charts);
+      setChartsLoaded(true);
 
       // Parse recent expenditures
       setRecentExpenditures(data.recent_expenditures || []);
 
     } catch (error) {
       console.error("Error loading dashboard:", error);
-    } finally {
-      setLoading(false);
+      setLoading(true); // Show error state
     }
   }
 
@@ -454,19 +464,7 @@ export default function Dashboard() {
     ]
   };
 
-  if (loading) {
-    return (
-      <div className={`flex h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <RefreshCw className={`w-12 h-12 ${darkMode ? 'text-white' : 'text-[#7163BA]'} animate-spin mx-auto mb-4`} />
-            <p className={darkMode ? 'text-white' : 'text-gray-600'}>Loading dashboard...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Removed full-screen loading spinner - now using progressive loading with skeleton UI
 
   return (
     <div className={`flex h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
@@ -524,7 +522,11 @@ export default function Dashboard() {
                   
                   <div>
                     <p className={`text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>{stat.title}</p>
-                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{stat.value}</h3>
+                    {!metricsLoaded ? (
+                      <div className={`h-8 w-32 mb-2 rounded-md ${darkMode ? 'bg-[#4a3f66]' : 'bg-gray-200'} animate-pulse`}></div>
+                    ) : (
+                      <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{stat.value}</h3>
+                    )}
                     <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{stat.subtitle}</p>
                   </div>
                   
@@ -551,10 +553,12 @@ export default function Dashboard() {
                 </button>
               </div>
               
-              {chartsData?.top_donors && chartsData.top_donors.length > 0 ? (
+              {!chartsLoaded ? (
+                <div className={`h-80 rounded-xl ${darkMode ? 'bg-[#4a3f66]' : 'bg-gray-200'} animate-pulse`}></div>
+              ) : chartsData?.top_donors && chartsData.top_donors.length > 0 ? (
                 <div className="h-80">
-                  <ReactECharts 
-                    option={topDonorsOption} 
+                  <ReactECharts
+                    option={topDonorsOption}
                     style={{ height: '100%', width: '100%' }}
                     opts={{ renderer: 'canvas' }}
                   />
@@ -598,7 +602,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Bottom Row - Doughnut & Recent Activity */}
+          {/* Bottom Row - Doughnut & Latest Expenditures */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* IE Benefit Breakdown - Doughnut */}
             <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm`}>
@@ -612,8 +616,8 @@ export default function Dashboard() {
               {chartsData?.is_for_benefit_breakdown &&
                chartsData.is_for_benefit_breakdown.for_benefit &&
                chartsData.is_for_benefit_breakdown.not_for_benefit &&
-               (chartsData.is_for_benefit_breakdown.for_benefit.total > 0 ||
-                chartsData.is_for_benefit_breakdown.not_for_benefit.total > 0) ? (
+               (Math.abs(chartsData.is_for_benefit_breakdown.for_benefit.total) > 0 ||
+                Math.abs(chartsData.is_for_benefit_breakdown.not_for_benefit.total) > 0) ? (
                 <>
                   <div className="h-64 flex items-center justify-center">
                     <ReactECharts 
@@ -656,17 +660,13 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Recent Activity Table */}
+            {/* Recent Expenditures Table */}
             <div className={`lg:col-span-2 ${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm flex flex-col`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Recent Activity</h3>
-                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Latest independent expenditures</p>
+                  <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Latest Expenditures</h3>
+                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Most recent independent expenditures in database</p>
                 </div>
-                <button className={`flex items-center gap-2 text-sm font-medium transition-colors ${darkMode ? 'text-purple-300 hover:text-purple-200' : 'text-[#7163BA] hover:text-[#332D54]'}`}>
-                  <Calendar className="w-4 h-4" />
-                  Last 30 days
-                </button>
               </div>
 
               {recentExpenditures.length > 0 ? (

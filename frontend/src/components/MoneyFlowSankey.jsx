@@ -9,19 +9,24 @@ const CustomNode = (props) => {
   const { x, y, width, height, index, payload, containerWidth } = props;
   const { darkMode } = useDarkMode();
   const isOut = x + width + 6 > containerWidth;
+
+  // Brand colors: Purple gradient (#6B5B95 to #4C3D7D)
+  const nodeColor = darkMode ? '#8b7cb8' : '#6B5B95';
+
   return (
     <g>
-      <Rectangle {...props} fill={darkMode ? '#a99eda' : '#7163BA'} fillOpacity="1"/>
+      <Rectangle {...props} fill={nodeColor} fillOpacity="1"/>
       <text
         textAnchor={isOut ? "end" : "start"}
         x={isOut ? x - 6 : x + width + 6}
         y={y + height / 2}
-        fontSize="12"
-        fill={darkMode ? '#d1d5db' : '#374151'}
-        stroke={darkMode ? '#2a2347' : '#f3f4f6'}
-        strokeWidth={2}
+        fontSize="13"
+        fontWeight="600"
+        fill={darkMode ? '#ffffff' : '#1f2937'}
+        stroke={darkMode ? '#3d3559' : '#ffffff'}
+        strokeWidth={3}
         strokeLinejoin="round"
-        strokeOpacity={0.8}
+        paintOrder="stroke"
       >
         {payload.name}
       </text>
@@ -45,7 +50,7 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
     setLoading(true);
     setError(null);
     try {
-      const flowData = await getMoneyFlow({ office: officeId, cycle: cycleId, limit });
+      const flowData = await getMoneyFlow({ office_id: officeId, cycle_id: cycleId, limit });
       const sankeyData = transformToSankeyData(flowData);
       setData(sankeyData);
     } catch (err) {
@@ -74,32 +79,45 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
 
     if (flowData.top_donors?.length > 0) {
       const committeeIndex = getNodeIndex("IE Committees", "committee");
+
+      // Add donor -> IE Committee links
       flowData.top_donors.forEach((donor) => {
-        const donorName = donor.entity_name || `${donor.entity__first_name || ''} ${donor.entity__last_name || ''}`.trim() || 'Unknown Donor';
+        const donorName = `${donor.entity__first_name || ''} ${donor.entity__last_name || ''}`.trim() || 'Unknown Donor';
         const donorIndex = getNodeIndex(donorName, "donor");
         links.push({
           source: donorIndex,
           target: committeeIndex,
-          value: parseFloat(donor.total_contributed || 0)
+          value: Math.abs(parseFloat(donor.total_contributed || 0))
         });
       });
 
+      // Add IE Committee -> Candidate links (aggregated by candidate)
       if (flowData.candidates?.length > 0) {
+        const candidateMap = new Map();
+
         flowData.candidates.forEach((candidate) => {
-          const candidateName = candidate.candidate_name || 'Unknown Candidate';
-          const candidateIndex = getNodeIndex(candidateName, "candidate");
-          const ieAmount = parseFloat(candidate.total_ie || 0);
-          if (ieAmount > 0) {
+          const candidateName = `${candidate.subject_committee__name__first_name || ''} ${candidate.subject_committee__name__last_name || ''}`.trim() || 'Unknown Candidate';
+          const ieAmount = Math.abs(parseFloat(candidate.total_ie || 0));
+
+          if (!candidateMap.has(candidateName)) {
+            candidateMap.set(candidateName, 0);
+          }
+          candidateMap.set(candidateName, candidateMap.get(candidateName) + ieAmount);
+        });
+
+        candidateMap.forEach((totalAmount, candidateName) => {
+          if (totalAmount > 0) {
+            const candidateIndex = getNodeIndex(candidateName, "candidate");
             links.push({
               source: committeeIndex,
               target: candidateIndex,
-              value: ieAmount
+              value: totalAmount
             });
           }
         });
       }
     }
-    
+
     return { nodes, links };
   }
 
@@ -128,9 +146,12 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
     );
   }
 
+  // Convert height string to number (e.g., "400px" -> 400)
+  const numericHeight = typeof height === 'string' ? parseInt(height) : height;
+
   return (
-    <div style={{ width: '100%', height }}>
-      <ResponsiveContainer width="100%" height="100%">
+    <div style={{ width: '100%', height: numericHeight }}>
+      <ResponsiveContainer width="100%" height={numericHeight}>
         <Sankey
           data={data}
           nodeWidth={10}
@@ -139,34 +160,35 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
           iterations={32}
           node={<CustomNode />}
           link={{
-            stroke: darkMode ? '#8b7cb8' : '#a78bfa',
-            strokeOpacity: darkMode ? 0.4 : 0.3,
+            stroke: darkMode ? '#8b7cb8' : '#7163BA',
+            strokeOpacity: darkMode ? 0.3 : 0.2,
           }}
         >
           <Tooltip
             cursor={{ fill: darkMode ? 'rgba(139, 124, 184, 0.2)' : 'rgba(113, 99, 186, 0.1)' }}
             content={({ active, payload }) => {
               if (!active || !payload || !payload[0]) return null;
-              
+
               const item = payload[0].payload;
-              const isLink = item.sourceLinks && item.targetLinks;
-              
+              // Check if this is a node (has sourceLinks/targetLinks) or a link (has source/target)
+              const isNode = item.sourceLinks && item.targetLinks;
+
               return (
                 <div className={`p-3 rounded-lg shadow-xl border ${darkMode ? 'bg-[#332D54] border-[#4c3e7c]' : 'bg-white/95 backdrop-blur-sm border-gray-200'}`}>
-                  {isLink ? (
+                  {isNode ? (
                     <>
                       <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{item.name}</p>
                       <p className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-                        Total Flow: ${item.value.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                        Total Flow: ${(item.value || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}
                       </p>
                     </>
                   ) : (
                     <>
                        <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {item.source.name} → {item.target.name}
+                        {item.source?.name} → {item.target?.name}
                       </p>
                       <p className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-                        ${item.value.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                        ${(item.value || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}
                       </p>
                     </>
                   )}

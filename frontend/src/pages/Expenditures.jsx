@@ -81,7 +81,13 @@ export default function Expenditures() {
               <div className="mb-4 sm:mb-6 flex justify-end">
                 <div className="h-10 w-32 rounded-lg animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]"></div>
               </div>
-              <TableSkeleton rows={10} columns={6} />
+              <div className={`overflow-x-auto shadow-lg rounded-2xl ${darkMode ? 'bg-[#3d3559]' : 'bg-white'}`}>
+                <table className="min-w-full divide-y divide-gray-200">
+                  <tbody>
+                    <TableSkeleton rows={10} columns={6} />
+                  </tbody>
+                </table>
+              </div>
             </>
           ) : (
             <>

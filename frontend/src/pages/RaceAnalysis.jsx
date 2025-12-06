@@ -54,8 +54,8 @@ export default function RaceAnalysis() {
     setLoading(true);
     try {
       const [spending, donors] = await Promise.all([
-        getRaceIESpending(selectedOffice, selectedCycle),
-        getRaceTopDonors(selectedOffice, selectedCycle)
+        getRaceIESpending({ office_id: selectedOffice, cycle_id: selectedCycle }),
+        getRaceTopDonors({ office_id: selectedOffice, cycle_id: selectedCycle })
       ]);
       setRaceData(spending);
       setTopDonors(donors.top_donors || []);
@@ -75,15 +75,15 @@ export default function RaceAnalysis() {
   }, [selectedOffice, selectedCycle]);
 
   const chartData = raceData?.candidates ? {
-    labels: raceData.candidates.map(c => 
+    labels: raceData.candidates.map(c =>
       `${c.subject_committee__name__first_name || ''} ${c.subject_committee__name__last_name || ''}`.trim()
     ),
     datasets: [
       {
-        label: 'IE For',
-        data: raceData.candidates.map(c => parseFloat(c.total_ie || 0)),
-        backgroundColor: darkMode ? 'rgba(139, 195, 74, 0.6)' : 'rgba(34, 197, 94, 0.6)',
-        borderColor: darkMode ? 'rgba(139, 195, 74, 1)' : 'rgba(34, 197, 94, 1)',
+        label: 'IE Spending',
+        data: raceData.candidates.map(c => Math.abs(parseFloat(c.total_ie || 0))),
+        backgroundColor: darkMode ? 'rgba(139, 124, 184, 0.6)' : 'rgba(107, 91, 149, 0.6)',
+        borderColor: darkMode ? 'rgba(139, 124, 184, 1)' : 'rgba(107, 91, 149, 1)',
         borderWidth: 1
       }
     ]
@@ -197,7 +197,13 @@ export default function RaceAnalysis() {
                 <ChartSkeleton height="300px" className="lg:col-span-2" />
                 <ChartSkeleton height="300px" />
               </div>
-              <TableSkeleton rows={8} columns={5} />
+              <div className={`overflow-x-auto shadow-lg rounded-2xl ${darkMode ? 'bg-[#3d3559]' : 'bg-white'}`}>
+                <table className="min-w-full divide-y divide-gray-200">
+                  <tbody>
+                    <TableSkeleton rows={8} columns={5} />
+                  </tbody>
+                </table>
+              </div>
             </>
           ) : loading && selectedOffice && selectedCycle ? (
             <>
@@ -205,7 +211,13 @@ export default function RaceAnalysis() {
                 <ChartSkeleton height="300px" className="lg:col-span-2" />
                 <ChartSkeleton height="300px" />
               </div>
-              <TableSkeleton rows={5} columns={5} />
+              <div className={`overflow-x-auto shadow-lg rounded-2xl ${darkMode ? 'bg-[#3d3559]' : 'bg-white'}`}>
+                <table className="min-w-full divide-y divide-gray-200">
+                  <tbody>
+                    <TableSkeleton rows={5} columns={5} />
+                  </tbody>
+                </table>
+              </div>
             </>
           ) : raceData ? (
             <>

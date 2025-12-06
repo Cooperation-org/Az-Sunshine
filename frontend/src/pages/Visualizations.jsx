@@ -73,12 +73,16 @@ export default function Visualizations() {
         getOffices(),
         getCycles(),
       ]);
-      
+
       setOffices(officesData);
       setCycles(cyclesData);
-      
-      if (officesData.length > 0) setSelectedOffice(officesData[0].office_id);
-      if (cyclesData.length > 0) setSelectedCycle(cyclesData[0].cycle_id);
+
+      // Default to Governor (2000) and 2014 cycle (27) which has IE data
+      const defaultOffice = officesData.find(o => o.office_id === 2000) || officesData[0];
+      const defaultCycle = cyclesData.find(c => c.cycle_id === 27) || cyclesData[0];
+
+      if (defaultOffice) setSelectedOffice(defaultOffice.office_id);
+      if (defaultCycle) setSelectedCycle(defaultCycle.cycle_id);
     } catch (error) {
       console.error("Error loading dropdowns:", error);
     } finally {
@@ -90,8 +94,8 @@ export default function Visualizations() {
     setChartsLoading(true);
     try {
       const candidatesData = await getTopCandidatesByIE({
-        office: selectedOffice,
-        cycle: selectedCycle,
+        office_id: selectedOffice,
+        cycle_id: selectedCycle,
         limit: 10,
       });
       setTopCandidates(candidatesData.results || candidatesData || []);
@@ -103,16 +107,33 @@ export default function Visualizations() {
     }
   }
 
-  const totalIE = topCandidates.reduce((sum, c) => sum + parseFloat(c.ie_total_for || 0) + parseFloat(c.ie_total_against || 0), 0);
-  const totalSupport = topCandidates.reduce((sum, c) => sum + parseFloat(c.ie_total_for || 0), 0);
-  const totalOppose = topCandidates.reduce((sum, c) => sum + parseFloat(c.ie_total_against || 0), 0);
+  // Calculate totals from API data (total_ie is negative, is_for_benefit indicates support/oppose)
+  const totalIE = topCandidates.reduce((sum, c) => sum + Math.abs(parseFloat(c.total_ie || 0)), 0);
+  const totalSupport = topCandidates.reduce((sum, c) => c.is_for_benefit === true ? sum + Math.abs(parseFloat(c.total_ie || 0)) : sum, 0);
+  const totalOppose = topCandidates.reduce((sum, c) => c.is_for_benefit === false ? sum + Math.abs(parseFloat(c.total_ie || 0)) : sum, 0);
 
+  // Group by candidate name and aggregate support/oppose
+  const candidateMap = new Map();
+  topCandidates.forEach(c => {
+    const name = `${c.subject_committee__name__first_name || ''} ${c.subject_committee__name__last_name || ''}`.trim() || 'Unknown';
+    if (!candidateMap.has(name)) {
+      candidateMap.set(name, { support: 0, oppose: 0 });
+    }
+    const amounts = candidateMap.get(name);
+    if (c.is_for_benefit === true) {
+      amounts.support += Math.abs(parseFloat(c.total_ie || 0));
+    } else if (c.is_for_benefit === false) {
+      amounts.oppose += Math.abs(parseFloat(c.total_ie || 0));
+    }
+  });
+
+  const uniqueCandidates = Array.from(candidateMap.keys());
   const barChartData = {
-    labels: topCandidates.map(c => c.candidate?.full_name || c.name?.full_name || "Unknown"),
+    labels: uniqueCandidates,
     datasets: [
       {
         label: "Support",
-        data: topCandidates.map(c => parseFloat(c.ie_total_for || 0)),
+        data: uniqueCandidates.map(name => candidateMap.get(name).support),
         backgroundColor: darkMode ? 'rgba(74, 222, 128, 0.4)' : 'rgba(34, 197, 94, 0.6)',
         borderColor: darkMode ? 'rgba(74, 222, 128, 1)' : 'rgba(34, 197, 94, 1)',
         borderWidth: 1,
@@ -120,7 +141,7 @@ export default function Visualizations() {
       },
       {
         label: "Oppose",
-        data: topCandidates.map(c => parseFloat(c.ie_total_against || 0)),
+        data: uniqueCandidates.map(name => candidateMap.get(name).oppose),
         backgroundColor: darkMode ? 'rgba(248, 113, 113, 0.4)' : 'rgba(239, 68, 68, 0.6)',
         borderColor: darkMode ? 'rgba(248, 113, 113, 1)' : 'rgba(239, 68, 68, 1)',
         borderWidth: 1,

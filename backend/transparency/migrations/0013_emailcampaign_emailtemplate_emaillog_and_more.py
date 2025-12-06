@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("transparency", "0012_merge_20251124_2357"),
+        ("transparency", "0011_candidatestatementofinterest_source_url"),
     ]
 
     operations = [

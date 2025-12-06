@@ -33,8 +33,8 @@ export default function Sidebar() {
     { path: "/email-campaign", icon: Mail, label: "Email Campaign", badge: null },
     { path: "/visualizations", icon: BarChart3, label: "Visualizations", badge: null },
     { path: "/race-analysis", icon: GitBranch, label: "Race Analysis", badge: null },
-    { path: "/workflow", icon: Workflow, label: "Workflow Automation", badge: null },
-    { path: "/data-validation", icon: Database, label: "Data Validation", badge: null },
+    // { path: "/workflow", icon: Workflow, label: "Workflow Automation", badge: null },
+    // { path: "/data-validation", icon: Database, label: "Data Validation", badge: null },
   ];
 
   return (
@@ -96,21 +96,21 @@ export default function Sidebar() {
           <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
         </button>
         
-        <Link
+        {/* <Link
           to="/settings"
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm"
         >
           <Settings className="w-5 h-5" />
           <span>Settings</span>
-        </Link>
-        
-        <Link
+        </Link> */}
+
+        {/* <Link
           to="/help"
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm"
         >
           <HelpCircle className="w-5 h-5" />
           <span>Help Center</span>
-        </Link>
+        </Link> */}
       </div>
     </aside>
   );
