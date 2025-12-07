@@ -310,9 +310,14 @@ export default function Visualizations() {
 
                 {/* Money Flow Sankey */}
                 <div className={`xl:col-span-2 ${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 sm:p-8 border shadow-sm`}>
-                  <div className="flex items-center gap-3 mb-6">
-                    <GitMerge className={`w-5 h-5 ${darkMode ? 'text-purple-300' : 'text-[#7163BA]'}`} />
-                    <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Money Flow</h3>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-1">
+                      <GitMerge className={`w-5 h-5 ${darkMode ? 'text-purple-300' : 'text-[#7163BA]'}`} />
+                      <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Top Donors Money Flow</h3>
+                    </div>
+                    <p className={`text-xs ml-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      Track how money flows from top donors through IE committees to candidates (each color represents a different donor)
+                    </p>
                   </div>
                   {chartsLoading ? <ChartSkeleton className="h-[400px]" /> :
                     <MoneyFlowSankey

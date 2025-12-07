@@ -34,6 +34,29 @@ const CustomNode = (props) => {
   );
 };
 
+const CustomLink = (props) => {
+  const { sourceX, targetX, sourceY, targetY, sourceControlX, targetControlX, linkWidth, payload } = props;
+  const { darkMode } = useDarkMode();
+
+  // Use the color from the link data, or fall back to default purple
+  const linkColor = payload.color || (darkMode ? '#8b7cb8' : '#7163BA');
+  const opacity = darkMode ? 0.6 : 0.5;
+
+  return (
+    <path
+      d={`
+        M${sourceX},${sourceY}
+        C${sourceControlX},${sourceY} ${targetControlX},${targetY} ${targetX},${targetY}
+      `}
+      stroke={linkColor}
+      strokeWidth={linkWidth}
+      fill="none"
+      strokeOpacity={opacity}
+      style={{ cursor: 'pointer' }}
+    />
+  );
+};
+
 export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height = '400px' }) {
   const { darkMode } = useDarkMode();
   const [data, setData] = useState(null);
@@ -65,7 +88,24 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
     const nodes = [];
     const links = [];
     const nodeMap = new Map();
+    const donorColorMap = new Map(); // Map donor index to color
     let nodeIndex = 0;
+
+    // Color palette for different donors (distinct, vibrant colors)
+    const colorPalette = [
+      '#FF6B6B', // Coral Red
+      '#4ECDC4', // Turquoise
+      '#45B7D1', // Sky Blue
+      '#FFA07A', // Light Salmon
+      '#98D8C8', // Mint
+      '#F7DC6F', // Yellow
+      '#BB8FCE', // Purple
+      '#85C1E2', // Light Blue
+      '#F8B195', // Peach
+      '#C06C84', // Mauve
+      '#6C5B7B', // Deep Purple
+      '#F67280', // Pink
+    ];
 
     const getNodeIndex = (name, type) => {
       if (nodeMap.has(name)) {
@@ -74,20 +114,31 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
       const index = nodeIndex++;
       nodeMap.set(name, index);
       nodes.push({ name, type });
+
+      // Assign color to donor nodes
+      if (type === 'donor') {
+        const colorIndex = donorColorMap.size % colorPalette.length;
+        donorColorMap.set(index, colorPalette[colorIndex]);
+      }
+
       return index;
     };
 
     if (flowData.top_donors?.length > 0) {
       const committeeIndex = getNodeIndex("IE Committees", "committee");
 
-      // Add donor -> IE Committee links
+      // Add donor -> IE Committee links (with color from donor)
       flowData.top_donors.forEach((donor) => {
         const donorName = `${donor.entity__first_name || ''} ${donor.entity__last_name || ''}`.trim() || 'Unknown Donor';
         const donorIndex = getNodeIndex(donorName, "donor");
+        const donorColor = donorColorMap.get(donorIndex);
+
         links.push({
           source: donorIndex,
           target: committeeIndex,
-          value: Math.abs(parseFloat(donor.total_contributed || 0))
+          value: Math.abs(parseFloat(donor.total_contributed || 0)),
+          color: donorColor, // Assign donor's color to this link
+          donorIndex: donorIndex // Track which donor this came from
         });
       });
 
@@ -111,14 +162,16 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
             links.push({
               source: committeeIndex,
               target: candidateIndex,
-              value: totalAmount
+              value: totalAmount,
+              color: '#8b7cb8', // Neutral purple for aggregated committee -> candidate flows
+              donorIndex: null // No specific donor (aggregated)
             });
           }
         });
       }
     }
 
-    return { nodes, links };
+    return { nodes, links, donorColorMap };
   }
 
   if (loading) {
@@ -159,10 +212,7 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
           linkCurvature={0.5}
           iterations={32}
           node={<CustomNode />}
-          link={{
-            stroke: darkMode ? '#8b7cb8' : '#7163BA',
-            strokeOpacity: darkMode ? 0.3 : 0.2,
-          }}
+          link={<CustomLink />}
         >
           <Tooltip
             cursor={{ fill: darkMode ? 'rgba(139, 124, 184, 0.2)' : 'rgba(113, 99, 186, 0.1)' }}
@@ -170,25 +220,56 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
               if (!active || !payload || !payload[0]) return null;
 
               const item = payload[0].payload;
-              // Check if this is a node (has sourceLinks/targetLinks) or a link (has source/target)
-              const isNode = item.sourceLinks && item.targetLinks;
+
+              // Check if this is a link (has source/target objects) or a node
+              const isLink = item.source && item.target && typeof item.source === 'object';
+
+              // Extract source and target names for links
+              const sourceName = isLink ? (item.source.name || 'Unknown') : null;
+              const targetName = isLink ? (item.target.name || 'Unknown') : null;
+              const amount = item.value || 0;
+
+              // Get link color for display
+              const linkColor = isLink ? (item.color || '#8b7cb8') : null;
+              const isDonorLink = isLink && item.donorIndex !== null;
 
               return (
                 <div className={`p-3 rounded-lg shadow-xl border ${darkMode ? 'bg-[#332D54] border-[#4c3e7c]' : 'bg-white/95 backdrop-blur-sm border-gray-200'}`}>
-                  {isNode ? (
+                  {isLink ? (
+                    // Hovering over a flow line (link)
                     <>
-                      <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{item.name}</p>
-                      <p className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-                        Total Flow: ${(item.value || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                      <div className="flex items-center gap-2 mb-1">
+                        {isDonorLink && (
+                          <div
+                            className="w-3 h-3 rounded-full border border-white/30"
+                            style={{ backgroundColor: linkColor }}
+                          ></div>
+                        )}
+                        <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Money Flow
+                        </p>
+                      </div>
+                      <p className={`text-xs mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {sourceName}
+                      </p>
+                      <p className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        ↓ {isDonorLink ? 'to' : 'from'} IE Committees ↓
+                      </p>
+                      <p className={`text-xs mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {targetName}
+                      </p>
+                      <p className={`text-sm font-bold ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
+                        ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </p>
                     </>
                   ) : (
+                    // Hovering over a node (bar)
                     <>
-                       <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {item.source?.name} → {item.target?.name}
+                      <p className={`font-semibold text-sm mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {item.name || 'Unknown'}
                       </p>
                       <p className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-                        ${(item.value || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                        Total: ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </p>
                     </>
                   )}

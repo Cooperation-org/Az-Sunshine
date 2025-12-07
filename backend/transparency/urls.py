@@ -27,6 +27,7 @@ urlpatterns = [
     path('races/ie-spending/', race_ie_spending, name='race-ie-spending'),
     path('races/top-donors/', race_top_donors, name='race-top-donors'),
     path('races/money-flow/', races_money_flow, name='races-money-flow'),
+    path('races/detailed-money-flow/', races_detailed_money_flow, name='races-detailed-money-flow'),
 
     # === VISUALIZATIONS ===
     path('committees/top_by_ie/', committees_top_by_ie, name='committees-top-by-ie'),

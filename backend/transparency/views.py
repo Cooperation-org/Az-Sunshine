@@ -836,6 +836,48 @@ def races_money_flow(request):
     })
 
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def races_detailed_money_flow(request):
+    """
+    Get detailed money flow: Donors -> Specific IE Committees -> Candidates
+    Shows actual transaction paths for top donors
+    NOTE: Temporarily using aggregated data like races_money_flow until we optimize the complex query
+    """
+    office_id = request.GET.get('office_id')
+    cycle_id = request.GET.get('cycle_id')
+    donor_limit = int(request.GET.get('donor_limit', 6))
+
+    if not office_id or not cycle_id:
+        return Response(
+            {'error': 'office_id and cycle_id parameters are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        office = Office.objects.get(office_id=office_id)
+        cycle = Cycle.objects.get(cycle_id=cycle_id)
+    except (Office.DoesNotExist, Cycle.DoesNotExist):
+        return Response(
+            {'error': 'Invalid office or cycle ID'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # For now, use the existing aggregated data
+    # TODO: Implement detailed committee-specific flows
+    candidates_data = RaceAggregationManager.get_race_ie_spending(office, cycle, None)
+    donors_data = RaceAggregationManager.get_top_ie_donors_by_race(office, cycle, donor_limit)
+
+    return Response({
+        'candidates': list(candidates_data),
+        'top_donors': list(donors_data),
+        'metadata': {
+            'donor_limit': donor_limit,
+            'note': 'Using aggregated data - detailed committee flows coming soon'
+        }
+    })
+
+
 # ==================== PHASE 1: TRANSACTION VIEWS ====================
 
 class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
