@@ -74,17 +74,23 @@ export default function Visualizations() {
         getCycles(),
       ]);
 
-      setOffices(officesData);
-      setCycles(cyclesData);
+      // Ensure we have arrays (handle both direct arrays and {results: []} format)
+      const offices = Array.isArray(officesData) ? officesData : (officesData?.results || []);
+      const cycles = Array.isArray(cyclesData) ? cyclesData : (cyclesData?.results || []);
+
+      setOffices(offices);
+      setCycles(cycles);
 
       // Default to Governor (2000) and 2014 cycle (27) which has IE data
-      const defaultOffice = officesData.find(o => o.office_id === 2000) || officesData[0];
-      const defaultCycle = cyclesData.find(c => c.cycle_id === 27) || cyclesData[0];
+      const defaultOffice = offices.find(o => o.office_id === 2000) || offices[0];
+      const defaultCycle = cycles.find(c => c.cycle_id === 27) || cycles[0];
 
       if (defaultOffice) setSelectedOffice(defaultOffice.office_id);
       if (defaultCycle) setSelectedCycle(defaultCycle.cycle_id);
     } catch (error) {
       console.error("Error loading dropdowns:", error);
+      setOffices([]);
+      setCycles([]);
     } finally {
       setLoading(false);
     }
