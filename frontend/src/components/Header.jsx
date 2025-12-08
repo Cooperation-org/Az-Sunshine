@@ -36,12 +36,12 @@ export default function Header() {
             {/* User Profile */}
             <div className="flex items-center gap-3">
               <img
-                src="https://ui-avatars.com/api/?name=Manik+Jinage&background=8b5cf6&color=fff&bold=true"
-                alt="Manik Jinage"
+                src="https://ui-avatars.com/api/?name=Emos+Moka&background=8b5cf6&color=fff&bold=true"
+                alt="Emos Moka"
                 className="w-10 h-10 rounded-full"
               />
               <div className="text-right">
-                <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Manik Jinage</p>
+                <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Emos Moka</p>
                 <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Admin User</p>
               </div>
             </div>

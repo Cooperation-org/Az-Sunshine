@@ -12,6 +12,15 @@ export function DarkModeProvider({ children }) {
   useEffect(() => {
     // Save to localStorage whenever it changes
     localStorage.setItem('darkMode', darkMode);
+
+    // Apply data-theme attribute to document root for CSS variables
+    if (darkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.body.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      document.body.removeAttribute('data-theme');
+    }
   }, [darkMode]);
 
   const toggleDarkMode = () => setDarkMode(prev => !prev);

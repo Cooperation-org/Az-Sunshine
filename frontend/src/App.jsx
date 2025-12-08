@@ -12,6 +12,10 @@ import EmailCampaign from "./pages/EmailCampaign";
 import DataValidation from "./pages/DataValidation";
 import WorkflowAutomation from "./pages/WorkflowAutomation";
 import Visualizations from "./pages/Visualizations";
+import DataImport from "./pages/DataImport";
+import ScraperControl from "./pages/ScraperControl";
+import SOSAutomation from "./pages/SOSAutomation";
+import SeeTheMoney from "./pages/SeeTheMoney";
 
 export default function App() {
   return (
@@ -28,6 +32,10 @@ export default function App() {
         <Route path="/data-validation" element={<DataValidation />} />
         <Route path="/workflow" element={<WorkflowAutomation />} />
         <Route path="/visualizations" element={<Visualizations />} />
+        <Route path="/admin/import" element={<DataImport />} />
+        <Route path="/admin/scrapers" element={<ScraperControl />} />
+        <Route path="/admin/sos" element={<SOSAutomation />} />
+        <Route path="/admin/seethemoney" element={<SeeTheMoney />} />
       </Routes>
     </DarkModeProvider>
   );

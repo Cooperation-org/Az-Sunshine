@@ -15,6 +15,11 @@ import {
   Moon,
   Sun,
   Workflow,
+  Upload,
+  Globe,
+  Download,
+  Eye,
+  FileCheck,
 } from "lucide-react";
 import { useDarkMode } from "../context/DarkModeContext";
 
@@ -37,6 +42,13 @@ export default function Sidebar() {
     // { path: "/data-validation", icon: Database, label: "Data Validation", badge: null },
   ];
 
+  const adminItems = [
+    { path: "/admin/seethemoney", icon: Eye, label: "SeeTheMoney", badge: "FREE" },
+    { path: "/admin/import", icon: Upload, label: "Data Import", badge: null },
+    { path: "/admin/scrapers", icon: Globe, label: "County Scrapers", badge: null },
+    { path: "/admin/sos", icon: FileCheck, label: "AZ SOS Automation", badge: null },
+  ];
+
   return (
     <aside className={`w-64 ${darkMode ? 'bg-[#332D54]' : 'bg-gradient-to-b from-[#685994] to-[#4c3e7c]'} flex flex-col h-screen sticky top-0`}>
       {/* Logo */}
@@ -55,20 +67,20 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 overflow-hidden">
+      <nav className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
-            
+
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 className={`
                   flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200
-                  ${active 
-                    ? 'bg-white/20 text-white font-medium shadow-lg' 
+                  ${active
+                    ? 'bg-white/20 text-white font-medium shadow-lg'
                     : 'text-white/70 hover:bg-white/10 hover:text-white hover:shadow-md'
                   }
                 `}
@@ -83,6 +95,41 @@ export default function Sidebar() {
               </Link>
             );
           })}
+        </div>
+
+        {/* Admin Tools Section */}
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <h3 className="px-3 mb-2 text-xs font-semibold text-white/50 uppercase tracking-wider">
+            Admin Tools
+          </h3>
+          <div className="space-y-1">
+            {adminItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200
+                    ${active
+                      ? 'bg-white/20 text-white font-medium shadow-lg'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white hover:shadow-md'
+                    }
+                  `}
+                >
+                  <Icon className={`w-5 h-5 ${active ? 'text-white' : 'text-white/60'}`} />
+                  <span className="flex-1 text-sm">{item.label}</span>
+                  {item.badge && (
+                    <span className="px-2 py-0.5 bg-[#800080] text-white text-xs font-semibold rounded-full">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </nav>
 

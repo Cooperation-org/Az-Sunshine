@@ -160,6 +160,22 @@ def dashboard_extreme(request):
                 'candidate': row[4] or 'Unknown'
             } for row in cursor.fetchall()]
 
+            # ==================================================================
+            # PART 6: Get actual data date range
+            # ==================================================================
+            cursor.execute("""
+                SELECT
+                    MIN(expenditure_date) as min_date,
+                    MAX(expenditure_date) as max_date
+                FROM mv_dashboard_recent_expenditures
+                WHERE expenditure_date IS NOT NULL
+            """)
+            date_range_row = cursor.fetchone()
+            date_range = {
+                'start': date_range_row[0].isoformat() if date_range_row and date_range_row[0] else None,
+                'end': date_range_row[1].isoformat() if date_range_row and date_range_row[1] else None
+            }
+
         # ==================================================================
         # UNIFIED RESPONSE: Everything in one payload
         # ==================================================================
@@ -174,6 +190,7 @@ def dashboard_extreme(request):
                 'top_donors': top_donors
             },
             'recent_expenditures': recent_expenditures,
+            'date_range': date_range,
             'metadata': {
                 'last_updated': timezone.now().isoformat(),
                 'cached': False,

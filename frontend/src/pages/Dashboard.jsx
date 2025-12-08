@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  DollarSign, 
-  FileText, 
+import { Link } from "react-router-dom";
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  DollarSign,
+  FileText,
   RefreshCw,
   ArrowUpRight,
   MoreVertical,
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState({});
   const [chartsData, setChartsData] = useState(null);
   const [recentExpenditures, setRecentExpenditures] = useState([]);
+  const [dateRange, setDateRange] = useState(null);
   const [loading, setLoading] = useState(true);
   const [metricsLoaded, setMetricsLoaded] = useState(false);
   const [chartsLoaded, setChartsLoaded] = useState(false);
@@ -63,6 +65,9 @@ export default function Dashboard() {
       // Parse recent expenditures
       setRecentExpenditures(data.recent_expenditures || []);
 
+      // Parse date range
+      setDateRange(data.date_range || null);
+
     } catch (error) {
       console.error("Error loading dashboard:", error);
       setLoading(true); // Show error state
@@ -86,38 +91,34 @@ export default function Dashboard() {
     {
       title: "Total IE Spending",
       value: `$${(metrics.total_expenditures || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
-      change: "+12.3%",
-      trend: "up",
-      subtitle: "+$3.14M vs last week",
+      subtitle: "All historical cycles combined",
       icon: DollarSign,
       color: "#7163BA",
+      link: "/expenditures",
     },
     {
       title: "Candidate Committees",
       value: (metrics.num_candidates || 0).toLocaleString(),
-      change: "+24.6%",
-      trend: "up",
-      subtitle: "+806 vs last week",
+      subtitle: "Tracked in database",
       icon: Users,
       color: "#7163BA",
+      link: "/candidates",
     },
     {
       title: "Total Expenditures",
       value: (metrics.num_expenditures || 0).toLocaleString(),
-      change: "+5.8%",
-      trend: "up",
-      subtitle: "+249 this month",
+      subtitle: "Transaction records",
       icon: FileText,
       color: "#7163BA",
+      link: "/expenditures",
     },
     {
       title: "SOI Filings",
       value: (metrics.soi_stats?.total_filings || 0).toLocaleString(),
-      change: "-8.5%",
-      trend: "down",
       subtitle: `${metrics.soi_stats?.uncontacted || 0} uncontacted`,
       icon: TrendingUp,
       color: "#800080",
+      link: "/soi",
     },
   ];
 
@@ -478,7 +479,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Dashboard Overview</h1>
-              <p className={`text-sm mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-500'}`}>Track campaign finance and independent expenditures</p>
+              <p className={`text-sm mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-500'}`}>
+                Arizona campaign finance data
+              </p>
             </div>
             <button 
               onClick={handleRefresh}
@@ -494,30 +497,21 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {statCards.map((stat, idx) => {
               const IconComponent = stat.icon;
-              const TrendIcon = stat.trend === 'up' ? TrendingUp : TrendingDown;
-              
+
               return (
                 <div key={idx} className={`${darkMode ? 'bg-[#3d3559]' : 'bg-white'} rounded-2xl p-6 border ${darkMode ? 'border-[#4a3f66]' : 'border-gray-100'} shadow-sm hover:shadow-md transition-all`}>
                   <div className="flex items-start justify-between mb-4">
-                    <div 
-                      className="p-3 rounded-xl" 
-                      style={{ 
+                    <div
+                      className="p-3 rounded-xl"
+                      style={{
                         backgroundColor: darkMode ? 'rgba(139, 124, 184, 0.2)' : `${stat.color}15`,
                       }}
                     >
-                      <IconComponent 
-                        className="w-6 h-6" 
+                      <IconComponent
+                        className="w-6 h-6"
                         style={{ color: darkMode ? '#8b7cb8' : stat.color }}
                       />
                     </div>
-                    <span className={`flex items-center gap-1 text-sm font-semibold px-2.5 py-1 rounded-full ${
-                      stat.trend === 'up' 
-                        ? darkMode ? 'bg-green-900/30 text-green-300' : 'bg-green-50 text-green-700'
-                        : darkMode ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700'
-                    }`}>
-                      <TrendIcon className="w-3.5 h-3.5" />
-                      {stat.change}
-                    </span>
                   </div>
                   
                   <div>
@@ -529,11 +523,11 @@ export default function Dashboard() {
                     )}
                     <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{stat.subtitle}</p>
                   </div>
-                  
-                  <button className="mt-4 text-xs font-medium flex items-center gap-1 hover:gap-2 transition-all" style={{ color: darkMode ? '#8b7cb8' : stat.color }}>
+
+                  <Link to={stat.link} className="mt-4 text-xs font-medium flex items-center gap-1 hover:gap-2 transition-all" style={{ color: darkMode ? '#8b7cb8' : stat.color }}>
                     View Report
                     <ArrowUpRight className="w-3 h-3" />
-                  </button>
+                  </Link>
                 </div>
               );
             })}
@@ -546,7 +540,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Top 10 Donors</h3>
-                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Highest contributors this cycle</p>
+                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Highest contributors (all cycles)</p>
                 </div>
                 <button className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-gray-50'}`}>
                   <MoreVertical className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
@@ -575,7 +569,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Top 10 IE Committees</h3>
-                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Highest spending committees</p>
+                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Highest spending (all cycles)</p>
                 </div>
                 <button className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-gray-50'}`}>
                   <MoreVertical className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
@@ -602,7 +596,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Bottom Row - Doughnut & Latest Expenditures */}
+          {/* Bottom Row - Doughnut & Expenditures Table */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* IE Benefit Breakdown - Doughnut */}
             <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm`}>
@@ -660,12 +654,12 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Recent Expenditures Table */}
+            {/* Expenditures Table */}
             <div className={`lg:col-span-2 ${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm flex flex-col`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Latest Expenditures</h3>
-                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Most recent independent expenditures in database</p>
+                  <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Independent Expenditures</h3>
+                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Historical database records (2023 and previous cycles)</p>
                 </div>
               </div>
 
@@ -744,8 +738,8 @@ export default function Dashboard() {
                 <div className={`flex-1 flex items-center justify-center ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>
                   <div className="text-center">
                     <FileText className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-300'}`} />
-                    <p className={`font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>No recent expenditures</p>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>Data will appear here once available</p>
+                    <p className={`font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>No expenditures available</p>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>Historical data will appear here when loaded</p>
                   </div>
                 </div>
               )}

@@ -6,6 +6,7 @@ from .views_soi import *
 from .views_email import *
 from .views_dashboard_optimized import *
 from .views_dashboard_extreme import *
+from .views_admin import DataImportViewSet, ScraperViewSet, SOSViewSet, SeeTheMoneyViewSet
 
 app_name = 'transparency'
 
@@ -20,6 +21,12 @@ router.register(r'parties', PartyViewSet, basename='party')
 router.register(r'email-templates', EmailTemplateViewSet, basename='email-template')
 router.register(r'email-campaigns', EmailCampaignViewSet, basename='email-campaign')
 router.register(r'email-logs', EmailLogViewSet, basename='email-log')
+
+# Phase 1 Admin Tools
+router.register(r'admin/imports', DataImportViewSet, basename='admin-imports')
+router.register(r'admin/scrapers', ScraperViewSet, basename='admin-scrapers')
+router.register(r'admin/sos', SOSViewSet, basename='admin-sos')
+router.register(r'admin/seethemoney', SeeTheMoneyViewSet, basename='admin-seethemoney')  # FREE!
 
 
 urlpatterns = [
