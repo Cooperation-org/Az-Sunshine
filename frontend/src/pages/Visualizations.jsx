@@ -42,7 +42,7 @@ ChartJS.register(
 const ChartSkeleton = ({ className }) => {
   const { darkMode } = useDarkMode();
   return (
-    <div className={`rounded-2xl ${darkMode ? 'bg-[#4a3f66]/50' : 'bg-gray-200'} animate-pulse ${className}`}></div>
+    <div className={`rounded-2xl ${darkMode ? 'bg-[#4a3f66]' : 'bg-gray-200'} animate-pulse ${className}`}></div>
   );
 };
 
@@ -208,10 +208,10 @@ export default function Visualizations() {
   };
 
   return (
-    <div className={`flex min-h-screen ${darkMode ? 'bg-[#2a2347]' : 'bg-gray-100'}`}>
+    <div className={`flex min-h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
       <Sidebar />
       <main className="flex-1 overflow-auto">
-        <Header />
+        
         <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           
           <div>

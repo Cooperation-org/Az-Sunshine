@@ -273,17 +273,17 @@ export default function SOIManagement() {
   ];
 
   if (!stats) return (
-    <div className={`flex h-screen ${darkMode ? 'bg-[#2a2347]' : 'bg-gray-100'}`}>
+    <div className={`flex h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
       <Sidebar />
-      <main className="flex-1 overflow-auto"><Header /><div className="p-8"><StatsGridSkeleton count={4}/></div></main>
+      <main className="flex-1 overflow-auto"><div className="p-8"><StatsGridSkeleton count={4}/></div></main>
     </div>
   );
 
   return (
-    <div className={`flex h-screen ${darkMode ? 'bg-[#2a2347]' : 'bg-gray-100'}`}>
+    <div className={`flex h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
       <Sidebar />
       <main className="flex-1 overflow-auto">
-        <Header />
+        
         <div className="p-4 sm:p-6 lg:p-8 space-y-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>

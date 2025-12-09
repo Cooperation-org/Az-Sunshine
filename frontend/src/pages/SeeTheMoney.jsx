@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+
 import { useDarkMode } from '../context/DarkModeContext';
 import { seeTheMoneyAPI, handleAdminError } from '../api/admin';
 
@@ -55,7 +55,7 @@ export default function SeeTheMoney() {
       <Sidebar />
 
       <main className="flex-1 overflow-auto">
-        <Header />
+        
 
         <div className="px-8 py-8 space-y-8">
           {/* Header */}

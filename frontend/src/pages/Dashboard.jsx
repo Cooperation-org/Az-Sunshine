@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import api from "../api/api";
-import Header from "../components/Header";
 import { useDarkMode } from "../context/DarkModeContext";
 
 export default function Dashboard() {
@@ -472,9 +471,9 @@ export default function Dashboard() {
       <Sidebar />
       
       <main className="flex-1 overflow-auto">
-        <Header />
         
-        <div className="px-8 py-8 space-y-8">
+        
+        <div className="p-4 sm:p-6 lg:p-8 space-y-8">
           {/* Top Header with Refresh */}
           <div className="flex items-center justify-between">
             <div>
@@ -664,20 +663,20 @@ export default function Dashboard() {
               </div>
 
               {recentExpenditures.length > 0 ? (
-                <div className="flex-1 overflow-x-auto -mx-8">
+                <div className="flex-1 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
                   <table className="min-w-full table-fixed">
                     <thead className={`border-b ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
                       <tr>
-                        <th scope="col" className={`w-5/12 px-8 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                        <th scope="col" className={`w-5/12 px-4 sm:px-6 lg:px-8 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                           Committee
                         </th>
-                        <th scope="col" className={`w-3/12 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                        <th scope="col" className={`w-3/12 px-4 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                           Candidate
                         </th>
-                        <th scope="col" className={`w-2/12 px-6 py-3 text-center text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                        <th scope="col" className={`w-2/12 px-4 sm:px-6 py-3 text-center text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                           Type
                         </th>
-                        <th scope="col" className={`w-2/12 px-8 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                        <th scope="col" className={`w-2/12 px-4 sm:px-6 lg:px-8 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                           Amount
                         </th>
                       </tr>
@@ -685,7 +684,7 @@ export default function Dashboard() {
                     <tbody className={`divide-y ${darkMode ? 'divide-[#4a3f66]' : 'divide-gray-100'}`}>
                       {recentExpenditures.slice(0, 5).map((exp, idx) => (
                         <tr key={idx} className={`transition-colors ${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-purple-50/50'}`}>
-                          <td className="px-8 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 lg:px-8 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-4">
                               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7163BA] to-[#332D54] flex items-center justify-center shadow-sm flex-shrink-0">
                                 <span className="text-white text-sm font-bold">
@@ -705,7 +704,7 @@ export default function Dashboard() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                              <p 
                               className={`text-sm truncate ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}
                               title={exp.candidate || 'N/A'}
@@ -713,7 +712,7 @@ export default function Dashboard() {
                               {exp.candidate || 'N/A'}
                             </p>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
                             <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold leading-5 ${
                               exp.is_for_benefit === true 
                                 ? darkMode ? 'bg-green-900/40 text-green-300' : 'bg-green-100 text-green-800'
@@ -724,7 +723,7 @@ export default function Dashboard() {
                               {exp.is_for_benefit === true ? 'Support' : exp.is_for_benefit === false ? 'Oppose' : 'N/A'}
                             </span>
                           </td>
-                          <td className="px-8 py-4 whitespace-nowrap text-right">
+                          <td className="px-4 sm:px-6 lg:px-8 py-4 whitespace-nowrap text-right">
                             <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                               ${(exp.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </p>

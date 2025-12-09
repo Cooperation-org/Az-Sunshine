@@ -3,7 +3,6 @@ import { Bell, Search } from "lucide-react";
 import { getOffices, getCycles, getRaceIESpending, getRaceTopDonors } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import { Bar } from "react-chartjs-2";
-import Header from "../components/Header";
 import { ChartSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import { useDarkMode } from "../context/DarkModeContext";
 
@@ -137,7 +136,6 @@ export default function RaceAnalysis() {
       <Sidebar />
       
       <main className="flex-1 lg:ml-0 min-w-0">
-        <Header />
 
         <div className="p-4 sm:p-6 lg:p-8">
           <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-4 sm:p-6 border shadow-lg mb-4 sm:mb-6`}>

@@ -35,7 +35,7 @@ import {
 } from "chart.js";
 
 import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
+
 import GrassrootsThresholdBadge from "../components/GrassrootsThresholdBadge";
 import { getCandidateById, getCandidateIESpending, getTransactions } from "../api/api";
 import { exportToCSV } from "../utils/csvExport";
@@ -130,7 +130,7 @@ export default function CandidateDetail() {
       <div className={`flex min-h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
         <Sidebar />
         <main className="flex-1 lg:ml-0">
-          <Header title="Loading..." subtitle="Fetching candidate data" />
+          
           <div className="p-8">
             <div className="flex items-center justify-center h-96">
               <div className="text-center">

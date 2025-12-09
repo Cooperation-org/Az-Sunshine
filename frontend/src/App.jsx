@@ -16,6 +16,7 @@ import DataImport from "./pages/DataImport";
 import ScraperControl from "./pages/ScraperControl";
 import SOSAutomation from "./pages/SOSAutomation";
 import SeeTheMoney from "./pages/SeeTheMoney";
+import NotFound from "./pages/NotFound";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/admin/scrapers" element={<ScraperControl />} />
         <Route path="/admin/sos" element={<SOSAutomation />} />
         <Route path="/admin/seethemoney" element={<SeeTheMoney />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </DarkModeProvider>
   );

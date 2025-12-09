@@ -4,7 +4,6 @@ import {
   AlertCircle, Search, X, ChevronRight, ChevronLeft, Loader, BarChart3, TrendingUp, Inbox
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
 import { StatsGridSkeleton } from "../components/SkeletonLoader";
 import { getSOICandidates } from "../api/api";
 import { useDarkMode } from "../context/DarkModeContext";
@@ -175,10 +174,9 @@ export default function EmailCampaign() {
   ];
 
   return (
-    <div className={`flex min-h-screen ${darkMode ? 'bg-[#2a2347]' : 'bg-gray-100'}`}>
+    <div className={`flex min-h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
       <Sidebar />
       <main className="flex-1 overflow-auto">
-        <Header />
         <div className="p-4 sm:p-6 lg:p-8 space-y-8">
           <div>
             <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Email Campaigns</h1>
@@ -242,7 +240,7 @@ export default function EmailCampaign() {
               <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200/80'} rounded-2xl border shadow-sm`}>
                 <div className="p-6">
                   <h2 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Preview</h2>
-                  <div className={`p-4 rounded-xl border ${darkMode ? 'bg-[#2a2347] border-[#4a3f66]' : 'bg-gray-50 border-gray-200'}`}>
+                  <div className={`p-4 rounded-xl border ${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-gray-50 border-gray-200'}`}>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>To: {previewCandidate.email || '[Recipient Email]'}</p>
                     <p className={`font-semibold mt-2 pb-2 border-b ${darkMode ? 'text-white border-[#4a3f66]' : 'text-gray-800 border-gray-200'}`}>{replaceTemplateVariables(emailSubject, previewCandidate) || '(Subject)'}</p>
                     <div className={`mt-3 text-sm whitespace-pre-wrap ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{replaceTemplateVariables(emailBody, previewCandidate) || '(Body)'}</div>

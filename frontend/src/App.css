@@ -42,3 +42,14 @@
 }
 
 
+main{
+  z-index: 1 !important;
+}
+
+aside{
+  z-index: 1000 !important;
+}
+
+nav{
+  z-index: 1000 !important;
+}

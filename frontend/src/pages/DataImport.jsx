@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+
 import { useDarkMode } from "../context/DarkModeContext";
 import { Upload, File, CheckCircle, XCircle } from "lucide-react";
 
@@ -56,7 +56,7 @@ const DataImport = () => {
     <div className={`flex h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
       <Sidebar />
       <main className="flex-1 overflow-auto">
-        <Header />
+        
         <div className="p-4 md:p-8">
           <header className="mb-8">
             <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Data Import</h1>

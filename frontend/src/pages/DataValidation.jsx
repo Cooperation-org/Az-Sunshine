@@ -18,7 +18,7 @@ import {
   Phone,
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
+
 import { StatsGridSkeleton, TableSkeleton, CardSkeleton } from "../components/SkeletonLoader";
 import ConfirmationModal from "../components/ConfirmationModal";
 
@@ -277,7 +277,6 @@ export default function DataValidation() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <main className="flex-1 lg:ml-0 min-w-0">
-        <Header title="Arizona Sunshine" subtitle="Data Validation" />
 
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
           {/* Data Quality Metrics */}

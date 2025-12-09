@@ -149,7 +149,7 @@ export default function WorkflowAutomation() {
       {showN8nModal && <N8nModal onClose={() => setShowN8nModal(false)} />}
       
       <main className="flex-1 overflow-auto">
-        <Header />
+        
         <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
           {/* Header Control Panel */}

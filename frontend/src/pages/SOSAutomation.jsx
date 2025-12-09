@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+
 import { useDarkMode } from '../context/DarkModeContext';
 import { sosAPI, handleAdminError } from '../api/admin';
 import { Download, CheckCircle, XCircle } from 'lucide-react';
@@ -50,7 +50,7 @@ export default function SOSAutomation() {
       <Sidebar />
 
       <main className="flex-1 overflow-auto">
-        <Header />
+        
 
         <div className="p-4 md:p-8">
           {/* Header */}
@@ -236,22 +236,7 @@ export default function SOSAutomation() {
           )}
 
           {/* Warning Card */}
-          <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-500/50' : 'bg-yellow-50 border-yellow-200'} rounded-2xl p-8 border shadow-sm mt-8 max-w-5xl mx-auto`}>
-            <div className="flex items-start gap-3">
-              <div className="text-yellow-500 text-xl">⚠</div>
-              <div>
-                <h4 className={`font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Important Information
-                </h4>
-                <ul className={`space-y-1 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  <li>• Requires AZ SOS credentials in environment variables (AZ_SOS_USERNAME, AZ_SOS_PASSWORD)</li>
-                  <li>• Database purchase costs $25 - payment info must be on file with AZ SOS</li>
-                  <li>• Process may take several minutes depending on data size</li>
-                  <li>• If CAPTCHA appears, disable headless mode and solve manually</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+          
         </div>
       </main>
     </div>
