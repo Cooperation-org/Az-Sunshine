@@ -5,6 +5,7 @@ import requests
 import json
 import os
 import csv
+import asyncio
 from pathlib import Path
 from datetime import datetime
 
@@ -30,6 +31,86 @@ CSV_OUTPUT = BASE_DIR / "data" / "soi_candidates.csv"
 VENV_PYTHON = BASE_DIR.parent / "venv" / "bin" / "python3"
 
 
+async def run_scraper_and_upload(python_cmd):
+    """
+    Background task to run scraper and upload results to server
+    """
+    try:
+        print("\n🚀 Starting scraper process...")
+
+        # Run the scraper synchronously and wait for it to complete
+        process = await asyncio.create_subprocess_exec(
+            python_cmd, "manage.py", "soi_scraper",
+            "--csv-output", str(CSV_OUTPUT),
+            cwd=str(BASE_DIR),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        stdout, stderr = await process.communicate()
+
+        if process.returncode != 0:
+            print(f"❌ Scraper failed with exit code {process.returncode}")
+            print(f"Error output: {stderr.decode()[:500]}")
+            return
+
+        print("✅ Scraper completed successfully!")
+
+        # Check if CSV file exists
+        if not CSV_OUTPUT.exists():
+            print(f"❌ CSV file not found at {CSV_OUTPUT}")
+            return
+
+        # Read CSV and convert to JSON
+        print(f"📤 Reading CSV data from {CSV_OUTPUT}...")
+        candidates = []
+
+        with open(CSV_OUTPUT, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                candidates.append({
+                    'name': row.get('name', ''),
+                    'office': row.get('office', ''),
+                    'party': row.get('party', ''),
+                    'phone': row.get('phone', ''),
+                    'email': row.get('email', ''),
+                    'filing_date': datetime.now().date().isoformat(),
+                    'source_url': row.get('source_url', 'https://apps.arizona.vote/electioninfo/SOI/')
+                })
+
+        print(f"✓ Loaded {len(candidates)} candidates from CSV")
+
+        if not candidates:
+            print("⚠️ No candidates to upload")
+            return
+
+        # Upload to server
+        print(f"📡 Uploading data to server: {SERVER_UPLOAD_URL}")
+        response = requests.post(
+            SERVER_UPLOAD_URL,
+            json=candidates,
+            headers={
+                "X-Secret": SECRET_TOKEN,
+                "Content-Type": "application/json"
+            },
+            timeout=60
+        )
+
+        response.raise_for_status()
+        server_response = response.json()
+
+        print("✅ Data uploaded successfully!")
+        print(f"📊 Server response: {json.dumps(server_response, indent=2)}")
+        print("\n" + "="*70)
+        print("🎉 SCRAPING AND UPLOAD COMPLETE!")
+        print("="*70 + "\n")
+
+    except Exception as e:
+        print(f"❌ Background task error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
+
 @app.get("/")
 async def health_check():
     """Health check endpoint"""
@@ -48,8 +129,9 @@ async def run_scraper(request: Request):
     """
     Endpoint that Django server calls to trigger scraping.
     This runs on your HOME LAPTOP with residential IP.
-    
+
     Runs Django management command: python manage.py soi_scraper
+    Then uploads the results to the remote server.
     """
     # Security check
     token = request.headers.get("X-Secret")
@@ -60,7 +142,7 @@ async def run_scraper(request: Request):
     print("\n" + "="*70)
     print("🔔 Server triggered the scraper...")
     print("="*70)
-    
+
     try:
         # Check if manage.py exists
         if not MANAGE_PY.exists():
@@ -71,7 +153,7 @@ async def run_scraper(request: Request):
 
         # Ensure CSV output directory exists
         CSV_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Determine which Python to use
         if VENV_PYTHON.exists():
             python_cmd = str(VENV_PYTHON)
@@ -85,9 +167,40 @@ async def run_scraper(request: Request):
         print(f"📍 Working directory: {BASE_DIR}")
         print(f"📂 CSV output: {CSV_OUTPUT}")
         print("-"*70)
-        
-        result = subprocess.run(
-            [python_cmd, "manage.py", "soi_scraper", 
+
+        # Start background task to run scraper and upload results
+        import asyncio
+        asyncio.create_task(run_scraper_and_upload(python_cmd))
+
+        # Return immediately
+        print("✅ Scraper started in background")
+        return {
+            "status": "success",
+            "message": "Scraper started successfully in background",
+            "timestamp": datetime.now().isoformat()
+        }
+
+    except FileNotFoundError as e:
+        return {
+            "status": "error",
+            "message": f"File not found: {str(e)}"
+        }
+    except Exception as e:
+        print(f"\n❌ Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
+# OLD SYNCHRONOUS CODE (removed - keeping for reference):
+"""
+def run_scraper_sync():
+    result = subprocess.run(
+            [python_cmd, "manage.py", "soi_scraper",
              "--csv-output", str(CSV_OUTPUT)],
             cwd=str(BASE_DIR),
             capture_output=True,
@@ -204,6 +317,7 @@ async def run_scraper(request: Request):
             "message": str(e),
             "traceback": traceback.format_exc()
         }
+"""
 
 
 if __name__ == "__main__":

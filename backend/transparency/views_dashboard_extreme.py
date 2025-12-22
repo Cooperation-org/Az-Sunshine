@@ -291,25 +291,42 @@ def dashboard_streaming(request):
 @permission_classes([AllowAny])
 def refresh_extreme_cache(request):
     """
-    Clear all extreme mode caches and force refresh
+    Refresh materialized views AND clear all caches for up-to-date data
     """
     try:
-        # Clear all dashboard caches (including Zstd)
+        logger.info("🔄 Starting dashboard refresh (materialized views + caches)...")
+
+        # STEP 1: Refresh materialized views to get latest data
+        with connection.cursor() as cursor:
+            # Refresh the most critical view first (contains SOI stats)
+            logger.info("  Refreshing dashboard_aggregations...")
+            cursor.execute('REFRESH MATERIALIZED VIEW dashboard_aggregations')
+
+            # Refresh other key views concurrently for speed
+            logger.info("  Refreshing chart views...")
+            cursor.execute('REFRESH MATERIALIZED VIEW CONCURRENTLY ie_benefit_breakdown')
+            cursor.execute('REFRESH MATERIALIZED VIEW CONCURRENTLY mv_dashboard_top_donors')
+            cursor.execute('REFRESH MATERIALIZED VIEW CONCURRENTLY mv_dashboard_top_ie_committees')
+            cursor.execute('REFRESH MATERIALIZED VIEW mv_dashboard_recent_expenditures')
+
+        # STEP 2: Clear all dashboard caches (including Zstd)
+        logger.info("  Clearing Zstd compressed caches...")
         CompressedCache.delete('dashboard_extreme_v1')
+        CompressedCache.delete('soi_dashboard_stats_v1')  # Also clear SOI stats cache
         cache.delete('dashboard_summary_v1')
         cache.delete('dashboard_charts_fast_v2')
         cache.delete('dashboard_recent_exp_v1')
 
-        logger.info("🔄 All dashboard caches cleared (including Zstd)")
+        logger.info("✅ Dashboard refresh complete: materialized views updated + caches cleared")
 
         return Response({
             'success': True,
-            'message': 'All caches cleared. Next request will rebuild from materialized views.',
+            'message': 'Dashboard refreshed successfully. Materialized views updated with latest data.',
             'timestamp': timezone.now().isoformat()
         })
 
     except Exception as e:
-        logger.error(f"Error clearing cache: {e}", exc_info=True)
+        logger.error(f"❌ Error refreshing dashboard: {e}", exc_info=True)
         return Response({
             'success': False,
             'error': str(e)

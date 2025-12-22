@@ -24,7 +24,8 @@ import logging
 
 # Initialize logger
 logger = logging.getLogger(__name__)
-NGROK_URL = "https://modularly-unsoulish-krystle.ngrok-free.dev/run-scraper"
+NGROK_URL = "https://fc88ced25882.ngrok-free.app/run-scraper"
+LOCAL_AGENT_URL = "http://localhost:5001/run-scraper"
 SECRET_TOKEN = "MY_SECRET_123"
 
 
@@ -34,20 +35,21 @@ def trigger_scrape(request):
     """
     Trigger scraping on home laptop via FastAPI agent
     POST /api/v1/trigger-scrape/
-    
-    This should call the LOCAL agent at http://localhost:5001
-    which is then exposed via ngrok tunnel
+
+    Tries local agent first (localhost:5001), falls back to ngrok
     """
+    # Try local agent first (for when Django runs on same machine)
+    agent_url = LOCAL_AGENT_URL
     try:
-        logger.info(f"🚀 Triggering scraper at {NGROK_URL}")
-        
+        logger.info(f"🚀 Triggering scraper at {agent_url}")
+
         response = requests.post(
-            NGROK_URL,
+            agent_url,
             headers={
                 "X-Secret": SECRET_TOKEN,
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-            timeout=600,  # 10 minute timeout for scraping to complete
+            timeout=30,  # 30 second timeout (agent returns immediately now)
             json={}  # Send empty JSON body
         )
         
@@ -121,18 +123,19 @@ def upload_scraped(request):
     try:
         # Parse incoming data
         data = json.loads(request.body.decode())
-        
+
         logger.info(f"📥 Received {len(data)} records from home scraper")
-        
+
         from .models import CandidateStatementOfInterest, Office
         from django.utils import timezone
         from datetime import datetime
-        
+
         created_count = 0
         updated_count = 0
         error_count = 0
         error_details = []  # Track first 10 errors for debugging
-        
+        new_candidates = []  # Track newly created candidates
+
         for idx, record in enumerate(data):
             try:
                 # Get candidate name FIRST
@@ -185,12 +188,22 @@ def upload_scraped(request):
                         'filing_date': filing_date,
                         'contact_status': 'uncontacted',
                         'pledge_received': False,
-                        'source_url': record.get('source_url', 'https://azsos.gov/elections'),  # ADD THIS LINE
+                        'source_url': record.get('source_url', 'https://azsos.gov/elections'),
                     }
                 )
-                
+
                 if created:
                     created_count += 1
+                    # Add to new candidates list for frontend
+                    new_candidates.append({
+                        'id': candidate.id,
+                        'candidate_name': candidate.candidate_name,
+                        'office': office_name,
+                        'party': candidate.party or '',
+                        'email': candidate.email or '',
+                        'phone': candidate.phone or '',
+                        'filing_date': candidate.filing_date.isoformat() if candidate.filing_date else None,
+                    })
                     if created_count <= 5:  # Log first 5 creations
                         logger.info(f"✅ Created: {candidate_name} - {office_name}")
                 else:
@@ -213,12 +226,13 @@ def upload_scraped(request):
                 "created": created_count,
                 "updated": updated_count,
                 "errors": error_count
-            }
+            },
+            "new_candidates": new_candidates  # Return list of newly created candidates
         }
-        
+
         if error_details:
             result["error_samples"] = error_details
-        
+
         logger.info(f"✅ Processing complete: Created={created_count}, Updated={updated_count}, Errors={error_count}")
         return JsonResponse(result)
         
@@ -470,7 +484,19 @@ class CommitteeViewSet(viewsets.ReadOnlyModelViewSet):
         active_only = self.request.query_params.get('active_only', None)
         if active_only == 'true':
             queryset = queryset.filter(termination_date__isnull=True)
-        
+
+        # Search by candidate name or committee name
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                Q(name__full_name__icontains=search) |
+                Q(candidate__full_name__icontains=search) |
+                Q(name__last_name__icontains=search) |
+                Q(name__first_name__icontains=search) |
+                Q(candidate__last_name__icontains=search) |
+                Q(candidate__first_name__icontains=search)
+            )
+
         return queryset
     
     def get_serializer_class(self):
@@ -930,10 +956,20 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(amount__gte=amount_min)
         if amount_max:
             queryset = queryset.filter(amount__lte=amount_max)
-        
+
+        # Search by purpose or committee name
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                Q(purpose__icontains=search) |
+                Q(committee__name__full_name__icontains=search) |
+                Q(subject_committee__name__full_name__icontains=search) |
+                Q(entity__full_name__icontains=search)
+            )
+
         order_by = self.request.query_params.get('order_by', '-transaction_date')
         queryset = queryset.order_by(order_by)
-        
+
         return queryset
     
     @action(detail=False, methods=['get'])
@@ -1165,7 +1201,8 @@ def candidates_list(request):
     office_id = request.query_params.get('office', '')
     party_id = request.query_params.get('party', '')
     cycle_id = request.query_params.get('cycle', '')
-    cache_key = f'candidates_list_p{page_num}_s{page_size}_o{office_id}_pt{party_id}_c{cycle_id}'
+    search = request.query_params.get('search', '')
+    cache_key = f'candidates_list_p{page_num}_s{page_size}_o{office_id}_pt{party_id}_c{cycle_id}_q{search}'
 
     # Try to get from Zstd-compressed cache (10 minute cache)
     cached_data = CompressedCache.get(cache_key)
@@ -1185,6 +1222,16 @@ def candidates_list(request):
 
     if cycle_id:
         queryset = queryset.filter(election_cycle_id=cycle_id)
+
+    # Apply search filter
+    if search:
+        queryset = queryset.filter(
+            Q(candidate__first_name__icontains=search) |
+            Q(candidate__last_name__icontains=search) |
+            Q(name__first_name__icontains=search) |
+            Q(name__last_name__icontains=search) |
+            Q(candidate_office__name__icontains=search)
+        )
     
     # Annotate with IE totals
     queryset = queryset.annotate(
@@ -1320,9 +1367,11 @@ def donors_list(request):
     result_data = []
     for row in results:
         entity_type = {'name': row[4]} if row[4] else None
+        donor_name = row[1] or 'Unknown'
         result_data.append({
             'id': row[0],
-            'name': row[1] or 'Unknown',
+            'name': donor_name,
+            'full_name': donor_name,
             'city': row[2],
             'state': row[3],
             'entity_type': entity_type,
@@ -1365,9 +1414,10 @@ def expenditures_list(request):
     # Get pagination params
     page_num = int(request.query_params.get('page', 1))
     page_size = int(request.query_params.get('page_size', 10))
+    search = request.query_params.get('search', '')
 
     # Build cache key
-    cache_key = f'expenditures_list_p{page_num}_s{page_size}'
+    cache_key = f'expenditures_list_p{page_num}_s{page_size}_q{search}'
     cached_data = CompressedCache.get(cache_key)
     if cached_data:
         return Response(cached_data)
@@ -1375,8 +1425,22 @@ def expenditures_list(request):
     # Calculate offset
     offset = (page_num - 1) * page_size
 
+    # Build search conditions
+    search_sql = ""
+    search_params = []
+    if search:
+        search_sql = """
+            AND (
+                t.memo ILIKE %s
+                OR COALESCE(cn.first_name || ' ' || cn.last_name, cn.last_name) ILIKE %s
+                OR COALESCE(scn.first_name || ' ' || scn.last_name, scn.last_name) ILIKE %s
+            )
+        """
+        search_term = f"%{search}%"
+        search_params = [search_term, search_term, search_term]
+
     # Optimized SQL query with minimal JOINs
-    sql = """
+    sql = f"""
         SELECT
             t.transaction_id,
             t.transaction_date,
@@ -1392,12 +1456,13 @@ def expenditures_list(request):
         LEFT JOIN "Names" scn ON sc.name_id = scn.name_id
         WHERE t.subject_committee_id IS NOT NULL
           AND t.deleted = false
+          {search_sql}
         ORDER BY t.transaction_date DESC NULLS LAST
         LIMIT %s OFFSET %s
     """
 
     with connection.cursor() as cursor:
-        cursor.execute(sql, [page_size + 1, offset])
+        cursor.execute(sql, search_params + [page_size + 1, offset])
         rows = cursor.fetchall()
 
     # Check if there are more results
@@ -1436,20 +1501,32 @@ def expenditures_list(request):
 
     # Get approximate count (fast query on indexed column)
     with connection.cursor() as cursor:
-        cursor.execute("""
+        count_sql = f"""
             SELECT COUNT(*)
-            FROM "Transactions"
-            WHERE subject_committee_id IS NOT NULL
-              AND deleted = false
-        """)
+            FROM "Transactions" t
+            LEFT JOIN "Committees" c ON t.committee_id = c.committee_id
+            LEFT JOIN "Names" cn ON c.name_id = cn.name_id
+            LEFT JOIN "Committees" sc ON t.subject_committee_id = sc.committee_id
+            LEFT JOIN "Names" scn ON sc.name_id = scn.name_id
+            WHERE t.subject_committee_id IS NOT NULL
+              AND t.deleted = false
+              {search_sql}
+        """
+        cursor.execute(count_sql, search_params)
         total_count = cursor.fetchone()[0]
 
     # Build paginated response
+    next_url = f'/api/v1/expenditures/?page={page_num + 1}&page_size={page_size}'
+    prev_url = f'/api/v1/expenditures/?page={page_num - 1}&page_size={page_size}'
+    if search:
+        next_url += f'&search={search}'
+        prev_url += f'&search={search}'
+
     response_data = {
         'results': result_data,
         'count': total_count,  # Fast count with index
-        'next': f'/api/v1/expenditures/?page={page_num + 1}&page_size={page_size}' if has_next else None,
-        'previous': f'/api/v1/expenditures/?page={page_num - 1}&page_size={page_size}' if page_num > 1 else None,
+        'next': next_url if has_next else None,
+        'previous': prev_url if page_num > 1 else None,
     }
 
     # Cache for 5 minutes with Zstd compression

@@ -136,10 +136,10 @@ def soi_candidates_list(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def mark_candidate_contacted(request, candidate_id):
+def mark_candidate_contacted(request, pk):
     """Mark candidate as contacted"""
     try:
-        candidate = CandidateStatementOfInterest.objects.get(id=candidate_id)
+        candidate = CandidateStatementOfInterest.objects.get(id=pk)
         candidate.contact_status = 'contacted'
         candidate.contact_date = timezone.now().date()
         candidate.contacted_by = request.data.get('contacted_by', 'System')
@@ -156,10 +156,10 @@ def mark_candidate_contacted(request, candidate_id):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def mark_pledge_received(request, candidate_id):
+def mark_pledge_received(request, pk):
     """Mark pledge as received"""
     try:
-        candidate = CandidateStatementOfInterest.objects.get(id=candidate_id)
+        candidate = CandidateStatementOfInterest.objects.get(id=pk)
         candidate.pledge_received = True
         candidate.pledge_date = timezone.now().date()
         candidate.contact_status = 'acknowledged'

@@ -225,11 +225,6 @@ export default function CandidateDetail() {
       <Sidebar />
 
       <main className="flex-1 lg:ml-0">
-        <Header
-          title={candidate.name?.full_name || "Candidate Details"}
-          subtitle={`${candidate.office?.name || "Office Unknown"} • ${candidate.party?.abbreviation || "Party Unknown"}`}
-        />
-
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
           {/* Back Button */}
           <button

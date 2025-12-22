@@ -6,7 +6,18 @@ export function DarkModeProvider({ children }) {
   const [darkMode, setDarkMode] = useState(() => {
     // Check localStorage for saved preference
     const saved = localStorage.getItem('darkMode');
-    return saved === 'true';
+    const isDark = saved === 'true';
+
+    // Apply theme immediately to prevent flash
+    if (isDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.body.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      document.body.removeAttribute('data-theme');
+    }
+
+    return isDark;
   });
 
   useEffect(() => {

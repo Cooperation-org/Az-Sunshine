@@ -18,168 +18,17 @@ import {
   Phone,
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
-
+import { useDarkMode } from "../context/DarkModeContext";
 import { StatsGridSkeleton, TableSkeleton, CardSkeleton } from "../components/SkeletonLoader";
 import ConfirmationModal from "../components/ConfirmationModal";
-
-// API Base URL
-const API_BASE_URL = "http://167.172.30.134/api/v1/";
-
-// Mock data - Replace with real API calls
-const getDuplicateEntities = async () => {
-  // TODO: Replace with real API call
-  // const response = await fetch(`${API_BASE_URL}validation/duplicates/`);
-  // return response.json();
-  
-  return {
-    duplicates: [
-      {
-        id: 1,
-        group_id: "group_1",
-        entities: [
-          {
-            id: 101,
-            name: "John Smith",
-            name_id: 1001,
-            entity_type: "Individual",
-            city: "Phoenix",
-            state: "AZ",
-            total_contributions: 15000,
-            transaction_count: 45,
-            created_date: "2023-01-15",
-            confidence_score: 0.95,
-          },
-          {
-            id: 102,
-            name: "John A. Smith",
-            name_id: 1002,
-            entity_type: "Individual",
-            city: "Phoenix",
-            state: "AZ",
-            total_contributions: 8500,
-            transaction_count: 23,
-            created_date: "2023-02-20",
-            confidence_score: 0.92,
-          },
-          {
-            id: 103,
-            name: "J. Smith",
-            name_id: 1003,
-            entity_type: "Individual",
-            city: "Phoenix",
-            state: "AZ",
-            total_contributions: 3200,
-            transaction_count: 12,
-            created_date: "2023-03-10",
-            confidence_score: 0.88,
-          },
-        ],
-        similarity_reason: "Name similarity, same location",
-      },
-      {
-        id: 2,
-        group_id: "group_2",
-        entities: [
-          {
-            id: 201,
-            name: "Arizona Business Corp",
-            name_id: 2001,
-            entity_type: "Organization",
-            city: "Tucson",
-            state: "AZ",
-            total_contributions: 50000,
-            transaction_count: 120,
-            created_date: "2022-11-05",
-            confidence_score: 0.97,
-          },
-          {
-            id: 202,
-            name: "Arizona Business Corporation",
-            name_id: 2002,
-            entity_type: "Organization",
-            city: "Tucson",
-            state: "AZ",
-            total_contributions: 25000,
-            transaction_count: 67,
-            created_date: "2023-01-12",
-            confidence_score: 0.94,
-          },
-        ],
-        similarity_reason: "Organization name variation",
-      },
-      {
-        id: 3,
-        group_id: "group_3",
-        entities: [
-          {
-            id: 301,
-            name: "Maria Garcia",
-            name_id: 3001,
-            entity_type: "Individual",
-            city: "Scottsdale",
-            state: "AZ",
-            total_contributions: 8900,
-            transaction_count: 34,
-            created_date: "2023-04-18",
-            confidence_score: 0.91,
-          },
-          {
-            id: 302,
-            name: "Maria G. Garcia",
-            name_id: 3002,
-            entity_type: "Individual",
-            city: "Scottsdale",
-            state: "AZ",
-            total_contributions: 5600,
-            transaction_count: 19,
-            created_date: "2023-05-22",
-            confidence_score: 0.89,
-          },
-        ],
-        similarity_reason: "Name abbreviation, same location",
-      },
-    ],
-    total_duplicate_groups: 3,
-    total_duplicate_entities: 7,
-  };
-};
-
-const getDataQualityMetrics = async () => {
-  // TODO: Replace with real API call
-  // const response = await fetch(`${API_BASE_URL}validation/phase1/`);
-  // return response.json();
-  
-  return {
-    total_entities: 15420,
-    duplicate_entities: 7,
-    entities_without_email: 3420,
-    entities_without_phone: 2890,
-    incomplete_addresses: 1560,
-    missing_entity_types: 230,
-    orphaned_transactions: 45,
-    data_quality_score: 87.5,
-    last_validated: new Date().toISOString(),
-  };
-};
-
-const mergeDuplicateEntities = async (primaryId, duplicateIds) => {
-  // TODO: Replace with real API call
-  // const response = await fetch(`${API_BASE_URL}validation/merge-duplicates/`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ primary_id: primaryId, duplicate_ids: duplicateIds })
-  // });
-  // return response.json();
-  
-  // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ success: true, merged_count: duplicateIds.length });
-    }, 1500);
-  });
-};
+import {
+  getDataQualityMetrics,
+  getDuplicateEntities,
+  mergeEntities
+} from "../api/api";
 
 export default function DataValidation() {
+  const { darkMode } = useDarkMode();
   const [duplicates, setDuplicates] = useState([]);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -202,10 +51,45 @@ export default function DataValidation() {
         getDuplicateEntities(),
         getDataQualityMetrics(),
       ]);
-      
-      setDuplicates(duplicatesData.duplicates || []);
-      setMetrics(metricsData);
-      setTotalPages(Math.ceil((duplicatesData.duplicates || []).length / pageSize));
+
+      // Backend returns { duplicates: [], total_found: N }
+      const duplicatesList = duplicatesData?.duplicates || [];
+
+      // Transform backend data to match frontend expectations
+      // Add sequential IDs and entity_type field
+      const transformedDuplicates = duplicatesList.map((dup, idx) => ({
+        id: idx + 1,
+        entities: dup.entities.map(entity => ({
+          id: entity.id,
+          name: entity.name,
+          city: entity.city,
+          state: 'AZ', // Backend doesn't return state, defaulting to AZ
+          entity_type: 'Individual', // Backend doesn't return this
+          total_contributions: 0, // Backend doesn't return this
+          transaction_count: 0, // Backend doesn't return this
+          confidence_score: dup.confidence_score || 0.85
+        })),
+        similarity_reason: dup.reason || 'Name similarity',
+        confidence_score: dup.confidence_score || 0.85
+      }));
+
+      setDuplicates(transformedDuplicates);
+
+      // Transform metrics data to match frontend expectations
+      const transformedMetrics = {
+        total_entities: metricsData?.total_records?.entities || 0,
+        duplicate_entities: duplicatesData?.total_found || 0,
+        entities_without_email: 0, // Not currently tracked
+        entities_without_phone: 0, // Not currently tracked
+        incomplete_addresses: metricsData?.missing_data?.entities_without_location || 0,
+        missing_entity_types: 0, // Not currently tracked
+        orphaned_transactions: 0, // Not currently tracked
+        data_quality_score: metricsData?.transaction_completeness || 0,
+        last_validated: new Date().toISOString(),
+      };
+
+      setMetrics(transformedMetrics);
+      setTotalPages(Math.ceil(transformedDuplicates.length / pageSize));
     } catch (error) {
       console.error("Error loading validation data:", error);
       setDuplicates([]);
@@ -224,7 +108,7 @@ export default function DataValidation() {
         .filter((e) => e.id !== primaryEntity.id)
         .map((e) => e.id);
 
-      await mergeDuplicateEntities(primaryEntity.id, duplicateIds);
+      const result = await mergeEntities(primaryEntity.id, duplicateIds);
 
       // Remove merged group from list
       setDuplicates((prev) => prev.filter((g) => g.id !== selectedGroup.id));
@@ -233,10 +117,9 @@ export default function DataValidation() {
       setPrimaryEntity(null);
 
       // Reload metrics
-      const metricsData = await getDataQualityMetrics();
-      setMetrics(metricsData);
+      await loadData();
 
-      alert(`Successfully merged ${duplicateIds.length} duplicate entities!`);
+      alert(`Successfully merged ${result.merged_count || duplicateIds.length} duplicate entities!`);
     } catch (error) {
       console.error("Error merging entities:", error);
       alert("Failed to merge entities. Please try again.");
@@ -274,7 +157,7 @@ export default function DataValidation() {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className={`flex min-h-screen ${darkMode ? 'bg-[#1A1625]' : 'bg-gray-50'}`}>
       <Sidebar />
       <main className="flex-1 lg:ml-0 min-w-0">
 
@@ -285,7 +168,9 @@ export default function DataValidation() {
           ) : metrics ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Overall Quality Score */}
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
+              <div className={`rounded-xl p-4 sm:p-6 shadow-sm border ${
+                darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'
+              }`}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-3 bg-purple-50 rounded-xl">
                     <Shield className="w-6 h-6 text-purple-600" />
@@ -294,14 +179,18 @@ export default function DataValidation() {
                     {metrics.data_quality_score.toFixed(1)}%
                   </span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                <div className={`text-2xl sm:text-3xl font-bold mb-1 ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   {metrics.data_quality_score.toFixed(1)}%
                 </div>
-                <div className="text-sm text-gray-600">Data Quality Score</div>
+                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Data Quality Score</div>
               </div>
 
               {/* Duplicate Entities */}
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
+              <div className={`rounded-xl p-4 sm:p-6 shadow-sm border ${
+                darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'
+              }`}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-3 bg-red-50 rounded-xl">
                     <Users className="w-6 h-6 text-red-600" />
@@ -312,14 +201,18 @@ export default function DataValidation() {
                     {metrics.duplicate_entities > 0 ? "Issue" : "Clean"}
                   </span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                <div className={`text-2xl sm:text-3xl font-bold mb-1 ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   {metrics.duplicate_entities}
                 </div>
-                <div className="text-sm text-gray-600">Duplicate Entities</div>
+                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Duplicate Entities</div>
               </div>
 
               {/* Missing Data */}
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
+              <div className={`rounded-xl p-4 sm:p-6 shadow-sm border ${
+                darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'
+              }`}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-3 bg-amber-50 rounded-xl">
                     <AlertTriangle className="w-6 h-6 text-amber-600" />
@@ -332,31 +225,41 @@ export default function DataValidation() {
                     {metrics.entities_without_email + metrics.entities_without_phone > 5000 ? "High" : "Medium"}
                   </span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                <div className={`text-2xl sm:text-3xl font-bold mb-1 ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   {(metrics.entities_without_email + metrics.entities_without_phone).toLocaleString()}
                 </div>
-                <div className="text-sm text-gray-600">Missing Contact Info</div>
+                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Missing Contact Info</div>
               </div>
 
               {/* Total Entities */}
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
+              <div className={`rounded-xl p-4 sm:p-6 shadow-sm border ${
+                darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'
+              }`}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-3 bg-blue-50 rounded-xl">
                     <Database className="w-6 h-6 text-blue-600" />
                   </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                <div className={`text-2xl sm:text-3xl font-bold mb-1 ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   {metrics.total_entities.toLocaleString()}
                 </div>
-                <div className="text-sm text-gray-600">Total Entities</div>
+                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Entities</div>
               </div>
             </div>
           ) : null}
 
           {/* Data Issues Alerts */}
           {metrics && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className={`rounded-xl shadow-sm border p-4 sm:p-6 ${
+              darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'
+            }`}>
+              <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>
                 <AlertCircle className="w-5 h-5 text-amber-600" />
                 Data Quality Issues
               </h3>
@@ -426,21 +329,27 @@ export default function DataValidation() {
           )}
 
           {/* Duplicate Entities Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 sm:p-6 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className={`rounded-xl shadow-sm border overflow-hidden ${
+            darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'
+          }`}>
+            <div className={`p-4 sm:p-6 border-b flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+              darkMode ? 'border-gray-700' : 'border-gray-200'
+            }`}>
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <h3 className={`text-lg sm:text-xl font-semibold flex items-center gap-2 ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   <Merge className="w-5 h-5 text-purple-600" />
                   Duplicate Entities
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {duplicates.length} duplicate group{duplicates.length !== 1 ? "s" : ""} found
                 </p>
               </div>
               <button
                 onClick={loadData}
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-b from-[#6B5B95] to-[#4C3D7D] text-white rounded-lg hover:from-[#7C6BA6] hover:to-[#5B4D7D] transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 bg-[#7667C1] text-white rounded-lg hover:bg-[#6557B1] transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                 Refresh
@@ -457,12 +366,14 @@ export default function DataValidation() {
               <div className="flex items-center justify-center h-64 text-center">
                 <div>
                   <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
-                  <div className="text-lg font-semibold text-gray-900 mb-1">No Duplicates Found</div>
-                  <div className="text-sm text-gray-500">All entities are unique</div>
+                  <div className={`text-lg font-semibold mb-1 ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>No Duplicates Found</div>
+                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>All entities are unique</div>
                 </div>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200">
+              <div className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                 {paginatedDuplicates.map((group) => (
                   <div key={group.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between mb-4">
@@ -532,22 +443,32 @@ export default function DataValidation() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="p-4 sm:p-6 border-t border-gray-200 flex items-center justify-between">
-                <p className="text-sm text-gray-600">
+              <div className={`p-4 sm:p-6 border-t flex items-center justify-between ${
+                darkMode ? 'border-gray-700' : 'border-gray-200'
+              }`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Page {currentPage} of {totalPages}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="w-10 h-10 rounded-lg bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-10 h-10 rounded-lg border flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                      darkMode
+                        ? 'bg-[#1F1B31] text-gray-300 hover:bg-[#16131F] border-gray-700'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
+                    }`}
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="w-10 h-10 rounded-lg bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-10 h-10 rounded-lg border flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                      darkMode
+                        ? 'bg-[#1F1B31] text-gray-300 hover:bg-[#16131F] border-gray-700'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
+                    }`}
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>

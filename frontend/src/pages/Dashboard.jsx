@@ -14,6 +14,7 @@ import {
   Building2,
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
+import DashboardHeroBanner from "../components/DashboardHeroBanner";
 import api from "../api/api";
 import { useDarkMode } from "../context/DarkModeContext";
 
@@ -467,64 +468,49 @@ export default function Dashboard() {
   // Removed full-screen loading spinner - now using progressive loading with skeleton UI
 
   return (
-    <div className={`flex h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
+    <div className={`flex h-screen ${darkMode ? 'bg-[#1a1625]' : 'bg-gray-50'}`}>
       <Sidebar />
-      
+
       <main className="flex-1 overflow-auto">
-        
-        
-        <div className="p-4 sm:p-6 lg:p-8 space-y-8">
-          {/* Top Header with Refresh */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Dashboard Overview</h1>
-              <p className={`text-sm mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-500'}`}>
-                Arizona campaign finance data
-              </p>
-            </div>
-            <button 
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className={`flex items-center gap-2 px-5 py-2.5 ${darkMode ? 'bg-[#7d6fa3] hover:bg-[#8b7cb8]' : 'bg-[#7163BA] hover:bg-[#332D54]'} text-white rounded-xl font-medium transition-all shadow-sm hover:shadow-md disabled:opacity-50`}
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh Data'}
-            </button>
-          </div>
+
+
+        <div className="p-6 sm:p-8 lg:p-10 space-y-6">
+          {/* Hero Banner */}
+          <DashboardHeroBanner onRefresh={handleRefresh} refreshing={refreshing} />
 
           {/* Stat Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {statCards.map((stat, idx) => {
               const IconComponent = stat.icon;
 
               return (
-                <div key={idx} className={`${darkMode ? 'bg-[#3d3559]' : 'bg-white'} rounded-2xl p-6 border ${darkMode ? 'border-[#4a3f66]' : 'border-gray-100'} shadow-sm hover:shadow-md transition-all`}>
-                  <div className="flex items-start justify-between mb-4">
+                <div key={idx} className={`${darkMode ? 'bg-[#2a2438]' : 'bg-white'} rounded-xl p-5 border ${darkMode ? 'border-[#7163BA]/20' : 'border-gray-200/80'} hover:border-[#7163BA]/40 transition-all duration-200`} style={darkMode ? { boxShadow: '0 4px 12px rgba(0,0,0,0.3)' } : {}}>
+                  <div className="flex items-start justify-between mb-3">
                     <div
-                      className="p-3 rounded-xl"
+                      className="p-2 rounded-lg"
                       style={{
-                        backgroundColor: darkMode ? 'rgba(139, 124, 184, 0.2)' : `${stat.color}15`,
+                        backgroundColor: darkMode ? 'rgba(139, 124, 184, 0.1)' : `${stat.color}10`,
                       }}
                     >
                       <IconComponent
-                        className="w-6 h-6"
+                        className="w-4 h-4"
                         style={{ color: darkMode ? '#8b7cb8' : stat.color }}
                       />
                     </div>
                   </div>
-                  
+
                   <div>
-                    <p className={`text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>{stat.title}</p>
+                    <p className={`text-xs font-medium mb-2 uppercase tracking-wider ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{stat.title}</p>
                     {!metricsLoaded ? (
-                      <div className={`h-8 w-32 mb-2 rounded-md ${darkMode ? 'bg-[#4a3f66]' : 'bg-gray-200'} animate-pulse`}></div>
+                      <div className={`h-7 w-28 mb-2 rounded ${darkMode ? 'bg-white/5' : 'bg-gray-200'} animate-pulse`}></div>
                     ) : (
-                      <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{stat.value}</h3>
+                      <h3 className={`text-2xl font-bold mb-1 tabular-nums ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif', fontVariantNumeric: 'tabular-nums' }}>{stat.value}</h3>
                     )}
-                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{stat.subtitle}</p>
+                    <p className={`text-xs ${darkMode ? 'text-[#8a7fb5]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{stat.subtitle}</p>
                   </div>
 
-                  <Link to={stat.link} className="mt-4 text-xs font-medium flex items-center gap-1 hover:gap-2 transition-all" style={{ color: darkMode ? '#8b7cb8' : stat.color }}>
-                    View Report
+                  <Link to={stat.link} className={`mt-4 text-xs font-medium flex items-center gap-1 hover:gap-2 transition-all ${darkMode ? 'text-[#7163BA] hover:text-[#8b7cb8]' : 'text-gray-600 hover:text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    View details
                     <ArrowUpRight className="w-3 h-3" />
                   </Link>
                 </div>
@@ -533,16 +519,16 @@ export default function Dashboard() {
           </div>
 
           {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Top Donors Chart */}
-            <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm`}>
-              <div className="flex items-center justify-between mb-6">
+            <div className={`${darkMode ? 'bg-[#2a2438]' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-[#7163BA]/20' : 'border-gray-200/80'}`} style={darkMode ? { boxShadow: '0 4px 12px rgba(0,0,0,0.3)' } : {}}>
+              <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Top 10 Donors</h3>
-                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Highest contributors (all cycles)</p>
+                  <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Top 10 Donors</h3>
+                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Highest contributors (all cycles)</p>
                 </div>
-                <button className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-gray-50'}`}>
-                  <MoreVertical className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
+                <button className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-[#7163BA]/10' : 'hover:bg-gray-50'}`}>
+                  <MoreVertical className={`w-4 h-4 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-400'}`} />
                 </button>
               </div>
               
@@ -564,14 +550,14 @@ export default function Dashboard() {
             </div>
 
             {/* Top IE Committees Chart */}
-            <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm`}>
-              <div className="flex items-center justify-between mb-6">
+            <div className={`${darkMode ? 'bg-[#2a2438]' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-[#7163BA]/20' : 'border-gray-200/80'}`} style={darkMode ? { boxShadow: '0 4px 12px rgba(0,0,0,0.3)' } : {}}>
+              <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Top 10 IE Committees</h3>
-                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Highest spending (all cycles)</p>
+                  <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Top 10 IE Committees</h3>
+                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Highest spending (all cycles)</p>
                 </div>
-                <button className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-gray-50'}`}>
-                  <MoreVertical className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
+                <button className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-[#7163BA]/10' : 'hover:bg-gray-50'}`}>
+                  <MoreVertical className={`w-4 h-4 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-400'}`} />
                 </button>
               </div>
               
@@ -596,13 +582,13 @@ export default function Dashboard() {
           </div>
 
           {/* Bottom Row - Doughnut & Expenditures Table */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* IE Benefit Breakdown - Doughnut */}
-            <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm`}>
-              <div className="flex items-center justify-between mb-6">
+            <div className={`${darkMode ? 'bg-[#2a2438]' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-[#7163BA]/20' : 'border-gray-200/80'}`} style={darkMode ? { boxShadow: '0 4px 12px rgba(0,0,0,0.3)' } : {}}>
+              <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>IE Spending Type</h3>
-                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Distribution by benefit</p>
+                  <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>IE Spending Type</h3>
+                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Distribution by benefit</p>
                 </div>
               </div>
 
@@ -654,17 +640,17 @@ export default function Dashboard() {
             </div>
 
             {/* Expenditures Table */}
-            <div className={`lg:col-span-2 ${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-8 border shadow-sm flex flex-col`}>
-              <div className="flex items-center justify-between mb-6">
+            <div className={`lg:col-span-2 ${darkMode ? 'bg-[#2a2438]' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-[#7163BA]/20' : 'border-gray-200/80'} flex flex-col`} style={darkMode ? { boxShadow: '0 4px 12px rgba(0,0,0,0.3)' } : {}}>
+              <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Independent Expenditures</h3>
-                  <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Historical database records (2023 and previous cycles)</p>
+                  <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Independent Expenditures</h3>
+                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Historical database records (2023 and previous cycles)</p>
                 </div>
               </div>
 
               {recentExpenditures.length > 0 ? (
-                <div className="flex-1 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
-                  <table className="min-w-full table-fixed">
+                <div className="flex-1 overflow-x-auto -mx-6">
+                  <table className="min-w-full">
                     <thead className={`border-b ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
                       <tr>
                         <th scope="col" className={`w-5/12 px-4 sm:px-6 lg:px-8 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>

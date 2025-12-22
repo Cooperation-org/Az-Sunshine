@@ -7,6 +7,28 @@ from .views_email import *
 from .views_dashboard_optimized import *
 from .views_dashboard_extreme import *
 from .views_admin import DataImportViewSet, ScraperViewSet, SOSViewSet, SeeTheMoneyViewSet
+from .views_ad_buys import AdBuyViewSet
+from .views_validation import (
+    data_quality_metrics,
+    duplicate_entities,
+    race_validation,
+    external_comparison,
+    merge_entities
+)
+from .views_auth import (
+    register,
+    login,
+    setup_2fa,
+    enable_2fa,
+    verify_2fa,
+    disable_2fa,
+    get_current_user,
+    logout
+)
+from .views_primary_race import (
+    primary_race_detail,
+    available_primary_races
+)
 
 app_name = 'transparency'
 
@@ -21,6 +43,7 @@ router.register(r'parties', PartyViewSet, basename='party')
 router.register(r'email-templates', EmailTemplateViewSet, basename='email-template')
 router.register(r'email-campaigns', EmailCampaignViewSet, basename='email-campaign')
 router.register(r'email-logs', EmailLogViewSet, basename='email-log')
+router.register(r'ad-buys', AdBuyViewSet, basename='ad-buy')
 
 # Phase 1 Admin Tools
 router.register(r'admin/imports', DataImportViewSet, basename='admin-imports')
@@ -30,11 +53,25 @@ router.register(r'admin/seethemoney', SeeTheMoneyViewSet, basename='admin-seethe
 
 
 urlpatterns = [
+    # === AUTHENTICATION ===
+    path('auth/register/', register, name='auth-register'),
+    path('auth/login/', login, name='auth-login'),
+    path('auth/logout/', logout, name='auth-logout'),
+    path('auth/me/', get_current_user, name='auth-me'),
+    path('auth/2fa-setup/', setup_2fa, name='auth-2fa-setup'),
+    path('auth/2fa-enable/', enable_2fa, name='auth-2fa-enable'),
+    path('auth/2fa-verify/', verify_2fa, name='auth-2fa-verify'),
+    path('auth/2fa-disable/', disable_2fa, name='auth-2fa-disable'),
+
     # === RACE ANALYSIS ===
     path('races/ie-spending/', race_ie_spending, name='race-ie-spending'),
     path('races/top-donors/', race_top_donors, name='race-top-donors'),
     path('races/money-flow/', races_money_flow, name='races-money-flow'),
     path('races/detailed-money-flow/', races_detailed_money_flow, name='races-detailed-money-flow'),
+
+    # === PRIMARY RACE VIEW (Golda Demo) ===
+    path('races/primary/', primary_race_detail, name='primary-race-detail'),
+    path('races/primary/available/', available_primary_races, name='available-primary-races'),
 
     # === VISUALIZATIONS ===
     path('committees/top_by_ie/', committees_top_by_ie, name='committees-top-by-ie'),
@@ -71,6 +108,11 @@ urlpatterns = [
     
     # === DATA VALIDATION ===
     path('validation/phase1/', validate_phase1_data, name='validate-phase1'),
+    path('validation/quality-metrics/', data_quality_metrics, name='validation-quality-metrics'),
+    path('validation/duplicates/', duplicate_entities, name='validation-duplicates'),
+    path('validation/race/', race_validation, name='validation-race'),
+    path('validation/external-comparison/', external_comparison, name='validation-external'),
+    path('validation/merge-entities/', merge_entities, name='validation-merge'),
     
     # === FRONTEND ADAPTERS ===
     path('donors/top/', donors_top, name='donors-top'),

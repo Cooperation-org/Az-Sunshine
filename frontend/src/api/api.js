@@ -20,7 +20,7 @@ const api = axios.create({
 // Request interceptor for adding auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -41,9 +41,10 @@ api.interceptors.response.use(
       
       // Handle 401 Unauthorized
       if (error.response.status === 401) {
-        localStorage.removeItem('auth_token');
-        // Optional: redirect to login
-        // window.location.href = '/login';
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        // Redirect to login
+        window.location.href = '/login';
       }
     } else if (error.request) {
       // Request made but no response
@@ -131,12 +132,19 @@ export async function getRecentExpenditures(limit = 10) {
 /**
  * Get all candidates with filters
  */
-export async function getCandidates(params = {}) {
+export async function getCandidates(params = {}, signal = null) {
   try {
     const queryString = buildQueryString(params);
-    const res = await api.get(`/candidates/?${queryString}`);
+    const config = signal ? { signal } : {};
+    const res = await api.get(`/candidates/?${queryString}`, config);
     return res.data;
   } catch (error) {
+    // If request was aborted, throw AbortError to be caught by caller
+    if (axios.isCancel(error) || error.name === 'CanceledError') {
+      const abortError = new Error('Request aborted');
+      abortError.name = 'AbortError';
+      throw abortError;
+    }
     handleError(error, 'Failed to load candidates');
   }
 }
@@ -699,6 +707,156 @@ export async function uploadScrapedData(file) {
 }
 
 
+// ==================== AD BUY ENDPOINTS ====================
+
+/**
+ * Get ad buys with filters
+ */
+export async function getAdBuys(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/ad-buys/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load ad buys');
+  }
+}
+
+/**
+ * Get ad buy statistics for a race
+ */
+export async function getAdBuyStats(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/ad-buys/stats/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load ad buy statistics');
+  }
+}
+
+/**
+ * Submit ad buy report (public, multipart/form-data)
+ */
+export async function submitAdBuy(formData) {
+  try {
+    const res = await api.post('/ad-buys/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to submit ad buy report');
+  }
+}
+
+/**
+ * Verify ad buy (admin only)
+ */
+export async function verifyAdBuy(adBuyId, data = {}) {
+  try {
+    const res = await api.post(`/ad-buys/${adBuyId}/verify/`, data);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to verify ad buy');
+  }
+}
+
+/**
+ * Reject ad buy (admin only)
+ */
+export async function rejectAdBuy(adBuyId, reason = '') {
+  try {
+    const res = await api.post(`/ad-buys/${adBuyId}/reject/`, { reason });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to reject ad buy');
+  }
+}
+
+/**
+ * Get pending ad buys for admin review
+ */
+export async function getPendingAdBuys(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/ad-buys/pending_review/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load pending ad buys');
+  }
+}
+
+
+// ==================== VALIDATION ENDPOINTS ====================
+
+/**
+ * Get data quality metrics
+ */
+export async function getDataQualityMetrics() {
+  try {
+    const res = await api.get('/validation/quality-metrics/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load data quality metrics');
+  }
+}
+
+/**
+ * Get duplicate entities
+ */
+export async function getDuplicateEntities() {
+  try {
+    const res = await api.get('/validation/duplicates/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load duplicate entities');
+  }
+}
+
+/**
+ * Get race validation data
+ */
+export async function getRaceValidation(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/validation/race/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load race validation data');
+  }
+}
+
+/**
+ * Get external comparison data
+ */
+export async function getExternalComparison(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/validation/external-comparison/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load external comparison data');
+  }
+}
+
+/**
+ * Merge duplicate entities
+ */
+export async function mergeEntities(primaryEntityId, duplicateEntityIds) {
+  try {
+    const res = await api.post('/validation/merge-entities/', {
+      primary_entity_id: primaryEntityId,
+      duplicate_entity_ids: duplicateEntityIds
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to merge entities');
+  }
+}
+
+
 // ==================== EXPORT FUNCTIONS ====================
 
 /**
@@ -771,6 +929,160 @@ export async function exportExpendituresCSV(params = {}) {
     return true;
   } catch (error) {
     handleError(error, 'Failed to export expenditures');
+  }
+}
+
+// ==================== AUTHENTICATION ====================
+
+/**
+ * Register a new user (auto-admin)
+ */
+export async function register(username, email, password, passwordConfirm, firstName = '', lastName = '') {
+  try {
+    const res = await api.post('/auth/register/', {
+      username,
+      email,
+      password,
+      password_confirm: passwordConfirm,
+      first_name: firstName,
+      last_name: lastName,
+    });
+
+    // Store tokens
+    if (res.data.tokens) {
+      localStorage.setItem('access_token', res.data.tokens.access);
+      localStorage.setItem('refresh_token', res.data.tokens.refresh);
+    }
+
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Registration failed');
+    throw error;
+  }
+}
+
+/**
+ * Login with username and password
+ */
+export async function login(username, password) {
+  try {
+    const res = await api.post('/auth/login/', {
+      username,
+      password,
+    });
+
+    // If 2FA is required, return the response with temp_token
+    if (res.data.requires_2fa) {
+      return res.data;
+    }
+
+    // No 2FA, store full tokens
+    if (res.data.tokens) {
+      localStorage.setItem('access_token', res.data.tokens.access);
+      localStorage.setItem('refresh_token', res.data.tokens.refresh);
+    }
+
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Login failed');
+    throw error;
+  }
+}
+
+/**
+ * Verify 2FA code after login
+ */
+export async function verify2FA(code, tempToken) {
+  try {
+    const res = await api.post('/auth/2fa-verify/', {
+      code,
+      temp_token: tempToken,
+    });
+
+    // Store full tokens after successful 2FA
+    if (res.data.tokens) {
+      localStorage.setItem('access_token', res.data.tokens.access);
+      localStorage.setItem('refresh_token', res.data.tokens.refresh);
+    }
+
+    return res.data;
+  } catch (error) {
+    handleError(error, '2FA verification failed');
+    throw error;
+  }
+}
+
+/**
+ * Get 2FA setup (QR code and secret)
+ */
+export async function setup2FA() {
+  try {
+    const res = await api.get('/auth/2fa-setup/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to get 2FA setup');
+    throw error;
+  }
+}
+
+/**
+ * Enable 2FA with verification code
+ */
+export async function enable2FA(code) {
+  try {
+    const res = await api.post('/auth/2fa-enable/', { code });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to enable 2FA');
+    throw error;
+  }
+}
+
+/**
+ * Disable 2FA
+ */
+export async function disable2FA() {
+  try {
+    const res = await api.post('/auth/2fa-disable/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to disable 2FA');
+    throw error;
+  }
+}
+
+/**
+ * Get current user info
+ */
+export async function getCurrentUser() {
+  try {
+    const res = await api.get('/auth/me/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to get user info');
+    throw error;
+  }
+}
+
+/**
+ * Logout user
+ */
+export async function logout() {
+  try {
+    await api.post('/auth/logout/');
+
+    // Clear tokens
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+
+    return true;
+  } catch (error) {
+    // Even if API call fails, clear tokens
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+
+    handleError(error, 'Logout failed');
+    throw error;
   }
 }
 

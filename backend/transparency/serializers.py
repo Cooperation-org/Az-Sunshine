@@ -252,19 +252,24 @@ class CandidateSOISerializer(serializers.ModelSerializer):
     """
     office = OfficeSerializer(read_only=True)
     entity = EntitySerializer(read_only=True)
-    
+    contacted = serializers.SerializerMethodField()
+
     # Write fields for creating/updating
     office_id = serializers.IntegerField(write_only=True)
-    
+
     class Meta:
         model = CandidateStatementOfInterest
         fields = [
-            'id', 'candidate_name', 'office', 'office_id', 'email',
+            'id', 'candidate_name', 'office', 'office_id', 'email', 'phone', 'party',
             'filing_date', 'contact_status', 'contact_date', 'contacted_by',
-            'pledge_received', 'pledge_date', 'notes', 'entity',
-            'created_at', 'updated_at'
+            'contacted', 'pledge_received', 'pledge_date', 'notes', 'entity',
+            'created_at', 'updated_at', 'source_url'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_contacted(self, obj):
+        """Return True if contact_status is contacted or acknowledged"""
+        return obj.contact_status in ['contacted', 'acknowledged']
     
     def validate_email(self, value):
         """Validate email format if provided"""
@@ -450,7 +455,7 @@ class EmailLogListSerializer(serializers.ModelSerializer):
     candidate_email = serializers.CharField(source='candidate.email', read_only=True)
     template_name = serializers.CharField(source='template.name', read_only=True)
     campaign_name = serializers.CharField(source='campaign.name', read_only=True, allow_null=True)
-    
+
     class Meta:
         model = EmailLog
         fields = [
@@ -460,6 +465,108 @@ class EmailLogListSerializer(serializers.ModelSerializer):
             'sent_at', 'status',
             'opened_at', 'clicked_at'
         ]
+
+
+# ==================== AD BUY SERIALIZERS ====================
+
+class AdBuySerializer(serializers.ModelSerializer):
+    """Ad Buy serializer with related data"""
+    ie_committee_name = serializers.CharField(
+        source='ie_committee.name.full_name',
+        read_only=True,
+        allow_null=True
+    )
+    candidate_name = serializers.CharField(
+        source='candidate.name.full_name',
+        read_only=True,
+        allow_null=True
+    )
+    candidate_office = serializers.CharField(
+        source='candidate.candidate_office.name',
+        read_only=True,
+        allow_null=True
+    )
+    verified_by_username = serializers.CharField(
+        source='verified_by.username',
+        read_only=True,
+        allow_null=True
+    )
+    is_pending_review = serializers.BooleanField(read_only=True)
+    image_url = serializers.SerializerMethodField()
+
+    # Write-only fields for submission
+    ie_committee_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    candidate_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+
+    class Meta:
+        model = AdBuy
+        fields = [
+            'id', 'image', 'image_url', 'url', 'ad_date', 'platform',
+            'paid_for_by', 'approximate_spend', 'how_known',
+            'ie_committee', 'ie_committee_id', 'ie_committee_name',
+            'candidate', 'candidate_id', 'candidate_name', 'candidate_office',
+            'support_oppose', 'reported_by', 'reported_at',
+            'verified', 'verified_at', 'verified_by_username',
+            'rejected', 'rejection_reason', 'admin_notes',
+            'is_pending_review', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'reported_at', 'verified_at', 'verified_by',
+            'updated_at'
+        ]
+
+    def get_image_url(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+
+    def validate_image(self, value):
+        """Validate image size and type"""
+        from django.conf import settings
+
+        if value.size > settings.MAX_UPLOAD_SIZE:
+            raise serializers.ValidationError(
+                f"Image size must be under {settings.MAX_UPLOAD_SIZE / 1024 / 1024}MB"
+            )
+
+        if value.content_type not in settings.ALLOWED_IMAGE_TYPES:
+            raise serializers.ValidationError(
+                f"Image type must be one of: {', '.join(settings.ALLOWED_IMAGE_TYPES)}"
+            )
+
+        return value
+
+
+class AdBuyCreateSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for volunteer submissions (public)"""
+    class Meta:
+        model = AdBuy
+        fields = [
+            'image', 'url', 'ad_date', 'platform',
+            'paid_for_by', 'approximate_spend', 'how_known',
+            'candidate', 'support_oppose', 'reported_by'
+        ]
+
+    def validate(self, data):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        # Basic spam prevention
+        reported_by = data.get('reported_by')
+        if reported_by:
+            recent_submissions = AdBuy.objects.filter(
+                reported_by=reported_by,
+                reported_at__gte=timezone.now() - timedelta(minutes=5)
+            ).count()
+
+            if recent_submissions >= 3:
+                raise serializers.ValidationError(
+                    "Please wait before submitting more reports"
+                )
+        return data
 
 
 

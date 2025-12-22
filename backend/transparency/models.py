@@ -759,6 +759,158 @@ class CandidateStatementOfInterest(models.Model):
     
     def __str__(self):
         return f"{self.candidate_name} - {self.office.name}"
+
+
+class AdBuy(models.Model):
+    """
+    Ad Buy tracking with volunteer crowdsourced reporting
+    Phase 2 Requirement: Track ad buys correlated with IE spending
+    """
+    # Image upload
+    image = models.ImageField(
+        upload_to='ad_buys/%Y/%m/%d/',
+        help_text='Screenshot/photo of the ad'
+    )
+
+    # Ad details
+    url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text='URL where ad appeared (if online)'
+    )
+    ad_date = models.DateField(
+        db_index=True,
+        help_text='Date ad was observed'
+    )
+    platform = models.CharField(
+        max_length=100,
+        choices=[
+            ('tv', 'Television'),
+            ('radio', 'Radio'),
+            ('digital', 'Digital/Online'),
+            ('print', 'Print/Newspaper'),
+            ('mail', 'Direct Mail'),
+            ('billboard', 'Billboard/Outdoor'),
+            ('other', 'Other'),
+        ],
+        db_index=True
+    )
+
+    # Financial details
+    paid_for_by = models.CharField(
+        max_length=255,
+        help_text='Committee/organization that paid for ad'
+    )
+    approximate_spend = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Estimated cost (if known)'
+    )
+    how_known = models.CharField(
+        max_length=50,
+        choices=[
+            ('disclaimer', 'Shown in disclaimer'),
+            ('research', 'Found via research'),
+            ('estimate', 'Estimated'),
+            ('unknown', 'Unknown'),
+        ],
+        default='disclaimer'
+    )
+
+    # Linked to IE spending
+    ie_committee = models.ForeignKey(
+        'Committee',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='ad_buys',
+        help_text='IE committee that paid for this ad',
+        db_index=True
+    )
+    candidate = models.ForeignKey(
+        'Committee',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='ads_about_candidate',
+        help_text='Candidate this ad is about',
+        db_index=True
+    )
+    support_oppose = models.CharField(
+        max_length=10,
+        choices=[
+            ('support', 'Support'),
+            ('oppose', 'Oppose'),
+            ('neutral', 'Neutral/Informational'),
+        ],
+        db_index=True
+    )
+
+    # Volunteer reporting
+    reported_by = models.CharField(
+        max_length=255,
+        help_text='Name/email of volunteer who reported this'
+    )
+    reported_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True
+    )
+
+    # Admin review
+    verified = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='Has this been reviewed and approved by admin?'
+    )
+    verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True
+    )
+    verified_by = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_ad_buys'
+    )
+    rejected = models.BooleanField(
+        default=False,
+        db_index=True
+    )
+    rejection_reason = models.TextField(blank=True)
+
+    # Admin notes
+    admin_notes = models.TextField(blank=True)
+
+    # Metadata
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ad_buys'
+        ordering = ['-ad_date', '-reported_at']
+        verbose_name = 'Ad Buy'
+        verbose_name_plural = 'Ad Buys'
+        indexes = [
+            models.Index(fields=['-ad_date'], name='idx_adbuy_date_desc'),
+            models.Index(fields=['verified', '-ad_date'], name='idx_adbuy_verified_date'),
+            models.Index(fields=['candidate', '-ad_date'], name='idx_adbuy_candidate_date'),
+            models.Index(fields=['ie_committee', '-ad_date'], name='idx_adbuy_ie_date'),
+            models.Index(fields=['platform', '-ad_date'], name='idx_adbuy_platform_date'),
+            models.Index(fields=['verified', 'rejected'], name='idx_adbuy_status'),
+        ]
+
+    def __str__(self):
+        return f"Ad Buy: {self.paid_for_by} - {self.ad_date}"
+
+    @property
+    def is_pending_review(self):
+        return not self.verified and not self.rejected
+
+
 # ==================== PHASE 1 AGGREGATION MANAGER ====================
 
 class RaceAggregationManager:
@@ -1045,4 +1197,43 @@ class EmailLog(models.Model):
     
     def __str__(self):
         return f"Email to {self.candidate.candidate_name}"
+
+
+# ==================== AUTHENTICATION & USER PROFILE ====================
+
+class UserProfile(models.Model):
+    """Extended user profile for 2FA support"""
+    user = models.OneToOneField(
+        'auth.User',
+        on_delete=models.CASCADE,
+        related_name='profile'
+    )
+
+    # 2FA fields
+    totp_secret = models.CharField(
+        max_length=32,
+        blank=True,
+        help_text='TOTP secret for two-factor authentication'
+    )
+    is_2fa_enabled = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='Has the user enabled 2FA?'
+    )
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_profiles'
+        ordering = ['-created_at']
+        verbose_name = 'User Profile'
+        verbose_name_plural = 'User Profiles'
+        indexes = [
+            models.Index(fields=['user', 'is_2fa_enabled'], name='idx_profile_user_2fa'),
+        ]
+
+    def __str__(self):
+        return f"Profile for {self.user.username}"
 

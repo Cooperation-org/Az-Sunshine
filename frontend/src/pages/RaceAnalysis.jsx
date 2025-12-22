@@ -1,10 +1,84 @@
 import React, { useEffect, useState } from "react";
-import { Bell, Search } from "lucide-react";
-import { getOffices, getCycles, getRaceIESpending, getRaceTopDonors } from "../api/api";
+import { getOffices, getCycles, getRaceIESpending, getRaceTopDonors, getAdBuys } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import { Bar } from "react-chartjs-2";
 import { ChartSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import { useDarkMode } from "../context/DarkModeContext";
+import {
+  ChevronDown, SlidersHorizontal, BarChart3, Users,
+  TrendingUp, TrendingDown, DollarSign, Target
+} from "lucide-react";
+import ViewToggle from "../components/ViewToggle";
+import CandidateCard from "../components/race/CandidateCard";
+import RaceSummaryPanel from "../components/race/RaceSummaryPanel";
+import AdBuyCard from "../components/race/AdBuyCard";
+
+// --- REFINED BANNER WITH INTEGRATED FILTERS ---
+const Banner = ({ offices, cycles, selectedOffice, setSelectedOffice, selectedCycle, setSelectedCycle, view, setView }) => {
+  const { darkMode } = useDarkMode();
+
+  return (
+    <div
+      className="w-full rounded-2xl p-6 md:p-10 mb-8 transition-colors duration-300 text-white"
+      style={darkMode
+        ? { background: '#2D2844' }
+        : { background: 'linear-gradient(to bottom, #685994, #4c3e7c)' }
+      }
+    >
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+              Race <span style={{ color: '#A78BFA' }}>Analysis</span>
+            </h1>
+            <p className="text-white/70 text-sm mt-1 max-w-xl">
+              Deep dive into specific electoral races to compare candidate support and donor influence.
+            </p>
+          </div>
+          <ViewToggle view={view} onViewChange={setView} />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+          <div className="relative">
+            <select
+              value={selectedOffice}
+              onChange={(e) => setSelectedOffice(e.target.value)}
+              className="w-full appearance-none px-4 py-2.5 rounded-full text-sm text-white border-none outline-none focus:ring-1 focus:ring-[#7667C1] transition-all"
+              style={darkMode
+                ? { background: '#1F1B31' }
+                : { background: 'rgba(255, 255, 255, 0.15)' }
+              }
+            >
+              <option value="" className="bg-[#2D2844]">Select Office</option>
+              {offices.map((o) => (
+                <option key={o.office_id} value={o.office_id} className="bg-[#2D2844]">{o.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+          </div>
+
+          <div className="relative">
+            <select
+              value={selectedCycle}
+              onChange={(e) => setSelectedCycle(e.target.value)}
+              className="w-full appearance-none px-4 py-2.5 rounded-full text-sm text-white border-none outline-none focus:ring-1 focus:ring-[#7667C1] transition-all"
+              style={darkMode
+                ? { background: '#1F1B31' }
+                : { background: 'rgba(255, 255, 255, 0.15)' }
+              }
+            >
+              <option value="" className="bg-[#2D2844]">Select Cycle</option>
+              {cycles.map((c) => (
+                <option key={c.cycle_id} value={c.cycle_id} className="bg-[#2D2844]">{c.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function RaceAnalysis() {
   const { darkMode } = useDarkMode();
@@ -15,41 +89,31 @@ export default function RaceAnalysis() {
   const [raceData, setRaceData] = useState(null);
   const [topDonors, setTopDonors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [initialLoad, setInitialLoad] = useState(true);
+  const [view, setView] = useState('candidate');
+  const [adBuys, setAdBuys] = useState([]);
 
   useEffect(() => {
     async function loadDropdowns() {
       try {
-        setLoading(true);
-        const [officesData, cyclesData] = await Promise.all([
-          getOffices(),
-          getCycles()
-        ]);
-        setOffices(officesData);
-        setCycles(cyclesData);
-        
-        if (cyclesData.length > 0) {
-          setSelectedCycle(cyclesData[0].cycle_id);
-        }
-      } catch (error) {
-        console.error("Error loading dropdowns:", error);
-        setOffices([]);
-        setCycles([]);
-      } finally {
-        setLoading(false);
-        setInitialLoad(false);
-      }
+        const [oData, cData] = await Promise.all([getOffices(), getCycles()]);
+        setOffices(oData);
+        setCycles(cData);
+        if (cData.length > 0) setSelectedCycle(cData[0].cycle_id);
+      } catch (e) { console.error(e); } finally { setLoading(false); }
     }
     loadDropdowns();
   }, []);
 
-  async function loadRaceData() {
-    if (!selectedOffice || !selectedCycle) {
-      setRaceData(null);
-      setTopDonors([]);
-      return;
+  useEffect(() => {
+    if (selectedOffice && selectedCycle) {
+      loadRaceData();
+      if (view === 'race') {
+        loadAdBuys();
+      }
     }
-    
+  }, [selectedOffice, selectedCycle, view]);
+
+  async function loadRaceData() {
     setLoading(true);
     try {
       const [spending, donors] = await Promise.all([
@@ -58,252 +122,185 @@ export default function RaceAnalysis() {
       ]);
       setRaceData(spending);
       setTopDonors(donors.top_donors || []);
-    } catch (error) {
-      console.error("Error loading race data:", error);
-      setRaceData(null);
-      setTopDonors([]);
-    } finally {
-      setLoading(false);
+    } catch (e) { console.error(e); } finally { setLoading(false); }
+  }
+
+  async function loadAdBuys() {
+    try {
+      const data = await getAdBuys({
+        office_id: selectedOffice,
+        cycle_id: selectedCycle
+      });
+      setAdBuys(data.results || []);
+    } catch (e) {
+      console.error(e);
     }
   }
 
-  useEffect(() => {
-    if (selectedOffice && selectedCycle) {
-      loadRaceData();
-    }
-  }, [selectedOffice, selectedCycle]);
+  // Statistics Calculation
+  const totalSpending = raceData?.candidates?.reduce((sum, c) => sum + Math.abs(parseFloat(c.total_ie || 0)), 0) || 0;
+  const topCandidate = raceData?.candidates?.sort((a, b) => b.total_ie - a.total_ie)[0];
 
-  const chartData = raceData?.candidates ? {
-    labels: raceData.candidates.map(c =>
-      `${c.subject_committee__name__first_name || ''} ${c.subject_committee__name__last_name || ''}`.trim()
-    ),
-    datasets: [
-      {
-        label: 'IE Spending',
-        data: raceData.candidates.map(c => Math.abs(parseFloat(c.total_ie || 0))),
-        backgroundColor: darkMode ? 'rgba(139, 124, 184, 0.6)' : 'rgba(107, 91, 149, 0.6)',
-        borderColor: darkMode ? 'rgba(139, 124, 184, 1)' : 'rgba(107, 91, 149, 1)',
-        borderWidth: 1
-      }
-    ]
-  } : null;
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-        labels: {
-          color: darkMode ? '#d8dbfc' : '#4B5563'
-        }
-      },
-      tooltip: {
-        backgroundColor: darkMode ? 'rgba(51, 45, 84, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-        titleColor: darkMode ? '#ffffff' : '#1F2937',
-        bodyColor: darkMode ? '#ffffff' : '#1F2937',
-        borderColor: darkMode ? '#4c3e7c' : '#E5E7EB',
-        borderWidth: 1,
-        callbacks: {
-          label: (context) => `$${context.parsed.y.toLocaleString()}`
-        }
-      }
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: darkMode ? '#b8b3cc' : '#6B7280'
-        },
-        grid: {
-          color: darkMode ? '#5f5482' : '#F3F4F6'
-        }
-      },
-      y: {
-        beginAtZero: true,
-        ticks: {
-          color: darkMode ? '#b8b3cc' : '#6B7280',
-          callback: (value) => `$${value.toLocaleString()}`
-        },
-        grid: {
-          color: darkMode ? '#5f5482' : '#F3F4F6'
-        }
-      }
-    }
-  };
+  const StatCard = ({ title, value, icon: Icon, color }) => (
+    <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} p-5 rounded-2xl border shadow-sm flex items-center gap-4`}>
+      <div className="p-3 rounded-xl" style={{ backgroundColor: `${color}15` }}>
+        <Icon size={20} style={{ color: color }} />
+      </div>
+      <div>
+        <p className={`text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{title}</p>
+        <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{value}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className={`flex min-h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
+    <div className={`flex min-h-screen ${darkMode ? 'bg-[#1A1625]' : 'bg-gray-50'}`}>
       <Sidebar />
-      
-      <main className="flex-1 lg:ml-0 min-w-0">
-
+      <main className="flex-1 min-w-0">
         <div className="p-4 sm:p-6 lg:p-8">
-          <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-4 sm:p-6 border shadow-lg mb-4 sm:mb-6`}>
-            <h2 className={`text-base sm:text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Select Race</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Office</label>
-                <select
-                  value={selectedOffice}
-                  onChange={(e) => setSelectedOffice(e.target.value)}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
-                    darkMode 
-                      ? 'bg-[#5f5482] border-[#6d5f8d] text-white' 
-                      : 'bg-white border-gray-300 text-gray-900 hover:border-gray-400'
-                  }`}
-                >
-                  <option value="">Select Office</option>
-                  {offices.map(office => (
-                    <option key={office.office_id} value={office.office_id}>
-                      {office.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Election Cycle</label>
-                <select
-                  value={selectedCycle}
-                  onChange={(e) => setSelectedCycle(e.target.value)}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
-                    darkMode 
-                      ? 'bg-[#5f5482] border-[#6d5f8d] text-white' 
-                      : 'bg-white border-gray-300 text-gray-900 hover:border-gray-400'
-                  }`}
-                >
-                  <option value="">Select Cycle</option>
-                  {cycles.map(cycle => (
-                    <option key={cycle.cycle_id} value={cycle.cycle_id}>
-                      {cycle.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <Banner
+            offices={offices} cycles={cycles}
+            selectedOffice={selectedOffice} setSelectedOffice={setSelectedOffice}
+            selectedCycle={selectedCycle} setSelectedCycle={setSelectedCycle}
+            view={view} setView={setView}
+          />
+
+          {loading ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><div className="h-24 bg-gray-200 animate-pulse rounded-2xl"></div></div>
+              <ChartSkeleton height="400px" />
             </div>
-          </div>
-
-          {initialLoad ? (
-            <>
-              <div className="mb-6">
-                <div className="h-12 w-48 rounded animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] mb-4"></div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="h-10 rounded animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]"></div>
-                  <div className="h-10 rounded animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]"></div>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <ChartSkeleton height="300px" className="lg:col-span-2" />
-                <ChartSkeleton height="300px" />
-              </div>
-              <div className={`overflow-x-auto shadow-lg rounded-2xl ${darkMode ? 'bg-[#3d3559]' : 'bg-white'}`}>
-                <table className="min-w-full divide-y divide-gray-200">
-                  <tbody>
-                    <TableSkeleton rows={8} columns={5} />
-                  </tbody>
-                </table>
-              </div>
-            </>
-          ) : loading && selectedOffice && selectedCycle ? (
-            <>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <ChartSkeleton height="300px" className="lg:col-span-2" />
-                <ChartSkeleton height="300px" />
-              </div>
-              <div className={`overflow-x-auto shadow-lg rounded-2xl ${darkMode ? 'bg-[#3d3559]' : 'bg-white'}`}>
-                <table className="min-w-full divide-y divide-gray-200">
-                  <tbody>
-                    <TableSkeleton rows={5} columns={5} />
-                  </tbody>
-                </table>
-              </div>
-            </>
           ) : raceData ? (
-            <>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
-                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-4 sm:p-6 border shadow-lg lg:col-span-2`}>
-                  <h2 className={`text-base sm:text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    IE Spending by Candidate - {raceData.office} ({raceData.cycle})
-                  </h2>
-                  {chartData && (
-                    <div className="h-[250px] sm:h-[300px] lg:h-[400px]">
-                      <Bar data={chartData} options={chartOptions} />
+            view === 'race' ? (
+              // ============ RACE VIEW ============
+              <div className="space-y-8">
+                {/* Candidate Cards - Horizontal Scroll */}
+                <div>
+                  <h3 className={`text-sm font-bold uppercase tracking-widest mb-4 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
+                    Candidates in This Race
+                  </h3>
+                  <div className="overflow-x-auto -mx-4 px-4">
+                    <div className="flex gap-4 pb-4" style={{ scrollSnapType: 'x mandatory' }}>
+                      {raceData.candidates.map((candidate, idx) => (
+                        <div key={idx} style={{ scrollSnapAlign: 'start' }}>
+                          <CandidateCard candidate={candidate} />
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </div>
                 </div>
 
-                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-4 sm:p-6 border shadow-lg`}>
-                  <h2 className={`text-base sm:text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Top Donors in Race</h2>
-                  <div className="space-y-2 sm:space-y-3">
-                    {topDonors.slice(0, 10).map((donor, idx) => (
-                      <div key={idx} className={`flex justify-between items-center pb-2 border-b ${darkMode ? 'border-[#4a3f66]' : 'border-gray-100'}`}>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {donor.entity__first_name} {donor.entity__last_name}
-                          </p>
-                          <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{donor.entity__occupation || 'N/A'}</p>
-                        </div>
-                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                          ${parseFloat(donor.total_contributed || 0).toLocaleString()}
-                        </p>
+                {/* Race Summary + Ad Buys Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <RaceSummaryPanel raceData={raceData} topDonors={topDonors} />
+
+                  <div className="lg:col-span-2">
+                    <h3 className={`text-sm font-bold uppercase tracking-widest mb-4 ${
+                      darkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}>
+                      Ad Buys Timeline
+                    </h3>
+                    {adBuys.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {adBuys.map((ad, idx) => (
+                          <AdBuyCard key={idx} adBuy={ad} />
+                        ))}
                       </div>
-                    ))}
+                    ) : (
+                      <div className={`text-center py-12 rounded-2xl border ${
+                        darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'
+                      }`}>
+                        <p className="text-gray-500">No ad buys reported for this race yet</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
+            ) : (
+              // ============ CANDIDATE VIEW (original) ============
+              <div className="space-y-8">
+              {/* Stat Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StatCard title="Total Race IE" value={`$${totalSpending.toLocaleString()}`} icon={DollarSign} color="#7667C1" />
+                <StatCard title="Top Recipient" value={topCandidate ? topCandidate.subject_committee__name__last_name : "N/A"} icon={TrendingUp} color="#22c55e" />
+                <StatCard title="Total Donors" value={topDonors.length} icon={Users} color="#3b82f6" />
+              </div>
 
-              <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-4 sm:p-6 border shadow-lg overflow-hidden`}>
-                <h2 className={`text-base sm:text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Candidate Breakdown</h2>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className={`${darkMode ? 'bg-[#4a3f66]' : 'bg-gray-50'} border-b ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
-                      <tr>
-                        <th className={`text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} whitespace-nowrap`}>Candidate</th>
-                        <th className={`text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} whitespace-nowrap`}>Party</th>
-                        <th className={`text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} whitespace-nowrap`}>Total IE</th>
-                        <th className={`text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} whitespace-nowrap`}>IE For</th>
-                        <th className={`text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} whitespace-nowrap`}>IE Against</th>
-                        <th className={`text-left py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} whitespace-nowrap`}>Net IE</th>
-                      </tr>
-                    </thead>
-                    <tbody className={`divide-y ${darkMode ? 'divide-[#4a3f66]' : 'divide-gray-100'}`}>
-                      {raceData.candidates.map((candidate, idx) => {
-                        const ieFor = parseFloat(candidate.is_for_benefit === true ? candidate.total_ie : 0);
-                        const ieAgainst = parseFloat(candidate.is_for_benefit === false ? candidate.total_ie : 0);
-                        const netIE = ieFor - ieAgainst;
-                        
-                        return (
-                          <tr key={idx} className={`transition-colors duration-150 ${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-purple-50/50'}`}>
-                            <td className={`py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'} whitespace-nowrap`}>
-                              {candidate.subject_committee__name__first_name} {candidate.subject_committee__name__last_name}
-                            </td>
-                            <td className={`py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'} whitespace-nowrap`}>
-                              {candidate.subject_committee__candidate_party__name || 'N/A'}
-                            </td>
-                            <td className={`py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'} whitespace-nowrap`}>
-                              ${parseFloat(candidate.total_ie || 0).toLocaleString()}
-                            </td>
-                            <td className={`py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm whitespace-nowrap ${darkMode ? 'text-green-300' : 'text-green-600'}`}>
-                              ${ieFor.toLocaleString()}
-                            </td>
-                            <td className={`py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm whitespace-nowrap ${darkMode ? 'text-red-300' : 'text-red-600'}`}>
-                              ${ieAgainst.toLocaleString()}
-                            </td>
-                            <td className="py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold whitespace-nowrap">
-                              <span className={netIE >= 0 ? (darkMode ? 'text-green-300' : 'text-green-600') : (darkMode ? 'text-red-300' : 'text-red-600')}>
-                                ${netIE.toLocaleString()}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+              {/* Chart & Donors Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className={`lg:col-span-2 p-6 rounded-2xl border ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`}>
+                  <div className="flex items-center gap-3 mb-6">
+                    <BarChart3 size={18} className="text-[#7667C1]" />
+                    <h3 className={`text-sm font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Spending by Candidate</h3>
+                  </div>
+                  <div className="h-[350px]">
+                    <Bar 
+                      data={{
+                        labels: raceData.candidates.map(c => c.subject_committee__name__last_name),
+                        datasets: [{ 
+                          label: 'IE Spending', 
+                          data: raceData.candidates.map(c => Math.abs(c.total_ie)),
+                          backgroundColor: '#7667C1',
+                          borderRadius: 8
+                        }]
+                      }} 
+                      options={{ maintainAspectRatio: false }}
+                    />
+                  </div>
+                </div>
+
+                <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`}>
+                   <h3 className={`text-sm font-bold uppercase tracking-widest mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Top Race Donors</h3>
+                   <div className="space-y-4">
+                      {topDonors.slice(0, 6).map((donor, idx) => (
+                        <div key={idx} className="flex justify-between items-center group">
+                          <div className="min-w-0">
+                            <p className={`text-sm font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{donor.entity__first_name} {donor.entity__last_name}</p>
+                            <p className="text-xs text-gray-500">{donor.entity__occupation || "Individual"}</p>
+                          </div>
+                          <span className="text-sm font-mono font-bold text-[#7667C1]">${parseFloat(donor.total_contributed).toLocaleString()}</span>
+                        </div>
+                      ))}
+                   </div>
                 </div>
               </div>
-            </>
+
+              {/* Table Section */}
+              <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`}>
+                <table className="w-full text-left border-collapse">
+                  <thead className={darkMode ? 'bg-[#1F1B31]' : 'bg-gray-50'}>
+                    <tr>
+                      {["Candidate", "Party", "Total IE", "Net IE"].map((h) => (
+                        <th key={h} className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
+                    {raceData.candidates.map((c, i) => (
+                      <tr key={i} className="hover:bg-purple-50/5 transition-colors">
+                        <td className={`px-6 py-4 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {c.subject_committee__name__first_name} {c.subject_committee__name__last_name}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">{c.subject_committee__candidate_party__name || "N/A"}</td>
+                        <td className={`px-6 py-4 text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>${Math.abs(c.total_ie).toLocaleString()}</td>
+                        <td className="px-6 py-4">
+                          <span className={`text-sm font-bold ${c.is_for_benefit ? 'text-green-500' : 'text-red-500'}`}>
+                            {c.is_for_benefit ? '+' : '-'}${Math.abs(c.total_ie).toLocaleString()}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            )
           ) : (
-            <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Select an office and cycle to view race analysis
+            <div className={`text-center py-20 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              <Users size={48} className="mx-auto mb-4 opacity-20" />
+              <p>Select an office and cycle to begin analysis</p>
             </div>
           )}
         </div>
