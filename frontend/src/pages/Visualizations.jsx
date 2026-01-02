@@ -103,8 +103,8 @@ export default function Visualizations() {
       const oList = Array.isArray(oData) ? oData : (oData?.results || []);
       const cList = Array.isArray(cData) ? cData : (cData?.results || []);
       setOffices(oList); setCycles(cList);
-      setSelectedOffice(oList.find(o => o.office_id === 2000)?.office_id || oList[0]?.office_id);
-      setSelectedCycle(cList.find(c => c.cycle_id === 27)?.cycle_id || cList[0]?.cycle_id);
+      setSelectedOffice(oList.find(o => o.office_id === 2060)?.office_id || oList[0]?.office_id); // Default to Corporation Commissioner
+      setSelectedCycle(cList.find(c => c.cycle_id === 28)?.cycle_id || cList[0]?.cycle_id); // Default to 2016
     } catch (e) { console.error(e); } finally { setLoading(false); }
   }
 
@@ -178,7 +178,7 @@ export default function Visualizations() {
                 <h3 className={`text-sm font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Top Donors Money Flow</h3>
               </div>
               <div className="h-[400px]">
-                <MoneyFlowSankey officeId={selectedOffice} cycleId={selectedCycle} limit={12} height="100%" />
+                <MoneyFlowSankey officeId={selectedOffice} cycleId={selectedCycle} limit={12} height={400} />
               </div>
             </div>
           </div>

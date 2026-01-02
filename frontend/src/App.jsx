@@ -21,6 +21,7 @@ import EmailCampaign from "./pages/EmailCampaign";
 import DataValidation from "./pages/DataValidation";
 import WorkflowAutomation from "./pages/WorkflowAutomation";
 import Visualizations from "./pages/Visualizations";
+import DataVerification from "./pages/DataVerification";
 import DataImport from "./pages/DataImport";
 import ScraperControl from "./pages/ScraperControl";
 import SOSAutomation from "./pages/SOSAutomation";
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/donors" element={<Donors />} />
           <Route path="/expenditures" element={<Expenditures />} />
           <Route path="/visualizations" element={<Visualizations />} />
+          <Route path="/verification" element={<DataVerification />} />
           <Route path="/report-ad" element={<ReportAdBuy />} />
 
           {/* Admin-Only Routes - Require Login */}

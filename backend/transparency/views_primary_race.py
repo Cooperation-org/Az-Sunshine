@@ -225,7 +225,7 @@ def available_primary_races(request):
     )
 
     # Get all cycles
-    cycles = Cycle.objects.filter(name__in=['2024', '2022', '2020', '2018']).order_by('-name')
+    cycles = Cycle.objects.filter(name__in=['2024', '2022', '2020', '2018', '2016']).order_by('-name')
 
     primary_races = []
 
