@@ -23,7 +23,8 @@ from .views_auth import (
     verify_2fa,
     disable_2fa,
     get_current_user,
-    logout
+    logout,
+    refresh_token
 )
 from .views_primary_race import (
     primary_race_detail,
@@ -57,6 +58,7 @@ urlpatterns = [
     path('auth/register/', register, name='auth-register'),
     path('auth/login/', login, name='auth-login'),
     path('auth/logout/', logout, name='auth-logout'),
+    path('auth/refresh/', refresh_token, name='auth-refresh'),
     path('auth/me/', get_current_user, name='auth-me'),
     path('auth/2fa-setup/', setup_2fa, name='auth-2fa-setup'),
     path('auth/2fa-enable/', enable_2fa, name='auth-2fa-enable'),

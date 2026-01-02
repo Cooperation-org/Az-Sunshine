@@ -51,7 +51,8 @@ export default function ReportAdBuy() {
     office_id: '',
     candidate_id: '',
     support_oppose: '',
-    reported_by: ''
+    reported_by: '',
+    notes: ''
   });
 
   // UI state
@@ -453,7 +454,7 @@ export default function ReportAdBuy() {
                           max={getTodayDate()}
                           className={`w-full pl-11 pr-4 py-3 rounded-xl border-none text-sm ${
                             darkMode
-                              ? 'bg-[#1F1B31] text-white'
+                              ? 'bg-[#1F1B31] text-white [color-scheme:dark]'
                               : 'bg-gray-50 text-gray-900'
                           } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all`}
                         />
@@ -473,8 +474,8 @@ export default function ReportAdBuy() {
                         onChange={handleChange}
                         className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
                           darkMode
-                            ? 'bg-[#1F1B31] text-white'
-                            : 'bg-gray-50 text-gray-900'
+                            ? 'bg-[#1F1B31] text-white [&>option]:bg-[#1F1B31] [&>option]:text-white'
+                            : 'bg-gray-50 text-gray-900 [&>option]:bg-white [&>option]:text-gray-900'
                         } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all`}
                       >
                         <option value="">Select platform...</option>
@@ -497,7 +498,7 @@ export default function ReportAdBuy() {
                       Paid For By <span className="text-red-400">*</span>
                     </label>
                     <p className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Enter the committee name from the ad disclaimer
+                      📸 Look for the "Paid for by..." disclaimer on the ad and enter the committee/organization name
                     </p>
                     <input
                       type="text"
@@ -538,8 +539,8 @@ export default function ReportAdBuy() {
                         disabled={loadingOffices}
                         className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
                           darkMode
-                            ? 'bg-[#1F1B31] text-white'
-                            : 'bg-gray-50 text-gray-900'
+                            ? 'bg-[#1F1B31] text-white [&>option]:bg-[#1F1B31] [&>option]:text-white'
+                            : 'bg-gray-50 text-gray-900 [&>option]:bg-white [&>option]:text-gray-900'
                         } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         <option value="">Select office...</option>
@@ -571,14 +572,14 @@ export default function ReportAdBuy() {
                         disabled={!formData.office_id}
                         className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
                           darkMode
-                            ? 'bg-[#1F1B31] text-white'
-                            : 'bg-gray-50 text-gray-900'
+                            ? 'bg-[#1F1B31] text-white [&>option]:bg-[#1F1B31] [&>option]:text-white'
+                            : 'bg-gray-50 text-gray-900 [&>option]:bg-white [&>option]:text-gray-900'
                         } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         <option value="">Select candidate...</option>
                         {candidates.map(candidate => (
                           <option key={candidate.committee_id} value={candidate.committee_id}>
-                            {candidate.name__first_name} {candidate.name__last_name}
+                            {candidate.candidate?.full_name || candidate.name?.full_name || 'Unknown'}
                           </option>
                         ))}
                       </select>
@@ -695,8 +696,8 @@ export default function ReportAdBuy() {
                         onChange={handleChange}
                         className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
                           darkMode
-                            ? 'bg-[#1F1B31] text-white'
-                            : 'bg-gray-50 text-gray-900'
+                            ? 'bg-[#1F1B31] text-white [&>option]:bg-[#1F1B31] [&>option]:text-white'
+                            : 'bg-gray-50 text-gray-900 [&>option]:bg-white [&>option]:text-gray-900'
                         } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all`}
                       >
                         <option value="">Select...</option>

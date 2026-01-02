@@ -157,7 +157,7 @@ export default function Visualizations() {
             <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`}>
               <div className="flex items-center gap-3 mb-6">
                 <BarChart3 size={18} className="text-[#7667C1]" />
-                <h3 className={`text-sm font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Candidate Expenditure Breakdown</h3>
+                <h3 className={`text-sm font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Independent Expenditure Breakdown</h3>
               </div>
               <div className="h-[400px]">
                 {/* Your Bar Component logic remains same */}

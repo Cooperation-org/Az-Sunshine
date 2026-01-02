@@ -31,20 +31,92 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
+// Track if we're currently refreshing to avoid multiple refresh requests
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Response interceptor for error handling and automatic token refresh
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
     if (error.response) {
       // Server responded with error status
       console.error('API Error:', error.response.data);
-      
-      // Handle 401 Unauthorized
-      if (error.response.status === 401) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        // Redirect to login
-        window.location.href = '/login';
+
+      // Handle 401 Unauthorized - Try to refresh token
+      if (error.response.status === 401 && !originalRequest._retry) {
+        if (isRefreshing) {
+          // If already refreshing, queue this request
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then(token => {
+              originalRequest.headers['Authorization'] = 'Bearer ' + token;
+              return api(originalRequest);
+            })
+            .catch(err => {
+              return Promise.reject(err);
+            });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        const refreshToken = localStorage.getItem('refresh_token');
+
+        if (!refreshToken) {
+          // No refresh token, logout
+          isRefreshing = false;
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+
+        try {
+          // Try to refresh the token
+          const response = await axios.post(`${API_BASE_URL}auth/refresh/`, {
+            refresh: refreshToken
+          });
+
+          const { access, refresh } = response.data;
+
+          // Update tokens in localStorage
+          localStorage.setItem('access_token', access);
+          localStorage.setItem('refresh_token', refresh);
+
+          // Update authorization header
+          api.defaults.headers.common['Authorization'] = 'Bearer ' + access;
+          originalRequest.headers['Authorization'] = 'Bearer ' + access;
+
+          // Process queued requests
+          processQueue(null, access);
+          isRefreshing = false;
+
+          // Retry original request
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Refresh failed, logout
+          processQueue(refreshError, null);
+          isRefreshing = false;
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
       }
     } else if (error.request) {
       // Request made but no response

@@ -1198,7 +1198,7 @@ def candidates_list(request):
     # Build cache key from request parameters
     page_num = request.query_params.get('page', 1)
     page_size = request.query_params.get('page_size', 100)
-    office_id = request.query_params.get('office', '')
+    office_id = request.query_params.get('office_id') or request.query_params.get('office', '')
     party_id = request.query_params.get('party', '')
     cycle_id = request.query_params.get('cycle', '')
     search = request.query_params.get('search', '')

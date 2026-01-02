@@ -297,3 +297,29 @@ def logout(request):
     return Response({
         'message': 'Logout successful'
     })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def refresh_token(request):
+    """
+    Refresh access token using refresh token
+    """
+    refresh = request.data.get('refresh')
+
+    if not refresh:
+        return Response({
+            'error': 'Refresh token is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        refresh_token_obj = RefreshToken(refresh)
+
+        return Response({
+            'access': str(refresh_token_obj.access_token),
+            'refresh': str(refresh_token_obj)
+        })
+    except Exception as e:
+        return Response({
+            'error': 'Invalid or expired refresh token'
+        }, status=status.HTTP_401_UNAUTHORIZED)

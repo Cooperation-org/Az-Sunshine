@@ -120,7 +120,7 @@ def primary_race_detail(request):
             for_spenders_list.append({
                 'committee_id': spender['committee__committee_id'],
                 'name': spender_name,
-                'amount': float(spender['total']),
+                'amount': float(abs(spender['total'])),
                 'transaction_count': spender['count']
             })
             all_ie_spenders.append({
@@ -137,7 +137,7 @@ def primary_race_detail(request):
             against_spenders_list.append({
                 'committee_id': spender['committee__committee_id'],
                 'name': spender_name,
-                'amount': float(spender['total']),
+                'amount': float(abs(spender['total'])),
                 'transaction_count': spender['count']
             })
             all_ie_spenders.append({
@@ -151,8 +151,8 @@ def primary_race_detail(request):
         candidates_data.append({
             'committee_id': comm.committee_id,
             'name': cand_name,
-            'ie_for': float(ie_for_amount),
-            'ie_against': float(ie_against_amount),
+            'ie_for': float(abs(ie_for_amount)),
+            'ie_against': float(abs(ie_against_amount)),
             'total_ie': float(abs(ie_for_amount) + abs(ie_against_amount)),
             'ie_for_spenders': for_spenders_list,
             'ie_against_spenders': against_spenders_list
