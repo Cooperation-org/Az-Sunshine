@@ -112,11 +112,11 @@ class Command(BaseCommand):
                                 self.style.ERROR(f"Row {row_num}: {str(e)}")
                             )
 
-        self.stdout.write(f'\n\n✅ Transformation complete:')
+        self.stdout.write(f'\n\nTransformation complete:')
         self.stdout.write(f'  Processed: {stats["processed"]:,}')
         self.stdout.write(f'  Errors: {stats["errors"]:,}')
         self.stdout.write(f'\n📄 Output file: {output_path}')
-        self.stdout.write(f'\n💡 Next step: python manage.py import_csv {output_path} --source "SeeTheMoney 2016 Q1"\n')
+        self.stdout.write(f'\nNext step: python manage.py import_csv {output_path} --source "SeeTheMoney 2016 Q1"\n')
 
     def _hash_to_int(self, value: str) -> int:
         """Generate consistent integer ID from string"""

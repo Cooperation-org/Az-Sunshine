@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import { useDarkMode } from '../context/DarkModeContext';
 import { Users, DollarSign, TrendingUp, TrendingDown, ExternalLink, Filter, Search, Loader } from 'lucide-react';
 import api from '../api/api';
+import { getPartyInfo } from '../utils/partyUtils';
 
 export default function PrimaryRaceView() {
   const { darkMode } = useDarkMode();
@@ -194,11 +195,14 @@ export default function PrimaryRaceView() {
                     >
                       <div className="font-bold text-sm truncate">{race.office}</div>
                       <div className="flex items-center justify-between mt-1">
-                        <span className={`text-xs ${
-                          race.party === 'Democratic' ? 'text-blue-400' : 'text-red-400'
-                        }`}>
-                          {race.party} {race.cycle}
-                        </span>
+                        {(() => {
+                          const racePartyInfo = getPartyInfo(race.party);
+                          return (
+                            <span className={`text-xs font-bold ${racePartyInfo.colors.text}`}>
+                              ({racePartyInfo.abbr}) {race.cycle}
+                            </span>
+                          );
+                        })()}
                         <span className="text-xs font-bold">{formatCurrency(race.total_ie)}</span>
                       </div>
                       <div className="text-xs mt-1 opacity-70">
@@ -235,11 +239,14 @@ export default function PrimaryRaceView() {
                     {raceData.race.office}
                   </h2>
                   <div className="flex items-center gap-4 text-sm">
-                    <span className={`font-bold ${
-                      raceData.race.party === 'Democratic' ? 'text-blue-500' : 'text-red-500'
-                    }`}>
-                      {raceData.race.party} Primary
-                    </span>
+                    {(() => {
+                      const partyInfo = getPartyInfo(raceData.race.party);
+                      return (
+                        <span className={`font-bold px-2 py-1 rounded-full ${partyInfo.colors.bgLight} ${partyInfo.colors.text}`}>
+                          ({partyInfo.abbr}) {partyInfo.fullName} Primary
+                        </span>
+                      );
+                    })()}
                     <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
                       {raceData.race.cycle}
                     </span>

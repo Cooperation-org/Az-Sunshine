@@ -1,19 +1,36 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Search, ChevronRight, Download, Loader } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Search, Download, Loader } from "lucide-react";
 import { getCandidates } from "../api/api";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { TableSkeleton } from "../components/SkeletonLoader";
 import { exportToCSV } from "../utils/csvExport";
 import { useDarkMode } from "../context/DarkModeContext";
+import Pagination from "../components/Pagination";
 
 // --- REFINED BANNER COMPONENT ---
-const Banner = ({ controls, searchTerm, setSearchTerm, onSearch }) => {
+const Banner = ({ controls, searchTerm, onSearch }) => {
   const { darkMode } = useDarkMode();
+  const [localSearch, setLocalSearch] = useState(searchTerm);
+
+  // Sync local state when URL param changes (e.g., browser back button)
+  useEffect(() => {
+    setLocalSearch(searchTerm);
+  }, [searchTerm]);
+
+  // Debounce search - triggers 300ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== searchTerm) {
+        onSearch(localSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localSearch]);
 
   const handleLocalSearch = (e) => {
     e.preventDefault();
-    onSearch();
+    onSearch(localSearch);
   };
 
   return (
@@ -51,8 +68,8 @@ const Banner = ({ controls, searchTerm, setSearchTerm, onSearch }) => {
             <input
               type="text"
               placeholder="Search Candidates..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="w-full border-none rounded-full py-2.5 pl-11 pr-4 text-sm text-white placeholder-gray-400 outline-none transition-all focus:ring-1 focus:ring-[#7667C1]"
               style={darkMode
                 ? { background: 'rgba(31, 27, 49, 0.8)' }
@@ -69,43 +86,39 @@ const Banner = ({ controls, searchTerm, setSearchTerm, onSearch }) => {
 // --- MAIN CANDIDATES PAGE ---
 export default function Candidates() {
   const { darkMode } = useDarkMode();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
   const [exporting, setExporting] = useState(false);
-  const isFirstRender = useRef(true);
 
-  // Initial and Page-Change Load
+  // Get search term and page from URL
+  const searchTerm = searchParams.get('search') || '';
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+
+  const setCurrentPage = (page) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', page.toString());
+    setSearchParams(params, { replace: true });
+  };
+
+  // Load candidates when URL params change
   useEffect(() => {
     const abortController = new AbortController();
     loadCandidates(currentPage, abortController.signal);
     return () => abortController.abort();
-  }, [currentPage]);
+  }, [searchParams]);
 
-  // Debounced Search
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
+  const handleSearch = (term) => {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set('search', term);
+    } else {
+      params.delete('search');
     }
-    const abortController = new AbortController();
-    const delaySearch = setTimeout(() => {
-      setCurrentPage(1);
-      loadCandidates(1, abortController.signal);
-    }, 500);
-
-    return () => {
-      clearTimeout(delaySearch);
-      abortController.abort();
-    };
-  }, [searchTerm]);
-
-  const handleSearch = () => {
-    setCurrentPage(1);
-    loadCandidates(1);
+    params.set('page', '1');
+    setSearchParams(params, { replace: true });
   };
 
   async function loadCandidates(page, signal = null) {
@@ -170,7 +183,6 @@ export default function Candidates() {
           <Banner
             controls={ExportButton}
             searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
             onSearch={handleSearch}
           />
 
@@ -221,6 +233,14 @@ export default function Candidates() {
               </table>
             </div>
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={setCurrentPage}
+            loading={loading}
+          />
         </div>
       </main>
     </div>

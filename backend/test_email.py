@@ -32,16 +32,16 @@ def test_basic_email():
         )
         
         if result == 1:
-            print("✅ SUCCESS: Basic email sent!")
+            print("SUCCESS: Basic email sent!")
             print(f"   From: {settings.DEFAULT_FROM_EMAIL}")
             print(f"   To: {settings.EMAIL_HOST_USER}")
             return True
         else:
-            print("❌ FAILED: Email not sent (result = 0)")
+            print("FAILED: Email not sent (result = 0)")
             return False
             
     except Exception as e:
-        print(f"❌ ERROR: {str(e)}")
+        print(f"ERROR: {str(e)}")
         print(f"\nCheck your .env file:")
         print(f"  EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
         print(f"  EMAIL_HOST: {settings.EMAIL_HOST}")
@@ -67,9 +67,9 @@ def test_html_email():
             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px;">
                 <h3>Features Tested:</h3>
                 <ul>
-                    <li>✅ HTML rendering</li>
-                    <li>✅ Email styling</li>
-                    <li>✅ Tracking pixel (see below)</li>
+                    <li>HTML rendering</li>
+                    <li>Email styling</li>
+                    <li>Tracking pixel (see below)</li>
                 </ul>
             </div>
             <p style="margin-top: 20px;">
@@ -95,16 +95,16 @@ def test_html_email():
         result = email.send()
         
         if result == 1:
-            print("✅ SUCCESS: HTML email sent!")
+            print("SUCCESS: HTML email sent!")
             print(f"   Tracking ID: {tracking_id}")
             print(f"   Tracking URL: {tracking_pixel_url}")
             return True
         else:
-            print("❌ FAILED: HTML email not sent")
+            print("FAILED: HTML email not sent")
             return False
             
     except Exception as e:
-        print(f"❌ ERROR: {str(e)}")
+        print(f"ERROR: {str(e)}")
         return False
 
 
@@ -119,7 +119,7 @@ def test_soi_email_template():
         candidate = CandidateStatementOfInterest.objects.first()
         
         if not candidate:
-            print("⚠️  No candidates in database. Creating test candidate...")
+            print(" No candidates in database. Creating test candidate...")
             from transparency.models import Office
             office, _ = Office.objects.get_or_create(
                 office_id=9999,
@@ -132,7 +132,7 @@ def test_soi_email_template():
                 filing_date='2024-01-01',
                 contact_status='uncontacted'
             )
-            print(f"✓ Created test candidate: {candidate.candidate_name}")
+            print(f"Created test candidate: {candidate.candidate_name}")
         
         # Create personalized email
         html_content = f"""
@@ -186,16 +186,16 @@ def test_soi_email_template():
         result = email.send()
         
         if result == 1:
-            print("✅ SUCCESS: SOI template email sent!")
+            print("SUCCESS: SOI template email sent!")
             print(f"   Candidate: {candidate.candidate_name}")
             print(f"   Office: {candidate.office.name}")
             return True
         else:
-            print("❌ FAILED: SOI template email not sent")
+            print("FAILED: SOI template email not sent")
             return False
             
     except Exception as e:
-        print(f"❌ ERROR: {str(e)}")
+        print(f"ERROR: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
@@ -229,15 +229,15 @@ def run_all_tests():
     total = len(results)
     
     for test_name, result in results.items():
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "PASS" if result else "FAIL"
         print(f"{status} - {test_name}")
     
     print(f"\nTotal: {passed}/{total} tests passed")
     
     if passed == total:
-        print("\n🎉 ALL TESTS PASSED! Email system is fully functional.")
+        print("\nALL TESTS PASSED! Email system is fully functional.")
     else:
-        print("\n⚠️  SOME TESTS FAILED. Check configuration above.")
+        print("\n SOME TESTS FAILED. Check configuration above.")
         print("\nTroubleshooting:")
         print("  1. Verify .env file has correct EMAIL_HOST_PASSWORD (Gmail App Password)")
         print("  2. Check that port 587 is not blocked by firewall")

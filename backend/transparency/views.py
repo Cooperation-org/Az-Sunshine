@@ -20,13 +20,103 @@ from django.views.decorators.http import require_http_methods
 import requests
 import json
 import logging
+import os
 
 
 # Initialize logger
 logger = logging.getLogger(__name__)
 NGROK_URL = "https://fc88ced25882.ngrok-free.app/run-scraper"
 LOCAL_AGENT_URL = "http://localhost:5001/run-scraper"
-SECRET_TOKEN = "MY_SECRET_123"
+
+# SECURITY: Load secret token from environment variable (NEVER hardcode!)
+SECRET_TOKEN = os.environ.get('AZ_SUNSHINE_SECRET_TOKEN')
+if not SECRET_TOKEN:
+    logger.warning(" AZ_SUNSHINE_SECRET_TOKEN not set in environment! Using fallback for development only.")
+    SECRET_TOKEN = os.environ.get('SECRET_TOKEN', 'CHANGE_ME_IN_PRODUCTION')
+
+# Scraper status cache key
+SCRAPER_STATUS_KEY = "soi_scraper_status"
+
+
+def get_scraper_status():
+    """Get current scraper status from cache"""
+    default_status = {
+        "status": "idle",
+        "started_at": None,
+        "completed_at": None,
+        "new_candidates": 0,
+        "total_scraped": 0,
+        "error": None
+    }
+    return cache.get(SCRAPER_STATUS_KEY, default_status)
+
+
+def set_scraper_status(status_data):
+    """Set scraper status in cache (expires after 1 hour)"""
+    cache.set(SCRAPER_STATUS_KEY, status_data, timeout=3600)
+
+
+@require_http_methods(["GET"])
+@csrf_exempt
+def scraper_status(request):
+    """
+    Get current scraper status
+    GET /api/v1/scraper-status/
+    """
+    status_data = get_scraper_status()
+    return JsonResponse(status_data)
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def scraper_complete(request):
+    """
+    Called by laptop scraper when scraping is complete
+    POST /api/v1/scraper-complete/
+
+    Body: {
+        "success": true/false,
+        "new_candidates": 5,
+        "total_scraped": 100,
+        "error": null or "error message"
+    }
+    """
+    try:
+        # Verify secret token
+        secret = request.headers.get('X-Secret', '')
+        if secret != SECRET_TOKEN:
+            return JsonResponse({"error": "Unauthorized"}, status=401)
+
+        data = json.loads(request.body) if request.body else {}
+
+        current_status = get_scraper_status()
+
+        if data.get('success', False):
+            set_scraper_status({
+                "status": "complete",
+                "started_at": current_status.get('started_at'),
+                "completed_at": timezone.now().isoformat(),
+                "new_candidates": data.get('new_candidates', 0),
+                "total_scraped": data.get('total_scraped', 0),
+                "error": None
+            })
+            logger.info(f"Scraper completed: {data.get('new_candidates', 0)} new candidates")
+        else:
+            set_scraper_status({
+                "status": "error",
+                "started_at": current_status.get('started_at'),
+                "completed_at": timezone.now().isoformat(),
+                "new_candidates": 0,
+                "total_scraped": 0,
+                "error": data.get('error', 'Unknown error')
+            })
+            logger.error(f"Scraper failed: {data.get('error')}")
+
+        return JsonResponse({"success": True})
+
+    except Exception as e:
+        logger.error(f"Error in scraper_complete: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @require_http_methods(["POST"])
@@ -38,10 +128,20 @@ def trigger_scrape(request):
 
     Tries local agent first (localhost:5001), falls back to ngrok
     """
+    # Set status to running
+    set_scraper_status({
+        "status": "running",
+        "started_at": timezone.now().isoformat(),
+        "completed_at": None,
+        "new_candidates": 0,
+        "total_scraped": 0,
+        "error": None
+    })
+
     # Try local agent first (for when Django runs on same machine)
     agent_url = LOCAL_AGENT_URL
     try:
-        logger.info(f"🚀 Triggering scraper at {agent_url}")
+        logger.info(f"Triggering scraper at {agent_url}")
 
         response = requests.post(
             agent_url,
@@ -56,7 +156,7 @@ def trigger_scrape(request):
         # Check if we got HTML error page instead of JSON
         content_type = response.headers.get('content-type', '')
         if 'text/html' in content_type:
-            logger.error(f"❌ Received HTML response instead of JSON: {response.text[:200]}")
+            logger.error(f"Received HTML response instead of JSON: {response.text[:200]}")
             return JsonResponse({
                 "success": False,
                 "error": "Agent returned HTML error page. Is the agent running on port 5001?"
@@ -65,7 +165,7 @@ def trigger_scrape(request):
         response.raise_for_status()
         result = response.json()
         
-        logger.info(f"✅ Scraper triggered: {result}")
+        logger.info(f"Scraper triggered: {result}")
         return JsonResponse({
             "success": True,
             "message": "Scraper triggered on home device",
@@ -73,7 +173,7 @@ def trigger_scrape(request):
         })
         
     except requests.exceptions.ConnectionError as e:
-        logger.error(f"❌ Connection error: {e}")
+        logger.error(f"Connection error: {e}")
         return JsonResponse({
             "success": False,
             "error": f"Cannot connect to agent at {NGROK_URL}. Is ngrok tunnel active?"
@@ -86,21 +186,21 @@ def trigger_scrape(request):
         }, status=504)
         
     except requests.exceptions.RequestException as e:
-        logger.error(f"❌ Request error: {e}")
+        logger.error(f"Request error: {e}")
         return JsonResponse({
             "success": False,
             "error": str(e)
         }, status=500)
         
     except json.JSONDecodeError as e:
-        logger.error(f"❌ JSON decode error: {e}")
+        logger.error(f"JSON decode error: {e}")
         return JsonResponse({
             "success": False,
             "error": "Agent returned invalid JSON response"
         }, status=500)
         
     except Exception as e:
-        logger.error(f"❌ Unexpected error: {e}", exc_info=True)
+        logger.error(f"Unexpected error: {e}", exc_info=True)
         return JsonResponse({
             "success": False,
             "error": f"Unexpected error: {str(e)}"
@@ -117,7 +217,7 @@ def upload_scraped(request):
     # Security check
     token = request.headers.get("X-Secret")
     if token != SECRET_TOKEN:
-        logger.warning("❌ Unauthorized upload attempt")
+        logger.warning("Unauthorized upload attempt")
         return JsonResponse({"error": "Unauthorized"}, status=401)
 
     try:
@@ -205,17 +305,17 @@ def upload_scraped(request):
                         'filing_date': candidate.filing_date.isoformat() if candidate.filing_date else None,
                     })
                     if created_count <= 5:  # Log first 5 creations
-                        logger.info(f"✅ Created: {candidate_name} - {office_name}")
+                        logger.info(f"Created: {candidate_name} - {office_name}")
                 else:
                     updated_count += 1
                     if updated_count <= 5:  # Log first 5 updates
-                        logger.info(f"🔄 Updated: {candidate_name} - {office_name}")
+                        logger.info(f"Updated: {candidate_name} - {office_name}")
                     
             except Exception as e:
                 error_count += 1
                 if len(error_details) < 10:
                     error_details.append(f"Row {idx} ({record.get('name', 'Unknown')}): {str(e)}")
-                logger.error(f"❌ Error processing record {idx}: {e}")
+                logger.error(f"Error processing record {idx}: {e}")
                 continue
         
         result = {
@@ -233,18 +333,18 @@ def upload_scraped(request):
         if error_details:
             result["error_samples"] = error_details
 
-        logger.info(f"✅ Processing complete: Created={created_count}, Updated={updated_count}, Errors={error_count}")
+        logger.info(f"Processing complete: Created={created_count}, Updated={updated_count}, Errors={error_count}")
         return JsonResponse(result)
         
     except json.JSONDecodeError:
-        logger.error("❌ Invalid JSON data")
+        logger.error("Invalid JSON data")
         return JsonResponse({
             "success": False,
             "error": "Invalid JSON data"
         }, status=400)
         
     except Exception as e:
-        logger.error(f"❌ Error processing upload: {e}", exc_info=True)
+        logger.error(f"Error processing upload: {e}", exc_info=True)
         return JsonResponse({
             "success": False,
             "error": str(e)
@@ -1400,7 +1500,7 @@ def donors_list(request):
     # Cache with Zstd compression for 10 minutes
     CompressedCache.set(cache_key, response_data, timeout=600)
 
-    logger.info(f"✅ Donors list loaded from MV: {len(result_data)} donors (page {page_num})")
+    logger.info(f"Donors list loaded from MV: {len(result_data)} donors (page {page_num})")
     return Response(response_data)
 
 
@@ -1532,7 +1632,7 @@ def expenditures_list(request):
     # Cache for 5 minutes with Zstd compression
     CompressedCache.set(cache_key, response_data, timeout=300)
 
-    logger.info(f"✅ Expenditures loaded: {len(result_data)} (page {page_num})")
+    logger.info(f"Expenditures loaded: {len(result_data)} (page {page_num})")
     return Response(response_data)
 
 
@@ -1685,10 +1785,10 @@ def dashboard_summary_optimized(request):
     cached_data = cache.get(cache_key)
     
     if cached_data:
-        logger.info("✅ Returning cached dashboard data")
+        logger.info("Returning cached dashboard data")
         return Response(cached_data)
     
-    logger.info("🔄 Computing fresh dashboard data...")
+    logger.info("Computing fresh dashboard data...")
     
     try:
         # Get current cycle
@@ -1745,7 +1845,7 @@ def dashboard_summary_optimized(request):
         # Cache for 5 minutes (300 seconds)
         cache.set(cache_key, response_data, timeout=300)
         
-        logger.info("✅ Dashboard data computed and cached")
+        logger.info("Dashboard data computed and cached")
         return Response(response_data)
         
     except Exception as e:

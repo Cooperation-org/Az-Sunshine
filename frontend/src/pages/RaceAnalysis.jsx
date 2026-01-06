@@ -6,16 +6,78 @@ import { ChartSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import { useDarkMode } from "../context/DarkModeContext";
 import {
   ChevronDown, SlidersHorizontal, BarChart3, Users,
-  TrendingUp, TrendingDown, DollarSign, Target
+  TrendingUp, TrendingDown, DollarSign, Target, Calendar, ToggleLeft, ToggleRight
 } from "lucide-react";
 import ViewToggle from "../components/ViewToggle";
 import CandidateCard from "../components/race/CandidateCard";
 import RaceSummaryPanel from "../components/race/RaceSummaryPanel";
 import AdBuyCard from "../components/race/AdBuyCard";
+import IEAdBuyCorrelation from "../components/race/IEAdBuyCorrelation";
+import { getPartyInfo } from "../utils/partyUtils";
+
+// Arizona Primary Election Dates (day before primary to capture all pre-primary spending)
+const AZ_PRIMARY_DATES = {
+  '2028': '2028-08-01', // Estimated - typically first Tuesday in August
+  '2026': '2026-08-04', // Estimated
+  '2024': '2024-07-30', // Primary was Aug 6, 2024
+  '2022': '2022-08-02', // Primary was Aug 2, 2022
+  '2020': '2020-08-04', // Primary was Aug 4, 2020
+  '2018': '2018-08-28', // Primary was Aug 28, 2018
+  '2016': '2016-08-30', // Primary was Aug 30, 2016
+  '2014': '2014-08-26', // Primary was Aug 26, 2014
+  '2012': '2012-08-28', // Primary was Aug 28, 2012
+};
+
+// Get primary cutoff date for a cycle
+const getPrimaryCutoffDate = (cycleName) => {
+  return AZ_PRIMARY_DATES[cycleName] || null;
+};
+
+// Extract district numbers from offices for filtering
+const extractDistricts = (offices) => {
+  const districtSet = new Set();
+  offices.forEach(o => {
+    const match = o.name.match(/District\s*(?:No\.\s*)?(\d+)/i);
+    if (match) {
+      districtSet.add(parseInt(match[1]));
+    }
+  });
+  return Array.from(districtSet).sort((a, b) => a - b);
+};
+
+// Filter offices by district
+const filterOfficesByDistrict = (offices, district) => {
+  if (!district) return offices;
+  return offices.filter(o => {
+    const match = o.name.match(/District\s*(?:No\.\s*)?(\d+)/i);
+    return match && parseInt(match[1]) === parseInt(district);
+  });
+};
 
 // --- REFINED BANNER WITH INTEGRATED FILTERS ---
-const Banner = ({ offices, cycles, selectedOffice, setSelectedOffice, selectedCycle, setSelectedCycle, view, setView }) => {
+const Banner = ({
+  offices,
+  cycles,
+  selectedOffice,
+  setSelectedOffice,
+  selectedCycle,
+  setSelectedCycle,
+  view,
+  setView,
+  selectedDistrict,
+  setSelectedDistrict,
+  dateFrom,
+  setDateFrom,
+  dateTo,
+  setDateTo,
+  primaryOnly,
+  setPrimaryOnly,
+  selectedCycleName
+}) => {
   const { darkMode } = useDarkMode();
+  const districts = extractDistricts(offices);
+  const filteredOffices = filterOfficesByDistrict(offices, selectedDistrict);
+  const primaryDate = getPrimaryCutoffDate(selectedCycleName);
 
   return (
     <div
@@ -38,7 +100,31 @@ const Banner = ({ offices, cycles, selectedOffice, setSelectedOffice, selectedCy
           <ViewToggle view={view} onViewChange={setView} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+        {/* Primary Filters Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mb-4">
+          {/* District Filter */}
+          <div className="relative">
+            <select
+              value={selectedDistrict}
+              onChange={(e) => {
+                setSelectedDistrict(e.target.value);
+                setSelectedOffice(""); // Reset office when district changes
+              }}
+              className="w-full appearance-none px-4 py-2.5 rounded-full text-sm text-white border-none outline-none focus:ring-1 focus:ring-[#7667C1] transition-all"
+              style={darkMode
+                ? { background: '#1F1B31' }
+                : { background: 'rgba(255, 255, 255, 0.15)' }
+              }
+            >
+              <option value="" className="bg-[#2D2844]">All Districts</option>
+              {districts.map((d) => (
+                <option key={d} value={d} className="bg-[#2D2844]">District {d}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+          </div>
+
+          {/* Office Filter */}
           <div className="relative">
             <select
               value={selectedOffice}
@@ -50,13 +136,14 @@ const Banner = ({ offices, cycles, selectedOffice, setSelectedOffice, selectedCy
               }
             >
               <option value="" className="bg-[#2D2844]">Select Office</option>
-              {offices.map((o) => (
+              {filteredOffices.map((o) => (
                 <option key={o.office_id} value={o.office_id} className="bg-[#2D2844]">{o.name}</option>
               ))}
             </select>
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
           </div>
 
+          {/* Cycle Filter */}
           <div className="relative">
             <select
               value={selectedCycle}
@@ -75,6 +162,66 @@ const Banner = ({ offices, cycles, selectedOffice, setSelectedOffice, selectedCy
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
           </div>
         </div>
+
+        {/* Date Range Filters Row */}
+        <div className="flex flex-col sm:flex-row gap-4 max-w-3xl">
+          {/* Primary Only Toggle */}
+          <button
+            onClick={() => setPrimaryOnly(!primaryOnly)}
+            disabled={!primaryDate}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+              primaryOnly
+                ? 'bg-purple-600 text-white'
+                : darkMode
+                  ? 'bg-[#1F1B31] text-white/70 hover:text-white'
+                  : 'bg-white/15 text-white/70 hover:text-white'
+            } ${!primaryDate ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            title={primaryDate ? `Filter to before ${primaryDate}` : 'Primary date not available for this cycle'}
+          >
+            {primaryOnly ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+            <span>Primary Only</span>
+          </button>
+
+          <div className="flex gap-4 flex-1">
+            <div className="relative flex-1">
+              <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                placeholder="From Date"
+                disabled={primaryOnly}
+                className={`w-full appearance-none pl-10 pr-4 py-2.5 rounded-full text-sm text-white border-none outline-none focus:ring-1 focus:ring-[#7667C1] transition-all [color-scheme:dark] ${primaryOnly ? 'opacity-50' : ''}`}
+                style={darkMode
+                  ? { background: '#1F1B31' }
+                  : { background: 'rgba(255, 255, 255, 0.15)' }
+                }
+              />
+            </div>
+            <div className="relative flex-1">
+              <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                placeholder="To Date"
+                disabled={primaryOnly}
+                className={`w-full appearance-none pl-10 pr-4 py-2.5 rounded-full text-sm text-white border-none outline-none focus:ring-1 focus:ring-[#7667C1] transition-all [color-scheme:dark] ${primaryOnly ? 'opacity-50' : ''}`}
+                style={darkMode
+                  ? { background: '#1F1B31' }
+                  : { background: 'rgba(255, 255, 255, 0.15)' }
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Primary Only indicator */}
+        {primaryOnly && primaryDate && (
+          <div className="mt-3 text-xs text-purple-300">
+            Showing spending before primary election ({primaryDate})
+          </div>
+        )}
       </div>
     </div>
   );
@@ -86,11 +233,22 @@ export default function RaceAnalysis() {
   const [cycles, setCycles] = useState([]);
   const [selectedOffice, setSelectedOffice] = useState("");
   const [selectedCycle, setSelectedCycle] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [primaryOnly, setPrimaryOnly] = useState(false);
   const [raceData, setRaceData] = useState(null);
   const [topDonors, setTopDonors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('candidate');
   const [adBuys, setAdBuys] = useState([]);
+
+  // Get cycle name for primary date lookup
+  const selectedCycleName = cycles.find(c => String(c.cycle_id) === String(selectedCycle))?.name || '';
+  const primaryCutoffDate = getPrimaryCutoffDate(selectedCycleName);
+
+  // Compute effective date filters (primaryOnly overrides manual dates)
+  const effectiveDateTo = primaryOnly && primaryCutoffDate ? primaryCutoffDate : dateTo;
 
   useEffect(() => {
     async function loadDropdowns() {
@@ -104,6 +262,13 @@ export default function RaceAnalysis() {
     loadDropdowns();
   }, []);
 
+  // Reset primaryOnly when cycle changes (if new cycle doesn't have primary date)
+  useEffect(() => {
+    if (primaryOnly && !primaryCutoffDate) {
+      setPrimaryOnly(false);
+    }
+  }, [selectedCycle, primaryCutoffDate]);
+
   useEffect(() => {
     if (selectedOffice && selectedCycle) {
       loadRaceData();
@@ -111,14 +276,18 @@ export default function RaceAnalysis() {
         loadAdBuys();
       }
     }
-  }, [selectedOffice, selectedCycle, view]);
+  }, [selectedOffice, selectedCycle, view, dateFrom, effectiveDateTo, primaryOnly]);
 
   async function loadRaceData() {
     setLoading(true);
     try {
+      const params = { office_id: selectedOffice, cycle_id: selectedCycle };
+      if (dateFrom) params.date_from = dateFrom;
+      if (effectiveDateTo) params.date_to = effectiveDateTo;
+
       const [spending, donors] = await Promise.all([
-        getRaceIESpending({ office_id: selectedOffice, cycle_id: selectedCycle }),
-        getRaceTopDonors({ office_id: selectedOffice, cycle_id: selectedCycle })
+        getRaceIESpending(params),
+        getRaceTopDonors(params)
       ]);
       setRaceData(spending);
       setTopDonors(donors.top_donors || []);
@@ -162,6 +331,11 @@ export default function RaceAnalysis() {
             offices={offices} cycles={cycles}
             selectedOffice={selectedOffice} setSelectedOffice={setSelectedOffice}
             selectedCycle={selectedCycle} setSelectedCycle={setSelectedCycle}
+            selectedDistrict={selectedDistrict} setSelectedDistrict={setSelectedDistrict}
+            dateFrom={dateFrom} setDateFrom={setDateFrom}
+            dateTo={dateTo} setDateTo={setDateTo}
+            primaryOnly={primaryOnly} setPrimaryOnly={setPrimaryOnly}
+            selectedCycleName={selectedCycleName}
             view={view} setView={setView}
           />
 
@@ -267,6 +441,9 @@ export default function RaceAnalysis() {
                 </div>
               </div>
 
+              {/* IE & Ad Buy Correlation */}
+              <IEAdBuyCorrelation officeId={selectedOffice} cycleId={selectedCycle} />
+
               {/* Table Section */}
               <div className={`rounded-2xl border overflow-hidden ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`}>
                 <table className="w-full text-left border-collapse">
@@ -278,20 +455,27 @@ export default function RaceAnalysis() {
                     </tr>
                   </thead>
                   <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                    {raceData.candidates.map((c, i) => (
-                      <tr key={i} className="hover:bg-purple-50/5 transition-colors">
-                        <td className={`px-6 py-4 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {c.subject_committee__name__first_name} {c.subject_committee__name__last_name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{c.subject_committee__candidate_party__name || "N/A"}</td>
-                        <td className={`px-6 py-4 text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>${Math.abs(c.total_ie).toLocaleString()}</td>
-                        <td className="px-6 py-4">
-                          <span className={`text-sm font-bold ${c.is_for_benefit ? 'text-green-500' : 'text-red-500'}`}>
-                            {c.is_for_benefit ? '+' : '-'}${Math.abs(c.total_ie).toLocaleString()}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {raceData.candidates.map((c, i) => {
+                      const partyInfo = getPartyInfo(c.subject_committee__candidate_party__name);
+                      return (
+                        <tr key={i} className="hover:bg-purple-50/5 transition-colors">
+                          <td className={`px-6 py-4 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {c.subject_committee__name__first_name} {c.subject_committee__name__last_name}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${partyInfo.colors.bgLight} ${partyInfo.colors.text}`}>
+                              ({partyInfo.abbr}) {partyInfo.fullName}
+                            </span>
+                          </td>
+                          <td className={`px-6 py-4 text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>${Math.abs(c.total_ie).toLocaleString()}</td>
+                          <td className="px-6 py-4">
+                            <span className={`text-sm font-bold ${c.is_for_benefit ? 'text-green-500' : 'text-red-500'}`}>
+                              {c.is_for_benefit ? '+' : '-'}${Math.abs(c.total_ie).toLocaleString()}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

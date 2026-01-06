@@ -6,7 +6,7 @@ import {
   HelpCircle, Moon, Sun, Upload, Globe,
   FileCheck, PanelLeftClose, PanelLeft, Bell,
   ChevronUp, Eye, Megaphone, ShieldCheck, Database,
-  Menu, X, LogOut, LogIn, Target
+  Menu, X, LogOut, LogIn, Target, CheckCircle
 } from "lucide-react";
 import { useDarkMode } from "../context/DarkModeContext";
 import { useAuth } from "../context/AuthContext";
@@ -70,20 +70,21 @@ export default function Sidebar() {
     { path: "/expenditures", icon: FileText, label: "Expenditures", badge: null },
     { path: "/visualizations", icon: BarChart3, label: "Visualizations", badge: null },
     { path: "/race-analysis", icon: GitBranch, label: "Race Analysis", badge: null },
-    { path: "/primary-race", icon: Target, label: "Primary Races", badge: "Demo" },
-    { path: "/report-ad", icon: Megaphone, label: "Report Ad Buy", badge: "New" },
+    { path: "/primary-race", icon: Target, label: "Race View", badge: "Demo" },
+    { path: "/verification", icon: CheckCircle, label: "Data Verification", badge: null },
+    { path: "/report-ad", icon: Megaphone, label: "Report Ad Buy", badge: null },
   ];
 
   // Admin-only items (only visible when logged in)
   const adminItems = [
     { path: "/soi", icon: CheckSquare, label: "SOI Tracking", badge: null },
     { path: "/email-campaign", icon: Mail, label: "Email Campaign", badge: null },
-    { path: "/data-validation", icon: Database, label: "Data Validation", badge: "New" },
+    { path: "/data-validation", icon: Database, label: "Data Validation", badge: null },
     { path: "/admin/seethemoney", icon: Eye, label: "SeeTheMoney", badge: "FREE" },
     { path: "/admin/import", icon: Upload, label: "Data Import", badge: null },
     { path: "/admin/scrapers", icon: Globe, label: "County Scrapers", badge: null },
     { path: "/admin/sos", icon: FileCheck, label: "AZ SOS Automation", badge: null },
-    { path: "/admin/ad-review", icon: ShieldCheck, label: "Ad Buy Review", badge: "New" },
+    { path: "/admin/ad-review", icon: ShieldCheck, label: "Ad Buy Review", badge: null },
   ];
 
   const SidebarContent = ({ isMobile = false }) => (

@@ -43,7 +43,7 @@ class MaricopaScraper(CountyScraperBase):
         candidates = []
 
         logger.warning(
-            "⚠️  Maricopa County website uses anti-bot protection. "
+            " Maricopa County website uses anti-bot protection. "
             "Recommended: Use AZ SOS Automation instead (covers all counties including Maricopa)."
         )
 

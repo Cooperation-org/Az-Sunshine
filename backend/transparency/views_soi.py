@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 import logging
 
@@ -135,9 +135,9 @@ def soi_candidates_list(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])  # SECURITY FIX: Require auth for modifications
 def mark_candidate_contacted(request, pk):
-    """Mark candidate as contacted"""
+    """Mark candidate as contacted - REQUIRES AUTHENTICATION"""
     try:
         candidate = CandidateStatementOfInterest.objects.get(id=pk)
         candidate.contact_status = 'contacted'
@@ -155,9 +155,9 @@ def mark_candidate_contacted(request, pk):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])  # SECURITY FIX: Require auth for modifications
 def mark_pledge_received(request, pk):
-    """Mark pledge as received"""
+    """Mark pledge as received - REQUIRES AUTHENTICATION"""
     try:
         candidate = CandidateStatementOfInterest.objects.get(id=pk)
         candidate.pledge_received = True
@@ -188,9 +188,9 @@ def email_templates(request):
         return Response([], status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])  # SECURITY FIX: Require auth
 def send_bulk_emails(request):
-    """Send bulk emails to candidates"""
+    """Send bulk emails to candidates - REQUIRES AUTHENTICATION"""
     try:
         from .services.email_service import EmailService
         

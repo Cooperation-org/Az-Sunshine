@@ -384,8 +384,18 @@ class Committee(models.Model):
         ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
     
     def get_cash_balance(self):
-        """Income minus expenses"""
-        return self.get_total_income() - self.get_total_expenses()
+        """
+        Income minus expenses.
+        FIXED: Single query to avoid race condition between income/expense reads.
+        """
+        # Single atomic query using conditional aggregation
+        totals = self.transactions.filter(deleted=False).aggregate(
+            income=Sum('amount', filter=Q(transaction_type__income_expense_neutral=1)),
+            expenses=Sum('amount', filter=Q(transaction_type__income_expense_neutral=2))
+        )
+        income = totals['income'] or Decimal('0.00')
+        expenses = totals['expenses'] or Decimal('0.00')
+        return income - expenses
     
     def get_ie_for(self):
         """Independent expenditures supporting this committee"""
@@ -408,36 +418,37 @@ class Committee(models.Model):
     def get_ie_spending_summary(self):
         """
         Ben requires: "Aggregate by entity, race, and candidate"
-        Returns total IE spending for/against this candidate
+        Returns total IE spending for/against this candidate.
+        FIXED: Single query to avoid race condition.
+        FIXED: Explicitly handles NULL is_for_benefit values.
         """
-        ie_for = Transaction.objects.filter(
+        # Single atomic query using conditional aggregation
+        # NOTE: is_for_benefit=True means "for", is_for_benefit=False means "against"
+        # NULL values are excluded from both counts (edge case handling)
+        totals = Transaction.objects.filter(
             subject_committee=self,
-            is_for_benefit=True,
-            deleted=False
+            deleted=False,
+            is_for_benefit__isnull=False  # FIXED: Exclude NULL values explicitly
         ).aggregate(
-            total=Sum('amount'),
-            count=Count('transaction_id')
+            for_total=Sum('amount', filter=Q(is_for_benefit=True)),
+            for_count=Count('transaction_id', filter=Q(is_for_benefit=True)),
+            against_total=Sum('amount', filter=Q(is_for_benefit=False)),
+            against_count=Count('transaction_id', filter=Q(is_for_benefit=False))
         )
-        
-        ie_against = Transaction.objects.filter(
-            subject_committee=self,
-            is_for_benefit=False,
-            deleted=False
-        ).aggregate(
-            total=Sum('amount'),
-            count=Count('transaction_id')
-        )
-        
+
+        ie_for_total = totals['for_total'] or Decimal('0.00')
+        ie_against_total = totals['against_total'] or Decimal('0.00')
+
         return {
             'for': {
-                'total': ie_for['total'] or Decimal('0.00'),
-                'count': ie_for['count'] or 0
+                'total': ie_for_total,
+                'count': totals['for_count'] or 0
             },
             'against': {
-                'total': ie_against['total'] or Decimal('0.00'),
-                'count': ie_against['count'] or 0
+                'total': ie_against_total,
+                'count': totals['against_count'] or 0
             },
-            'net': (ie_for['total'] or Decimal('0.00')) - (ie_against['total'] or Decimal('0.00'))
+            'net': ie_for_total - ie_against_total
         }
     
     def get_ie_spending_by_committee(self):
@@ -1236,4 +1247,3 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profile for {self.user.username}"
-

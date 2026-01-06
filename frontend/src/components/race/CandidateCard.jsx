@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { useDarkMode } from '../../context/DarkModeContext';
+import { getPartyInfo } from '../../utils/partyUtils';
 
 export default function CandidateCard({ candidate }) {
   const { darkMode } = useDarkMode();
@@ -9,6 +10,9 @@ export default function CandidateCard({ candidate }) {
   const ieFor = parseFloat(candidate.ie_for || 0);
   const ieAgainst = parseFloat(candidate.ie_against || 0);
   const netBenefit = ieFor - ieAgainst;
+
+  // Get party info with abbreviation and colors
+  const partyInfo = getPartyInfo(candidate.subject_committee__candidate_party__name);
 
   return (
     <div className={`min-w-[280px] p-5 rounded-2xl border transition-all hover:scale-105 ${
@@ -22,10 +26,8 @@ export default function CandidateCard({ candidate }) {
           {candidate.subject_committee__name__first_name} {candidate.subject_committee__name__last_name}
         </h3>
         <div className="flex items-center gap-2 mt-1">
-          <span className={`text-xs px-2 py-1 rounded-full ${
-            darkMode ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-700'
-          }`}>
-            {candidate.subject_committee__candidate_party__name || 'Independent'}
+          <span className={`text-xs font-bold px-2 py-1 rounded-full ${partyInfo.colors.bgLight} ${partyInfo.colors.text}`}>
+            ({partyInfo.abbr}) {partyInfo.fullName}
           </span>
         </div>
       </div>

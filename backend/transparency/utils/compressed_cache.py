@@ -67,7 +67,7 @@ class CompressedCache:
             compression_ratio = (1 - len(compressed) / len(json_bytes)) * 100
 
             logger.info(
-                f"✅ ZSTD CACHE SET: {key} | "
+                f"ZSTD CACHE SET: {key} | "
                 f"Original: {len(json_bytes):,} bytes | "
                 f"Compressed: {len(compressed):,} bytes | "
                 f"Ratio: {compression_ratio:.1f}% | "
@@ -77,7 +77,7 @@ class CompressedCache:
             return True
 
         except Exception as e:
-            logger.error(f"❌ ZSTD compression error: {e}")
+            logger.error(f"ZSTD compression error: {e}")
             return False
 
     @staticmethod
@@ -98,7 +98,7 @@ class CompressedCache:
             compressed = cache.get(f'zstd:{key}')
 
             if compressed is None:
-                logger.info(f"❌ ZSTD CACHE MISS: {key}")
+                logger.info(f"ZSTD CACHE MISS: {key}")
                 return None
 
             # Decompress
@@ -108,7 +108,7 @@ class CompressedCache:
             decompress_time = (time.perf_counter() - start) * 1000
 
             logger.info(
-                f"✅ ZSTD CACHE HIT: {key} | "
+                f"ZSTD CACHE HIT: {key} | "
                 f"Compressed: {len(compressed):,} bytes | "
                 f"Decompressed: {len(json_bytes):,} bytes | "
                 f"Time: {decompress_time:.3f}ms"
@@ -117,7 +117,7 @@ class CompressedCache:
             return data
 
         except Exception as e:
-            logger.error(f"❌ ZSTD decompression error: {e}")
+            logger.error(f"ZSTD decompression error: {e}")
             return None
 
     @staticmethod
@@ -148,7 +148,7 @@ def zstd_cached(cache_key_func, timeout=300):
                 return cached_data
 
             # Cache miss - execute function
-            logger.info(f"🔄 ZSTD: Computing fresh data for {key}...")
+            logger.info(f"ZSTD: Computing fresh data for {key}...")
             result = func(*args, **kwargs)
 
             # Cache result

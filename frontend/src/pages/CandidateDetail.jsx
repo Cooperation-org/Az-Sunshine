@@ -37,7 +37,7 @@ import {
 import Sidebar from "../components/Sidebar";
 
 import GrassrootsThresholdBadge from "../components/GrassrootsThresholdBadge";
-import { getCandidateById, getCandidateIESpending, getTransactions } from "../api/api";
+import { getCandidateById, getCandidateIESpending, getCandidateAggregate, getCandidateAggregateIESpending, getTransactions } from "../api/api";
 import { exportToCSV } from "../utils/csvExport";
 import { useDarkMode } from "../context/DarkModeContext";
 
@@ -58,6 +58,7 @@ export default function CandidateDetail() {
 
   const [candidate, setCandidate] = useState(null);
   const [ieSpending, setIESpending] = useState(null);
+  const [aggregateData, setAggregateData] = useState(null);
   const [expenditures, setExpenditures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expendituresLoading, setExpendituresLoading] = useState(true);
@@ -73,15 +74,36 @@ export default function CandidateDetail() {
   async function loadCandidateData() {
     setLoading(true);
     setError(null);
-    
+
     try {
+      // Try to get aggregate data first (combines all committees for same candidate)
+      let aggregateResult = null;
+      let aggregateIEResult = null;
+
+      try {
+        [aggregateResult, aggregateIEResult] = await Promise.all([
+          getCandidateAggregate(id),
+          getCandidateAggregateIESpending(id),
+        ]);
+      } catch (aggErr) {
+        console.log("Aggregate endpoint not available, falling back to single committee");
+      }
+
+      // Fallback to single committee data
       const [candidateData, ieData] = await Promise.all([
         getCandidateById(id),
         getCandidateIESpending(id),
       ]);
 
       setCandidate(candidateData);
-      setIESpending(ieData);
+      setAggregateData(aggregateResult);
+
+      // Use aggregate IE data if available, otherwise use single committee data
+      if (aggregateIEResult) {
+        setIESpending(aggregateIEResult);
+      } else {
+        setIESpending(ieData);
+      }
     } catch (err) {
       console.error("Error loading candidate:", err);
       setError(err.message || "Failed to load candidate data");
@@ -171,11 +193,17 @@ export default function CandidateDetail() {
     );
   }
 
-  // Calculate totals
-  const totalIEFor = parseFloat(ieSpending?.ie_spending?.for?.total || 0);
-  const totalIEAgainst = parseFloat(ieSpending?.ie_spending?.against?.total || 0);
+  // Calculate totals - use absolute values since IE expenses are stored as negative
+  const rawIEFor = parseFloat(ieSpending?.ie_spending?.for?.total || 0);
+  const rawIEAgainst = parseFloat(ieSpending?.ie_spending?.against?.total || 0);
+  const totalIEFor = Math.abs(rawIEFor);
+  const totalIEAgainst = Math.abs(rawIEAgainst);
   const totalIE = totalIEFor + totalIEAgainst;
   const netIE = totalIEFor - totalIEAgainst;
+
+  // Check if we're showing aggregated data from multiple committees
+  const isAggregated = ieSpending?.is_aggregated || aggregateData?.is_aggregated;
+  const relatedCommitteesCount = ieSpending?.related_committees_count || aggregateData?.related_committees_count || 1;
 
   // Pie chart data
   const pieChartData = {
@@ -297,6 +325,21 @@ export default function CandidateDetail() {
               </div>
             </div>
           </div>
+
+          {/* Aggregation Indicator */}
+          {isAggregated && (
+            <div className={`${darkMode ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-200'} border rounded-xl p-4 mb-6 flex items-center gap-3`}>
+              <CheckCircle className={`w-5 h-5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+              <div>
+                <p className={`font-semibold ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                  Aggregated Data from {relatedCommitteesCount} Committees
+                </p>
+                <p className={`text-sm ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                  This candidate has multiple campaign committees. Totals shown combine all related committees.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Tab Navigation */}
           <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl shadow-lg border mb-6 overflow-hidden`}>

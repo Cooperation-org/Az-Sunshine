@@ -42,12 +42,12 @@ export default function Dashboard() {
     try {
       const startTime = performance.now();
 
-      // 🚀 EXTREME MODE: Single unified request for everything!
+      // Single unified request for everything
       const response = await api.get('dashboard/extreme/');
       const data = response.data;
 
       const loadTime = ((performance.now() - startTime) / 1000).toFixed(2);
-      console.log(`🔥 EXTREME: Dashboard loaded in ${loadTime}s:`, data.metadata);
+      console.log(`Dashboard loaded in ${loadTime}s:`, data.metadata);
 
       // Parse summary (show metrics first - most important)
       setMetrics({
@@ -77,7 +77,8 @@ export default function Dashboard() {
   async function handleRefresh() {
     setRefreshing(true);
     try {
-      await api.post('dashboard/refresh-extreme/');
+      // Materialized view refresh can take 60-90s for large datasets
+      await api.post('dashboard/refresh-extreme/', {}, { timeout: 120000 });
       await loadDashboard();
     } catch (error) {
       console.error("Error refreshing:", error);

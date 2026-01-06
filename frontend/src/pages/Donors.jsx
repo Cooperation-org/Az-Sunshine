@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Search, ChevronRight, Download, Loader } from "lucide-react";
+import { Search, Download, Loader } from "lucide-react";
 import { getDonors } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import { TableSkeleton } from "../components/SkeletonLoader";
 import { exportToCSV } from "../utils/csvExport";
 import { useDarkMode } from "../context/DarkModeContext";
+import Pagination from "../components/Pagination";
 
 // --- REFINED BANNER COMPONENT (Consistent with Dashboard & Candidates) ---
 const Banner = ({ controls, searchTerm, setSearchTerm, onSearch }) => {
@@ -211,24 +212,13 @@ export default function Donors() {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-between">
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{totalCount} results</p>
-            <div className="flex gap-2">
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${
-                    currentPage === page
-                      ? 'bg-[#7667C1] text-white shadow-md'
-                      : darkMode ? 'bg-[#2D2844] text-gray-300 hover:bg-[#373052]' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={setCurrentPage}
+            loading={loading}
+          />
         </div>
       </main>
     </div>

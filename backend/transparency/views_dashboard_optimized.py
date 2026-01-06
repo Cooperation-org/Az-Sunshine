@@ -22,10 +22,10 @@ def dashboard_summary_optimized(request):
     cached_data = cache.get(cache_key)
     
     if cached_data:
-        logger.info("✅ Returning cached dashboard data")
+        logger.info("Returning cached dashboard data")
         return Response(cached_data)
     
-    logger.info("🔄 Computing fresh dashboard data...")
+    logger.info("Computing fresh dashboard data...")
     
     try:
         with connection.cursor() as cursor:
@@ -71,7 +71,7 @@ def dashboard_summary_optimized(request):
                 }
         
         cache.set(cache_key, response_data, timeout=300)
-        logger.info("✅ Dashboard data computed and cached")
+        logger.info("Dashboard data computed and cached")
         return Response(response_data)
         
     except Exception as e:
@@ -99,10 +99,10 @@ def dashboard_charts_data_mv(request):
     if not force_refresh:
         cached_data = cache.get(cache_key)
         if cached_data:
-            logger.info("✅ Returning cached charts")
+            logger.info("Returning cached charts")
             return Response(cached_data)
 
-    logger.info("🔄 Loading fresh dashboard charts from materialized views...")
+    logger.info("Loading fresh dashboard charts from materialized views...")
 
     try:
         with connection.cursor() as cursor:
@@ -183,11 +183,11 @@ def dashboard_charts_data_mv(request):
             # Cache for 10 minutes
             cache.set(cache_key, response_data, timeout=600)
 
-            logger.info(f"✅ Charts loaded from MV: {len(top_committees)} committees, {len(top_donors)} donors")
+            logger.info(f"Charts loaded from MV: {len(top_committees)} committees, {len(top_donors)} donors")
             return Response(response_data)
 
     except Exception as e:
-        logger.error(f"❌ Charts error: {e}", exc_info=True)
+        logger.error(f"Charts error: {e}", exc_info=True)
         return Response({
             'is_for_benefit_breakdown': {
                 'for_benefit': {'total': 0.0, 'count': 0, 'percentage': 0.0},
@@ -237,7 +237,7 @@ def dashboard_recent_expenditures_mv(request):
         response_data = {'results': results}
         cache.set(cache_key, response_data, timeout=300)
 
-        logger.info(f"✅ Recent expenditures loaded from MV: {len(results)} records")
+        logger.info(f"Recent expenditures loaded from MV: {len(results)} records")
         return Response(response_data)
 
     except Exception as e:

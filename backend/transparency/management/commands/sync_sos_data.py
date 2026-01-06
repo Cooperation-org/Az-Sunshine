@@ -101,7 +101,7 @@ class Command(BaseCommand):
 
             if purchase:
                 self.stdout.write(self.style.WARNING(
-                    '⚠️  Purchase mode enabled ($25 will be charged)'
+                    ' Purchase mode enabled ($25 will be charged)'
                 ))
                 confirm = input('Continue? (yes/no): ')
                 if confirm.lower() != 'yes':
@@ -117,7 +117,7 @@ class Command(BaseCommand):
 
                 if not headless:
                     self.stdout.write(self.style.WARNING(
-                        '\n⚠️  Browser will open. Solve any CAPTCHAs manually.'
+                        '\n Browser will open. Solve any CAPTCHAs manually.'
                     ))
 
                 csv_file = scraper.download_database(
@@ -127,7 +127,7 @@ class Command(BaseCommand):
                 )
 
                 self.stdout.write(self.style.SUCCESS(
-                    f'✅ Download complete: {csv_file}'
+                    f'Download complete: {csv_file}'
                 ))
 
             except AZSOSDownloadError as e:
@@ -138,7 +138,7 @@ class Command(BaseCommand):
 
         # Step 2: Import (unless download-only)
         if not download_only:
-            self.stdout.write('\n📊 STEP 2: IMPORTING DATA')
+            self.stdout.write('\nSTEP 2: IMPORTING DATA')
             self.stdout.write('-' * 70)
 
             # Get CSV file to import
@@ -177,7 +177,7 @@ class Command(BaseCommand):
                 )
 
                 self.stdout.write(self.style.SUCCESS(
-                    '\n✅ Import complete'
+                    '\nImport complete'
                 ))
 
             except Exception as e:
@@ -186,7 +186,7 @@ class Command(BaseCommand):
 
         # Final summary
         self.stdout.write('\n' + '=' * 70)
-        self.stdout.write(self.style.SUCCESS('✅ SYNC COMPLETE'))
+        self.stdout.write(self.style.SUCCESS('SYNC COMPLETE'))
         self.stdout.write('=' * 70)
 
         if csv_file:

@@ -27,14 +27,17 @@ from .models import (
 def ie_spending_by_race(request):
     """
     Phase 1 Req 2a: Aggregate IE spending by race + Zstd compression
-    GET /api/v1/ie-analysis/by-race/?office_id=1&cycle_id=1
+    GET /api/v1/ie-analysis/by-race/?office_id=1&cycle_id=1&date_from=2024-01-01&date_to=2024-12-31
 
     Returns IE spending for/against all candidates in a race
+    Supports optional date_from and date_to filters for date range filtering
     """
     from transparency.utils.compressed_cache import CompressedCache
 
     office_id = request.GET.get('office_id')
     cycle_id = request.GET.get('cycle_id')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
 
     if not office_id or not cycle_id:
         return Response(
@@ -42,14 +45,18 @@ def ie_spending_by_race(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Build cache key
+    # Build cache key (include date range if provided)
     cache_key = f'ie_spending_by_race_o{office_id}_c{cycle_id}'
+    if date_from:
+        cache_key += f'_df{date_from}'
+    if date_to:
+        cache_key += f'_dt{date_to}'
 
     # Try Zstd-compressed cache first (10 min TTL)
     cached_data = CompressedCache.get(cache_key)
     if cached_data:
         return Response(cached_data)
-    
+
     try:
         office = Office.objects.get(office_id=office_id)
         cycle = Cycle.objects.get(cycle_id=cycle_id)
@@ -58,21 +65,29 @@ def ie_spending_by_race(request):
             {'error': 'Invalid office_id or cycle_id'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
     # Get all candidates in this race
     candidates = Committee.objects.filter(
         candidate_office=office,
         election_cycle=cycle,
         candidate__isnull=False
     ).select_related('candidate', 'candidate_party', 'name')
-    
+
     race_summary = []
     total_ie_for = Decimal('0')
     total_ie_against = Decimal('0')
-    
+
     for candidate in candidates:
+        # Build date filter for transactions
+        date_filter = Q()
+        if date_from:
+            date_filter &= Q(transaction_date__gte=date_from)
+        if date_to:
+            date_filter &= Q(transaction_date__lte=date_to)
+
         # Get IE spending for this candidate
         ie_for = Transaction.objects.filter(
+            date_filter,
             subject_committee=candidate,
             is_for_benefit=True,
             deleted=False
@@ -80,8 +95,9 @@ def ie_spending_by_race(request):
             total=Sum('amount'),
             count=Count('transaction_id')
         )
-        
+
         ie_against = Transaction.objects.filter(
+            date_filter,
             subject_committee=candidate,
             is_for_benefit=False,
             deleted=False
@@ -122,6 +138,10 @@ def ie_spending_by_race(request):
         'cycle': {
             'cycle_id': cycle.cycle_id,
             'name': cycle.name
+        },
+        'filters': {
+            'date_from': date_from,
+            'date_to': date_to,
         },
         'summary': {
             'total_ie_for': float(total_ie_for),

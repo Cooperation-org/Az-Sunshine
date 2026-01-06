@@ -58,6 +58,9 @@ export default function ReportAdBuy() {
   // UI state
   const [offices, setOffices] = useState([]);
   const [candidates, setCandidates] = useState([]);
+  const [isOtherOffice, setIsOtherOffice] = useState(false);
+  const [customOfficeName, setCustomOfficeName] = useState('');
+  const [customCandidateName, setCustomCandidateName] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingOffices, setLoadingOffices] = useState(true);
@@ -84,7 +87,7 @@ export default function ReportAdBuy() {
   // Load candidates when office changes
   useEffect(() => {
     async function loadCandidates() {
-      if (formData.office_id) {
+      if (formData.office_id && formData.office_id !== 'other') {
         try {
           const data = await getCandidates({ office_id: formData.office_id });
           setCandidates(data.results || data);
@@ -99,6 +102,22 @@ export default function ReportAdBuy() {
     }
     loadCandidates();
   }, [formData.office_id]);
+
+  // Handle office selection change
+  const handleOfficeChange = (e) => {
+    const value = e.target.value;
+    if (value === 'other') {
+      setIsOtherOffice(true);
+      setFormData(prev => ({ ...prev, office_id: 'other', candidate_id: '' }));
+      setCandidates([]);
+    } else {
+      setIsOtherOffice(false);
+      setCustomOfficeName('');
+      setCustomCandidateName('');
+      setFormData(prev => ({ ...prev, office_id: value, candidate_id: '' }));
+    }
+    setError('');
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -186,9 +205,21 @@ export default function ReportAdBuy() {
       setError('Please select the office for this ad.');
       return false;
     }
-    if (!formData.candidate_id) {
-      setError('Please select the candidate this ad is about.');
-      return false;
+    // Validate based on whether "Other" is selected
+    if (isOtherOffice) {
+      if (!customOfficeName.trim()) {
+        setError('Please enter the office name.');
+        return false;
+      }
+      if (!customCandidateName.trim()) {
+        setError('Please enter the candidate name.');
+        return false;
+      }
+    } else {
+      if (!formData.candidate_id) {
+        setError('Please select the candidate this ad is about.');
+        return false;
+      }
     }
     if (!formData.support_oppose) {
       setError('Please indicate if this ad supports or opposes the candidate.');
@@ -218,9 +249,20 @@ export default function ReportAdBuy() {
       formDataObj.append('ad_date', formData.ad_date);
       formDataObj.append('platform', formData.platform);
       formDataObj.append('paid_for_by', formData.paid_for_by);
-      formDataObj.append('candidate', formData.candidate_id);
       formDataObj.append('support_oppose', formData.support_oppose);
       formDataObj.append('reported_by', formData.reported_by);
+
+      // Handle "Other" office/candidate case
+      if (isOtherOffice) {
+        // Don't send candidate_id, instead include custom info in paid_for_by field
+        // and add details to admin_notes
+        const customInfo = `[CUSTOM ENTRY] Office: ${customOfficeName}, Candidate: ${customCandidateName}`;
+        formDataObj.append('admin_notes', customInfo);
+        // Still need to provide paid_for_by with the custom candidate info appended
+        formDataObj.append('paid_for_by', `${formData.paid_for_by} (Re: ${customCandidateName} for ${customOfficeName})`);
+      } else {
+        formDataObj.append('candidate', formData.candidate_id);
+      }
 
       if (formData.url) formDataObj.append('url', formData.url);
       if (formData.approximate_spend) formDataObj.append('approximate_spend', formData.approximate_spend);
@@ -267,6 +309,9 @@ export default function ReportAdBuy() {
     });
     setImagePreview(null);
     setError('');
+    setIsOtherOffice(false);
+    setCustomOfficeName('');
+    setCustomCandidateName('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -535,7 +580,7 @@ export default function ReportAdBuy() {
                       <select
                         name="office_id"
                         value={formData.office_id}
-                        onChange={handleChange}
+                        onChange={handleOfficeChange}
                         disabled={loadingOffices}
                         className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
                           darkMode
@@ -549,6 +594,7 @@ export default function ReportAdBuy() {
                             {office.name}
                           </option>
                         ))}
+                        <option value="other">Other (not listed)</option>
                       </select>
                       {loadingOffices && (
                         <p className={`text-xs mt-2 flex items-center gap-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -558,38 +604,77 @@ export default function ReportAdBuy() {
                       )}
                     </div>
 
-                    {/* Candidate */}
+                    {/* Candidate - conditional rendering based on isOtherOffice */}
                     <div>
                       <label className={`block text-sm font-medium mb-2 ${
                         darkMode ? 'text-white' : 'text-gray-900'
                       }`}>
                         Candidate <span className="text-red-400">*</span>
                       </label>
-                      <select
-                        name="candidate_id"
-                        value={formData.candidate_id}
-                        onChange={handleChange}
-                        disabled={!formData.office_id}
-                        className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
-                          darkMode
-                            ? 'bg-[#1F1B31] text-white [&>option]:bg-[#1F1B31] [&>option]:text-white'
-                            : 'bg-gray-50 text-gray-900 [&>option]:bg-white [&>option]:text-gray-900'
-                        } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
-                      >
-                        <option value="">Select candidate...</option>
-                        {candidates.map(candidate => (
-                          <option key={candidate.committee_id} value={candidate.committee_id}>
-                            {candidate.candidate?.full_name || candidate.name?.full_name || 'Unknown'}
-                          </option>
-                        ))}
-                      </select>
-                      {!formData.office_id && (
+                      {isOtherOffice ? (
+                        <input
+                          type="text"
+                          placeholder="Enter candidate name"
+                          value={customCandidateName}
+                          onChange={(e) => setCustomCandidateName(e.target.value)}
+                          className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
+                            darkMode
+                              ? 'bg-[#1F1B31] text-white placeholder-gray-500'
+                              : 'bg-gray-50 text-gray-900 placeholder-gray-400'
+                          } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all`}
+                        />
+                      ) : (
+                        <select
+                          name="candidate_id"
+                          value={formData.candidate_id}
+                          onChange={handleChange}
+                          disabled={!formData.office_id}
+                          className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
+                            darkMode
+                              ? 'bg-[#1F1B31] text-white [&>option]:bg-[#1F1B31] [&>option]:text-white'
+                              : 'bg-gray-50 text-gray-900 [&>option]:bg-white [&>option]:text-gray-900'
+                          } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <option value="">Select candidate...</option>
+                          {candidates.map(candidate => (
+                            <option key={candidate.committee_id} value={candidate.committee_id}>
+                              {candidate.candidate?.full_name || candidate.name?.full_name || 'Unknown'}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      {!formData.office_id && !isOtherOffice && (
                         <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                           Please select an office first
                         </p>
                       )}
                     </div>
                   </div>
+
+                  {/* Custom Office Name - only shown when "Other" is selected */}
+                  {isOtherOffice && (
+                    <div className="mb-6">
+                      <label className={`block text-sm font-medium mb-2 ${
+                        darkMode ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        Office Name <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g., City Council, School Board, etc."
+                        value={customOfficeName}
+                        onChange={(e) => setCustomOfficeName(e.target.value)}
+                        className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
+                          darkMode
+                            ? 'bg-[#1F1B31] text-white placeholder-gray-500'
+                            : 'bg-gray-50 text-gray-900 placeholder-gray-400'
+                        } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all`}
+                      />
+                      <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Enter the office name since it's not in our database yet
+                      </p>
+                    </div>
+                  )}
 
                   {/* Support/Oppose */}
                   <div className="mb-6">

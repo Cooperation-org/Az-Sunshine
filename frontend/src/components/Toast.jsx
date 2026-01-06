@@ -100,6 +100,7 @@ export function useToast() {
   return {
     toasts,
     showToast,
+    addToast: showToast,  // alias for compatibility
     removeToast,
     success,
     error,

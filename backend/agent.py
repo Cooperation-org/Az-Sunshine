@@ -36,7 +36,7 @@ async def run_scraper_and_upload(python_cmd):
     Background task to run scraper and upload results to server
     """
     try:
-        print("\n🚀 Starting scraper process...")
+        print("\nStarting scraper process...")
 
         # Run the scraper synchronously and wait for it to complete
         process = await asyncio.create_subprocess_exec(
@@ -50,15 +50,15 @@ async def run_scraper_and_upload(python_cmd):
         stdout, stderr = await process.communicate()
 
         if process.returncode != 0:
-            print(f"❌ Scraper failed with exit code {process.returncode}")
+            print(f"Scraper failed with exit code {process.returncode}")
             print(f"Error output: {stderr.decode()[:500]}")
             return
 
-        print("✅ Scraper completed successfully!")
+        print("Scraper completed successfully!")
 
         # Check if CSV file exists
         if not CSV_OUTPUT.exists():
-            print(f"❌ CSV file not found at {CSV_OUTPUT}")
+            print(f"CSV file not found at {CSV_OUTPUT}")
             return
 
         # Read CSV and convert to JSON
@@ -78,10 +78,10 @@ async def run_scraper_and_upload(python_cmd):
                     'source_url': row.get('source_url', 'https://apps.arizona.vote/electioninfo/SOI/')
                 })
 
-        print(f"✓ Loaded {len(candidates)} candidates from CSV")
+        print(f"Loaded {len(candidates)} candidates from CSV")
 
         if not candidates:
-            print("⚠️ No candidates to upload")
+            print("No candidates to upload")
             return
 
         # Upload to server
@@ -99,14 +99,14 @@ async def run_scraper_and_upload(python_cmd):
         response.raise_for_status()
         server_response = response.json()
 
-        print("✅ Data uploaded successfully!")
-        print(f"📊 Server response: {json.dumps(server_response, indent=2)}")
+        print("Data uploaded successfully!")
+        print(f"Server response: {json.dumps(server_response, indent=2)}")
         print("\n" + "="*70)
-        print("🎉 SCRAPING AND UPLOAD COMPLETE!")
+        print("SCRAPING AND UPLOAD COMPLETE!")
         print("="*70 + "\n")
 
     except Exception as e:
-        print(f"❌ Background task error: {str(e)}")
+        print(f"Background task error: {str(e)}")
         import traceback
         traceback.print_exc()
 
@@ -136,7 +136,7 @@ async def run_scraper(request: Request):
     # Security check
     token = request.headers.get("X-Secret")
     if token != SECRET_TOKEN:
-        print(f"❌ Unauthorized: received token '{token}', expected '{SECRET_TOKEN}'")
+        print(f"Unauthorized: received token '{token}', expected '{SECRET_TOKEN}'")
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     print("\n" + "="*70)
@@ -157,10 +157,10 @@ async def run_scraper(request: Request):
         # Determine which Python to use
         if VENV_PYTHON.exists():
             python_cmd = str(VENV_PYTHON)
-            print(f"✓ Using venv Python: {python_cmd}")
+            print(f"Using venv Python: {python_cmd}")
         else:
             python_cmd = "python3"
-            print(f"✓ Using system Python: {python_cmd}")
+            print(f"Using system Python: {python_cmd}")
 
         # Run the Django management command
         print(f"▶️  Running: {python_cmd} manage.py soi_scraper")
@@ -173,7 +173,7 @@ async def run_scraper(request: Request):
         asyncio.create_task(run_scraper_and_upload(python_cmd))
 
         # Return immediately
-        print("✅ Scraper started in background")
+        print("Scraper started in background")
         return {
             "status": "success",
             "message": "Scraper started successfully in background",
@@ -186,7 +186,7 @@ async def run_scraper(request: Request):
             "message": f"File not found: {str(e)}"
         }
     except Exception as e:
-        print(f"\n❌ Error: {str(e)}")
+        print(f"\nError: {str(e)}")
         import traceback
         traceback.print_exc()
         return {
@@ -214,11 +214,11 @@ def run_scraper_sync():
         print(result.stdout)
         
         if result.stderr:
-            print("\n⚠️  Scraper Errors/Warnings:")
+            print("\n Scraper Errors/Warnings:")
             print(result.stderr)
         
         if result.returncode != 0:
-            print(f"\n❌ Scraper failed with exit code {result.returncode}")
+            print(f"\nScraper failed with exit code {result.returncode}")
             return {
                 "status": "error",
                 "message": "Scraper execution failed",
@@ -253,7 +253,7 @@ def run_scraper_sync():
                     'source_url': row.get('source_url', '')
                 })
         
-        print(f"✓ Loaded {len(candidates)} candidates from CSV")
+        print(f"Loaded {len(candidates)} candidates from CSV")
 
         # Send data back to Django server
         print(f"\n📡 Sending data to server: {SERVER_UPLOAD_URL}")
@@ -270,11 +270,11 @@ def run_scraper_sync():
         response.raise_for_status()
         server_response = response.json()
         
-        print("✅ Data uploaded successfully!")
-        print(f"📊 Server response: {json.dumps(server_response, indent=2)}")
+        print("Data uploaded successfully!")
+        print(f"Server response: {json.dumps(server_response, indent=2)}")
         
         print("\n" + "="*70)
-        print("🎉 SCRAPING COMPLETE!")
+        print("SCRAPING COMPLETE!")
         print("="*70)
         
         return {
@@ -309,7 +309,7 @@ def run_scraper_sync():
             "message": f"Failed to upload to server: {str(e)}"
         }
     except Exception as e:
-        print(f"\n❌ Error: {str(e)}")
+        print(f"\nError: {str(e)}")
         import traceback
         traceback.print_exc()
         return {
@@ -323,7 +323,7 @@ def run_scraper_sync():
 if __name__ == "__main__":
     import uvicorn
     print("\n" + "="*70)
-    print("🚀 Starting FastAPI SOI Scraper Agent")
+    print("Starting FastAPI SOI Scraper Agent")
     print("="*70)
     print(f"📍 Base directory: {BASE_DIR}")
     print(f"📍 manage.py: {MANAGE_PY}")

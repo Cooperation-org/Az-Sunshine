@@ -8,7 +8,7 @@ class Command(BaseCommand):
     help = 'Create all dashboard materialized views'
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('🔄 Creating dashboard materialized views...'))
+        self.stdout.write(self.style.SUCCESS('Creating dashboard materialized views...'))
         
         try:
             with connection.cursor() as cursor:
@@ -38,7 +38,7 @@ class Command(BaseCommand):
                     
                     CREATE UNIQUE INDEX idx_ie_benefit_unique ON ie_benefit_breakdown(is_for_benefit);
                 """)
-                self.stdout.write(self.style.SUCCESS('  ✅ ie_benefit_breakdown created'))
+                self.stdout.write(self.style.SUCCESS('  ie_benefit_breakdown created'))
                 
                 # 2. Create Top IE Committees View (if not exists)
                 self.stdout.write('Creating top_ie_committees_mv...')
@@ -62,7 +62,7 @@ class Command(BaseCommand):
                     
                     CREATE UNIQUE INDEX idx_top_committees_unique ON top_ie_committees_mv(committee_id);
                 """)
-                self.stdout.write(self.style.SUCCESS('  ✅ top_ie_committees_mv created'))
+                self.stdout.write(self.style.SUCCESS('  top_ie_committees_mv created'))
                 
                 # 3. Create Top Donors View (if not exists)
                 self.stdout.write('Creating top_donors_mv...')
@@ -90,7 +90,7 @@ class Command(BaseCommand):
 
                     CREATE UNIQUE INDEX idx_top_donors_unique ON top_donors_mv(entity_id);
                 """)
-                self.stdout.write(self.style.SUCCESS('  ✅ top_donors_mv created'))
+                self.stdout.write(self.style.SUCCESS('  top_donors_mv created'))
                 
                 # 4. Create Dashboard Aggregations View
                 self.stdout.write('Creating dashboard_aggregations...')
@@ -118,10 +118,10 @@ class Command(BaseCommand):
                     
                     CREATE UNIQUE INDEX idx_dashboard_agg_unique ON dashboard_aggregations((1));
                 """)
-                self.stdout.write(self.style.SUCCESS('  ✅ dashboard_aggregations created'))
+                self.stdout.write(self.style.SUCCESS('  dashboard_aggregations created'))
                 
-            self.stdout.write(self.style.SUCCESS('\n✅ All materialized views created successfully!'))
-            self.stdout.write('\n📊 View summary:')
+            self.stdout.write(self.style.SUCCESS('\nAll materialized views created successfully!'))
+            self.stdout.write('\nView summary:')
             
             # Show row counts
             with connection.cursor() as cursor:
@@ -141,9 +141,9 @@ class Command(BaseCommand):
                 count = cursor.fetchone()[0]
                 self.stdout.write(f'  • dashboard_aggregations: {count} row')
             
-            self.stdout.write('\n💡 Run "python manage.py refresh_dashboard_views" to update data')
+            self.stdout.write('\nRun "python manage.py refresh_dashboard_views" to update data')
             
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'❌ Error creating views: {e}'))
+            self.stdout.write(self.style.ERROR(f'Error creating views: {e}'))
             logger.error(f"Error creating materialized views: {e}", exc_info=True)
             raise

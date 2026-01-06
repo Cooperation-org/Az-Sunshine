@@ -11,7 +11,7 @@ from django.db import models
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 
 from .models import (
@@ -36,10 +36,10 @@ logger = logging.getLogger(__name__)
 # ==================== EMAIL TEMPLATE VIEWSET ====================
 
 class EmailTemplateViewSet(viewsets.ModelViewSet):
-    """Manage email templates"""
+    """Manage email templates - REQUIRES AUTHENTICATION"""
     queryset = EmailTemplate.objects.all()
     serializer_class = EmailTemplateSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]  # SECURITY FIX: Require auth
     pagination_class = PageNumberPagination
     
     def get_queryset(self):
@@ -58,10 +58,10 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 # ==================== EMAIL CAMPAIGN VIEWSET ====================
 
 class EmailCampaignViewSet(viewsets.ModelViewSet):
-    """Manage email campaigns"""
+    """Manage email campaigns - REQUIRES AUTHENTICATION"""
     queryset = EmailCampaign.objects.all()
     serializer_class = EmailCampaignSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]  # SECURITY FIX: Require auth
     pagination_class = PageNumberPagination
     
     def get_queryset(self):
@@ -157,9 +157,9 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
 # ==================== EMAIL LOG VIEWSET ====================
 
 class EmailLogViewSet(viewsets.ReadOnlyModelViewSet):
-    """View email logs and history"""
+    """View email logs and history - REQUIRES AUTHENTICATION"""
     queryset = EmailLog.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]  # SECURITY FIX: Require auth
     pagination_class = PageNumberPagination
     
     def get_serializer_class(self):
@@ -198,9 +198,9 @@ class EmailLogViewSet(viewsets.ReadOnlyModelViewSet):
 # ==================== EMAIL STATISTICS ====================
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])  # SECURITY FIX: Require auth
 def email_statistics(request):
-    """Get email campaign statistics"""
+    """Get email campaign statistics - REQUIRES AUTHENTICATION"""
     
     # Date range filter
     date_from = request.query_params.get('date_from', None)
@@ -243,9 +243,9 @@ def email_statistics(request):
 # ==================== SEND SINGLE EMAIL ====================
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])  # SECURITY FIX: Require auth
 def send_single_email(request):
-    """Send a single email to a candidate"""
+    """Send a single email to a candidate - REQUIRES AUTHENTICATION"""
     
     try:
         candidate_id = request.data.get('candidate_id')
@@ -403,10 +403,10 @@ def track_email_click(request, tracking_id):
 # ==================== BULK EMAIL SENDING ====================
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])  # SECURITY FIX: Require auth
 def send_bulk_emails(request):
     """
-    Send bulk emails to multiple candidates
+    Send bulk emails to multiple candidates - REQUIRES AUTHENTICATION
     POST /api/v1/email/send-bulk/
     Body: {
         "candidate_ids": [1, 2, 3],

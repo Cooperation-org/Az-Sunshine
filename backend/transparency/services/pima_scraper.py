@@ -37,7 +37,7 @@ class PimaScraper(CountyScraperBase):
         candidates = []
 
         logger.warning(
-            "⚠️  Pima County website may use anti-bot protection. "
+            " Pima County website may use anti-bot protection. "
             "Recommended: Use AZ SOS Automation instead (covers all counties including Pima)."
         )
 

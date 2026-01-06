@@ -86,21 +86,21 @@ class Command(BaseCommand):
 
                 # Print summary
                 self.stdout.write(self.style.SUCCESS(
-                    f"✅ {scraper_name}: "
+                    f"{scraper_name}: "
                     f"{len(result['candidates'])} candidates, "
                     f"{len(result['filings'])} filings"
                 ))
 
                 if result['errors']:
                     self.stdout.write(self.style.WARNING(
-                        f"⚠️  {len(result['errors'])} errors encountered"
+                        f" {len(result['errors'])} errors encountered"
                     ))
                     for error in result['errors'][:3]:  # Show first 3 errors
                         self.stdout.write(f"   - {error}")
 
             except Exception as e:
                 self.stdout.write(self.style.ERROR(
-                    f"❌ {scraper_name} failed: {str(e)}"
+                    f"{scraper_name} failed: {str(e)}"
                 ))
                 logger.error(f"Scraping {scraper_name} failed", exc_info=True)
                 results[scraper_name] = {'error': str(e)}

@@ -57,7 +57,7 @@ class SeeTheMoneyScraper:
 
         logger.info(f"SeeTheMoney Scraper initialized. Download dir: {self.download_dir}")
 
-    def download_data(self, year=None, entity_type="Candidate", office_type=None):
+    def download_data(self, year=None, entity_type="Candidate", office_type=None, quarter=None):
         """
         Download campaign finance data from SeeTheMoney using quarterly chunks
         to avoid server timeouts on large datasets.
@@ -66,9 +66,10 @@ class SeeTheMoneyScraper:
             year: Year for data (default: current year)
             entity_type: Type of entity ("Candidate", "PAC", "Party", "All")
             office_type: Office type filter (optional)
+            quarter: Specific quarter to download (1-4), or None for all quarters
 
         Returns:
-            Path to downloaded CSV file
+            Path to downloaded CSV file (or list of paths if downloading all quarters)
         """
         if not year:
             year = datetime.now().year
@@ -76,16 +77,54 @@ class SeeTheMoneyScraper:
         logger.info(f"Starting SeeTheMoney download - Year: {year}, Entity: {entity_type}")
 
         # CRITICAL FIX: Use quarterly date ranges to avoid 500K+ record timeouts
-        quarters = [
+        all_quarters = [
             (f"{year}-01-01", f"{year}-03-31", "Q1"),
             (f"{year}-04-01", f"{year}-06-30", "Q2"),
             (f"{year}-07-01", f"{year}-09-30", "Q3"),
             (f"{year}-10-01", f"{year}-12-31", "Q4"),
         ]
 
-        # We'll download Q1 as proof of concept (can extend to all quarters)
-        start_date, end_date, quarter_name = quarters[0]
-        logger.info(f"Using date range: {start_date} to {end_date} ({quarter_name})")
+        # FIXED: Download all quarters (or specific quarter if specified)
+        if quarter and 1 <= quarter <= 4:
+            quarters_to_download = [all_quarters[quarter - 1]]
+            logger.info(f"Downloading single quarter: Q{quarter}")
+        else:
+            quarters_to_download = all_quarters
+            logger.info(f"Downloading ALL quarters (Q1-Q4) for year {year}")
+
+        downloaded_files = []
+
+        for start_date, end_date, quarter_name in quarters_to_download:
+            logger.info(f"Processing {quarter_name}: {start_date} to {end_date}")
+            try:
+                csv_path = self._download_quarter(year, entity_type, start_date, end_date, quarter_name)
+                if csv_path:
+                    downloaded_files.append(csv_path)
+                    logger.info(f"{quarter_name} downloaded: {csv_path}")
+            except Exception as e:
+                logger.error(f"Failed to download {quarter_name}: {e}")
+                # Continue with other quarters even if one fails
+                continue
+
+        if not downloaded_files:
+            raise Exception(f"Failed to download any data for {year}")
+
+        # If we downloaded multiple files, return the list
+        # The caller can merge them if needed
+        if len(downloaded_files) == 1:
+            return downloaded_files[0]
+
+        logger.info(f"Downloaded {len(downloaded_files)} quarterly files for {year}")
+        return downloaded_files
+
+    def _download_quarter(self, year, entity_type, start_date, end_date, quarter_name):
+        """
+        Download a single quarter of data.
+
+        Returns:
+            Path to downloaded CSV file
+        """
+        logger.info(f"Downloading {quarter_name} data: {start_date} to {end_date}")
 
         with sync_playwright() as p:
             # Launch browser with download settings
@@ -139,11 +178,11 @@ class SeeTheMoneyScraper:
 
                     if start_date_input.count() > 0:
                         start_date_input.first.fill(start_date)
-                        logger.info(f"✓ Set start date: {start_date}")
+                        logger.info(f"Set start date: {start_date}")
 
                     if end_date_input.count() > 0:
                         end_date_input.first.fill(end_date)
-                        logger.info(f"✓ Set end date: {end_date}")
+                        logger.info(f"Set end date: {end_date}")
                 except Exception as e:
                     logger.warning(f"Could not set date range: {e}")
 
@@ -228,14 +267,14 @@ class SeeTheMoneyScraper:
                 # Step 1: Wait for results table to appear
                 try:
                     page.wait_for_selector("table", state="visible", timeout=30000)
-                    logger.info("✓ Results table visible")
+                    logger.info("Results table visible")
                 except:
                     logger.warning("Results table not found")
 
                 # Step 2: Wait for entry count to appear
                 try:
                     page.wait_for_selector("text=/Showing.*entries/i", timeout=30000)
-                    logger.info("✓ Entry count displayed")
+                    logger.info("Entry count displayed")
                 except:
                     logger.warning("Entry count not displayed")
 
@@ -246,7 +285,7 @@ class SeeTheMoneyScraper:
                     if processing.count() > 0:
                         logger.info("Data is loading... waiting up to 45 seconds")
                         page.wait_for_selector("text=/Processing/i", state="hidden", timeout=45000)
-                        logger.info("✓ Processing complete")
+                        logger.info("Processing complete")
                 except Exception as e:
                     logger.warning(f"Processing timeout: {e}")
                     logger.info("Attempting to force-remove stuck overlay...")
@@ -254,7 +293,7 @@ class SeeTheMoneyScraper:
                     # Force remove overlay if stuck
                     try:
                         page.evaluate("document.querySelectorAll('.overlay').forEach(el => el.remove())")
-                        logger.info("✓ Forced removal of overlay")
+                        logger.info("Forced removal of overlay")
                         page.wait_for_timeout(2000)
                     except:
                         pass
@@ -316,13 +355,13 @@ class SeeTheMoneyScraper:
                         logger.error("Export button is DISABLED - cannot proceed")
                         raise Exception("Export button is disabled. Data may still be loading or export feature unavailable.")
 
-                    logger.info("✓ Export button is enabled")
+                    logger.info("Export button is enabled")
 
                     # Scroll button into view
                     try:
                         export_button.first.scroll_into_view_if_needed()
                         page.wait_for_timeout(500)
-                        logger.info("✓ Button scrolled into view")
+                        logger.info("Button scrolled into view")
                     except Exception as e:
                         logger.warning(f"Could not scroll button: {e}")
 
@@ -330,19 +369,19 @@ class SeeTheMoneyScraper:
                     logger.info("Clicking Export Report button to open modal...")
                     try:
                         export_button.first.click(force=True)
-                        logger.info("✓ Export Report button clicked")
+                        logger.info("Export Report button clicked")
                     except Exception as e:
                         logger.error(f"Failed to click export button: {e}")
                         # Try JavaScript click as fallback
                         logger.info("Trying JavaScript click as fallback...")
                         export_button.first.evaluate("button => button.click()")
-                        logger.info("✓ JavaScript click executed")
+                        logger.info("JavaScript click executed")
 
                     # STEP 2: Wait for modal to appear
                     logger.info("Waiting for Export Reports modal...")
                     try:
                         page.wait_for_selector("text=/Export Reports/i", state="visible", timeout=5000)
-                        logger.info("✓ Modal appeared")
+                        logger.info("Modal appeared")
                     except:
                         logger.warning("Modal title not found, continuing anyway...")
 
@@ -365,7 +404,7 @@ class SeeTheMoneyScraper:
                     try:
                         logger.info("Attempting direct selection using value='CSV'...")
                         page.locator("#ExportFormatOptions").select_option(value="CSV")
-                        logger.info("✓ Selected CSV using select_option(value='CSV')")
+                        logger.info("Selected CSV using select_option(value='CSV')")
                     except Exception as e:
                         logger.warning(f"Direct selection failed: {e}")
                         logger.info("Trying JavaScript fallback...")
@@ -377,17 +416,17 @@ class SeeTheMoneyScraper:
                             select.value = 'CSV';
                             select.dispatchEvent(new Event('change', { bubbles: true }));
                         """)
-                        logger.info("✓ Selected CSV using JavaScript fallback")
+                        logger.info("Selected CSV using JavaScript fallback")
 
                     # VERIFY selection worked
                     selected_value = page.locator("#ExportFormatOptions").evaluate("el => el.value")
                     logger.info(f"Verification - Selected value: '{selected_value}'")
 
                     if selected_value != "CSV":
-                        logger.error(f"❌ Selection verification failed! Expected 'CSV', got '{selected_value}'")
+                        logger.error(f"Selection verification failed! Expected 'CSV', got '{selected_value}'")
                         raise Exception(f"Failed to select CSV format. Current value: '{selected_value}'")
 
-                    logger.info("✓ CSV format successfully selected and verified!")
+                    logger.info("CSV format successfully selected and verified!")
                     page.wait_for_timeout(500)
 
                     # STEP 4: Set up download handler and click Export button
@@ -403,15 +442,15 @@ class SeeTheMoneyScraper:
                         with page.expect_download(timeout=60000) as download_info:
                             try:
                                 export_button.click(timeout=10000)
-                                logger.info("✓ Export button clicked (form submitted)")
+                                logger.info("Export button clicked (form submitted)")
                             except Exception as e:
                                 logger.warning(f"Normal click failed: {e}")
                                 logger.info("Trying force click...")
                                 export_button.click(force=True)
-                                logger.info("✓ Export button force-clicked")
+                                logger.info("Export button force-clicked")
 
                         download = download_info.value
-                        logger.info("✓ Download started!")
+                        logger.info("Download started!")
                     else:
                         logger.error("Export button (#Export) not found in modal")
                         logger.error(f"Check screenshot: {after_export_screenshot}")
@@ -447,7 +486,7 @@ class SeeTheMoneyScraper:
                                 first_line = content.split('\n')[0]
                                 # If we see normal CSV structure (commas without excessive spaces), it's good
                                 if ',' in first_line and not all(c == ' ' for c in first_line[::2]):
-                                    logger.info(f"✓ Successfully decoded with {encoding}")
+                                    logger.info(f"Successfully decoded with {encoding}")
                                     break
                                 else:
                                     content = None
@@ -459,11 +498,11 @@ class SeeTheMoneyScraper:
                             # Save as UTF-8
                             with open(save_path, 'w', encoding='utf-8', newline='') as f:
                                 f.write(content)
-                            logger.info(f"✓ Converted to UTF-8: {save_path}")
+                            logger.info(f"Converted to UTF-8: {save_path}")
 
                             # Remove temp file
                             temp_path.unlink()
-                            logger.info("✓ Removed temp file")
+                            logger.info("Removed temp file")
                         else:
                             logger.warning("Could not convert encoding, using original file")
                             temp_path.rename(save_path)
@@ -473,7 +512,7 @@ class SeeTheMoneyScraper:
                         logger.info("Saving original file without conversion")
                         temp_path.rename(save_path)
 
-                    logger.info(f"✅ Downloaded successfully: {save_path}")
+                    logger.info(f"Downloaded successfully: {save_path}")
 
                     return save_path
 
@@ -502,7 +541,7 @@ class SeeTheMoneyScraper:
                             save_path = self.download_dir / filename
                             download.save_as(save_path)
 
-                            logger.info(f"✅ Downloaded successfully: {save_path}")
+                            logger.info(f"Downloaded successfully: {save_path}")
                             return save_path
 
                     raise Exception(
@@ -531,7 +570,7 @@ class SeeTheMoneyScraper:
 
 
 # Convenience function
-def download_seethemoney_data(year=None, entity_type="Candidate", headless=True):
+def download_seethemoney_data(year=None, entity_type="Candidate", headless=True, quarter=None):
     """
     Download campaign finance data from SeeTheMoney (FREE!)
 
@@ -539,9 +578,10 @@ def download_seethemoney_data(year=None, entity_type="Candidate", headless=True)
         year: Year for data
         entity_type: Type of entity ("Candidate", "PAC", "Party", "All")
         headless: Run browser in headless mode
+        quarter: Specific quarter (1-4), or None to download all quarters
 
     Returns:
-        Path to downloaded CSV file
+        Path to downloaded CSV file (or list of paths if downloading all quarters)
     """
     scraper = SeeTheMoneyScraper(headless=headless)
-    return scraper.download_data(year=year, entity_type=entity_type)
+    return scraper.download_data(year=year, entity_type=entity_type, quarter=quarter)

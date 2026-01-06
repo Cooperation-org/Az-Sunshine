@@ -16,13 +16,13 @@ class Command(BaseCommand):
     help = 'Create EXTREME performance indexes for 10M+ records'
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('🔥 EXTREME MODE: Creating aggressive indexes...'))
+        self.stdout.write(self.style.SUCCESS('EXTREME MODE: Creating aggressive indexes...'))
 
         with connection.cursor() as cursor:
             # =================================================================
             # TRANSACTIONS TABLE (10M rows - CRITICAL)
             # =================================================================
-            self.stdout.write('📊 Checking Transactions indexes (10M rows)...')
+            self.stdout.write('Checking Transactions indexes (10M rows)...')
 
             # NOTE: Transactions table already has excellent indexing!
             # Verified existing indexes that cover all hot paths:
@@ -31,7 +31,7 @@ class Command(BaseCommand):
             # - idx_txn_ie_benefit (benefit breakdown)
             # - idx_txn_date_desc (time-series)
 
-            self.stdout.write(self.style.SUCCESS('  ✅ Transactions already well-indexed'))
+            self.stdout.write(self.style.SUCCESS('  Transactions already well-indexed'))
 
             # =================================================================
             # NAMES TABLE (2.3M rows - CRITICAL)
@@ -50,7 +50,7 @@ class Command(BaseCommand):
                 ON "Names" USING gin ((COALESCE(last_name || ', ' || first_name, last_name)) gin_trgm_ops);
             """)
 
-            self.stdout.write(self.style.SUCCESS('  ✅ Names indexed'))
+            self.stdout.write(self.style.SUCCESS('  Names indexed'))
 
             # =================================================================
             # COMMITTEES TABLE (5.5K rows - medium priority)
@@ -64,12 +64,12 @@ class Command(BaseCommand):
                 WHERE candidate_id IS NOT NULL;
             """)
 
-            self.stdout.write(self.style.SUCCESS('  ✅ Committees indexed'))
+            self.stdout.write(self.style.SUCCESS('  Committees indexed'))
 
             # =================================================================
             # MATERIALIZED VIEWS - Ensure all have proper indexes
             # =================================================================
-            self.stdout.write('📈 Indexing Materialized Views...')
+            self.stdout.write('Indexing Materialized Views...')
 
             # Dashboard aggregations (single row - no index needed)
 
@@ -91,21 +91,21 @@ class Command(BaseCommand):
                 ON top_donors_mv USING gin (entity_name gin_trgm_ops);
             """)
 
-            self.stdout.write(self.style.SUCCESS('  ✅ Materialized views indexed'))
+            self.stdout.write(self.style.SUCCESS('  Materialized views indexed'))
 
             # =================================================================
             # ANALYZE - Update statistics for query planner
             # =================================================================
-            self.stdout.write('📊 Updating statistics...')
+            self.stdout.write('Updating statistics...')
             cursor.execute('ANALYZE "Transactions";')
             cursor.execute('ANALYZE "Names";')
             cursor.execute('ANALYZE "Committees";')
             cursor.execute('ANALYZE top_donors_mv;')
             cursor.execute('ANALYZE ie_benefit_breakdown;')
 
-            self.stdout.write(self.style.SUCCESS('  ✅ Statistics updated'))
+            self.stdout.write(self.style.SUCCESS('  Statistics updated'))
 
-        self.stdout.write(self.style.SUCCESS('\n✅ EXTREME MODE: All indexes created!'))
-        self.stdout.write(self.style.SUCCESS('📈 Performance improvement: 10-50x faster queries'))
-        self.stdout.write(self.style.WARNING('\n⚠️  Note: CONCURRENTLY means indexes were built without locking tables'))
+        self.stdout.write(self.style.SUCCESS('\nEXTREME MODE: All indexes created!'))
+        self.stdout.write(self.style.SUCCESS('Performance improvement: 10-50x faster queries'))
+        self.stdout.write(self.style.WARNING('\n Note: CONCURRENTLY means indexes were built without locking tables'))
         self.stdout.write(self.style.WARNING('   Production queries continued running during index creation'))

@@ -73,51 +73,71 @@ class SOIScraper:
         "https://apps.arizona.vote/electioninfo/SOI/68"
     ]
     
-    def __init__(self, progress_reporter=None):
-        """Initialize scraper with progress reporting"""
+    def __init__(self, progress_reporter=None, proxy_url=None, headless=True):
+        """Initialize scraper with progress reporting and optional proxy
+
+        Args:
+            progress_reporter: ProgressReporter instance for UI feedback
+            proxy_url: Residential proxy URL (e.g., "http://user:pass@proxy.iproyal.com:12321")
+            headless: Run browser in headless mode (True for server, False for debug)
+        """
         self.chrome_executable = "/usr/bin/google-chrome"
         self.user_data_dir = str(Path.home() / ".config/chrome-scraper-profile")
         self.browser: Browser = None
         self.results = []
         self.progress = progress_reporter
-        
+        self.proxy_url = proxy_url
+        self.headless = headless
+
     async def _setup_browser(self, playwright):
-        """Setup browser with real Chrome and dedicated profile"""
+        """Setup browser with real Chrome, optional proxy, and dedicated profile"""
         Path(self.user_data_dir).mkdir(parents=True, exist_ok=True)
-        
+
         if self.progress:
             self.progress.log(f"🌐 Using Chrome from: {self.chrome_executable}")
-        
+            if self.proxy_url:
+                # Mask password in log
+                masked_proxy = self.proxy_url.split('@')[-1] if '@' in self.proxy_url else self.proxy_url
+                self.progress.log(f"Using residential proxy: {masked_proxy}")
+            self.progress.log(f"👻 Headless mode: {self.headless}")
+
+        # Build launch options
+        launch_options = {
+            'user_data_dir': self.user_data_dir,
+            'executable_path': self.chrome_executable,
+            'headless': self.headless,
+            'channel': None,
+            'args': [
+                '--disable-blink-features=AutomationControlled',
+                '--no-first-run',
+                '--no-default-browser-check',
+                '--disable-popup-blocking',
+                '--start-maximized',
+            ],
+            'viewport': {'width': 1920, 'height': 1080},
+            'user_agent': None,
+            'ignore_default_args': ['--enable-automation'],
+        }
+
+        # Add proxy if configured
+        if self.proxy_url:
+            launch_options['proxy'] = {'server': self.proxy_url}
+
         try:
-            self.browser = await playwright.chromium.launch_persistent_context(
-                user_data_dir=self.user_data_dir,
-                executable_path=self.chrome_executable,
-                headless=False,
-                channel=None,
-                args=[
-                    '--disable-blink-features=AutomationControlled',
-                    '--no-first-run',
-                    '--no-default-browser-check',
-                    '--disable-popup-blocking',
-                    '--start-maximized',
-                ],
-                viewport={'width': 1920, 'height': 1080},
-                user_agent=None,
-                ignore_default_args=['--enable-automation'],
-            )
+            self.browser = await playwright.chromium.launch_persistent_context(**launch_options)
         except Exception as e:
             logger.error(f"Failed to launch browser: {e}")
             raise
     
     async def _solve_cloudflare_turnstile(self, page: Page) -> bool:
         """
-        🤖 AUTOMATIC CLOUDFLARE TURNSTILE SOLVER (FIXED)
+        AUTOMATIC CLOUDFLARE TURNSTILE SOLVER (FIXED)
         Automatically clicks the "Verify you are human" checkbox
         Now prevents multiple clicks!
         """
         try:
             if self.progress:
-                self.progress.log("🤖 Checking Turnstile status...")
+                self.progress.log("Checking Turnstile status...")
             
             # First check if already verified
             await asyncio.sleep(2)
@@ -130,11 +150,11 @@ class SOIScraper:
             
             if is_already_verified:
                 if self.progress:
-                    self.progress.log("✅ Already verified, skipping click")
+                    self.progress.log("Already verified, skipping click")
                 return True
             
             if self.progress:
-                self.progress.log("🤖 Attempting to solve Turnstile challenge...")
+                self.progress.log("Attempting to solve Turnstile challenge...")
             
             # Wait for Turnstile iframe to load
             await asyncio.sleep(random.uniform(2, 4))
@@ -153,7 +173,7 @@ class SOIScraper:
                             y = box['y'] + box['height'] / 2 + random.randint(-3, 3)
                             
                             if self.progress:
-                                self.progress.log(f"🎯 Clicking Turnstile at ({int(x)}, {int(y)})")
+                                self.progress.log(f"Clicking Turnstile at ({int(x)}, {int(y)})")
                             
                             # Human-like mouse movement
                             await page.mouse.move(x, y)
@@ -162,17 +182,17 @@ class SOIScraper:
                             await asyncio.sleep(2)
                             
                             if self.progress:
-                                self.progress.log("✅ Clicked Turnstile checkbox (Strategy 1)")
+                                self.progress.log("Clicked Turnstile checkbox (Strategy 1)")
                             clicked = True
                         else:
                             if self.progress:
-                                self.progress.log("⚠️ Could not get iframe bounding box")
+                                self.progress.log("Could not get iframe bounding box")
                     else:
                         if self.progress:
-                            self.progress.log("⚠️ Turnstile iframe not found")
+                            self.progress.log("Turnstile iframe not found")
                 except Exception as e:
                     if self.progress:
-                        self.progress.log(f"⚠️ Strategy 1 failed: {str(e)[:50]}")
+                        self.progress.log(f"Strategy 1 failed: {str(e)[:50]}")
             
             # Strategy 2: Try to access iframe content directly
             if not clicked:
@@ -184,7 +204,7 @@ class SOIScraper:
                             try:
                                 await frame.click('input[type="checkbox"]', timeout=2000)
                                 if self.progress:
-                                    self.progress.log("✅ Clicked checkbox via frame access (Strategy 2)")
+                                    self.progress.log("Clicked checkbox via frame access (Strategy 2)")
                                 await asyncio.sleep(2)
                                 clicked = True
                                 break
@@ -192,24 +212,24 @@ class SOIScraper:
                                 pass
                 except Exception as e:
                     if self.progress:
-                        self.progress.log(f"⚠️ Strategy 2 failed: {str(e)[:50]}")
+                        self.progress.log(f"Strategy 2 failed: {str(e)[:50]}")
             
             # Strategy 3: Click by visible text
             if not clicked:
                 try:
                     await page.click('text="Verify you are human"', timeout=3000)
                     if self.progress:
-                        self.progress.log("✅ Clicked via text selector (Strategy 3)")
+                        self.progress.log("Clicked via text selector (Strategy 3)")
                     await asyncio.sleep(2)
                     clicked = True
                 except Exception as e:
                     if self.progress:
-                        self.progress.log(f"⚠️ Strategy 3 failed: {str(e)[:50]}")
+                        self.progress.log(f"Strategy 3 failed: {str(e)[:50]}")
             
             # If none of the strategies worked, return False early
             if not clicked:
                 if self.progress:
-                    self.progress.log("❌ All click strategies failed")
+                    self.progress.log("All click strategies failed")
                 return False
             
             # Wait for verification to complete
@@ -231,7 +251,7 @@ class SOIScraper:
                 
                 if is_verified:
                     if self.progress:
-                        self.progress.log("✅ Turnstile verification successful!")
+                        self.progress.log("Turnstile verification successful!")
                     await asyncio.sleep(3)  # Extra wait for page to fully load
                     return True
                 
@@ -239,7 +259,7 @@ class SOIScraper:
                     self.progress.log(f"⏳ Verifying... ({i}s)")
             
             if self.progress:
-                self.progress.log("⚠️ Verification timeout - challenge may have failed")
+                self.progress.log("Verification timeout - challenge may have failed")
             return False
             
         except Exception as e:
@@ -269,7 +289,7 @@ class SOIScraper:
             
             if is_cloudflare:
                 if self.progress:
-                    self.progress.log("⚠️ Cloudflare Turnstile detected!")
+                    self.progress.log("Cloudflare Turnstile detected!")
                 
                 # Try automatic solution
                 success = await self._solve_cloudflare_turnstile(page)
@@ -279,7 +299,7 @@ class SOIScraper:
                 
                 # If auto-solve failed, wait for manual intervention
                 if self.progress:
-                    self.progress.log("⚠️ Auto-solve incomplete - waiting for manual help...")
+                    self.progress.log("Auto-solve incomplete - waiting for manual help...")
                 
                 max_wait = 120
                 for i in range(max_wait):
@@ -295,7 +315,7 @@ class SOIScraper:
                     
                     if not is_still_cloudflare:
                         if self.progress:
-                            self.progress.log("✅ Challenge passed!")
+                            self.progress.log("Challenge passed!")
                         await asyncio.sleep(2)
                         return True
                     
@@ -306,7 +326,7 @@ class SOIScraper:
                 return False
             else:
                 if self.progress:
-                    self.progress.log("✅ No Cloudflare challenge")
+                    self.progress.log("No Cloudflare challenge")
                 return True
                 
         except Exception as e:
@@ -502,35 +522,56 @@ class Command(BaseCommand):
     help = 'Scrape Arizona SOS Statements of Interest with auto Cloudflare solver'
 
     def add_arguments(self, parser):
-        parser.add_argument('--dry-run', action='store_true')
-        parser.add_argument('--csv-output', type=str, default='data/soi_candidates.csv')
+        parser.add_argument('--dry-run', action='store_true',
+                          help='Run without saving to database')
+        parser.add_argument('--csv-output', type=str, default='data/soi_candidates.csv',
+                          help='Output CSV file path')
+        parser.add_argument('--proxy', type=str, default=None,
+                          help='Residential proxy URL (e.g., http://user:pass@proxy.iproyal.com:12321)')
+        parser.add_argument('--headless', action='store_true', default=False,
+                          help='Run browser in headless mode (requires proxy for Cloudflare bypass)')
+        parser.add_argument('--proxy-env', action='store_true',
+                          help='Read proxy URL from SOI_PROXY_URL environment variable')
 
     def handle(self, *args, **options):
         dry_run = options['dry_run']
         csv_path = options['csv_output']
-        
+        headless = options['headless']
+
+        # Get proxy URL from argument or environment
+        proxy_url = options.get('proxy')
+        if options.get('proxy_env'):
+            proxy_url = os.environ.get('SOI_PROXY_URL')
+            if not proxy_url:
+                self.stdout.write(self.style.WARNING('SOI_PROXY_URL env var not set'))
+
         self.stdout.write(self.style.SUCCESS('='*70))
-        self.stdout.write(self.style.SUCCESS('🗳️ Arizona SOI Scraper v2.1 (Fixed Cloudflare Solver)'))
+        self.stdout.write(self.style.SUCCESS('🗳️ Arizona SOI Scraper v2.2 (Proxy Support + Cloudflare Solver)'))
         self.stdout.write(self.style.SUCCESS('='*70))
-        
+
+        if proxy_url:
+            self.stdout.write(self.style.SUCCESS('Using residential proxy for Cloudflare bypass'))
+        elif headless:
+            self.stdout.write(self.style.WARNING('Headless mode without proxy may fail on Cloudflare'))
+
         progress = ProgressReporter(self.stdout)
-        scraper = SOIScraper(progress_reporter=progress)
+        scraper = SOIScraper(progress_reporter=progress, proxy_url=proxy_url, headless=headless)
         
         try:
             results = asyncio.run(scraper.scrape_all())
             
             if not results:
-                self.stdout.write(self.style.WARNING('\n⚠️ No candidates found'))
+                self.stdout.write(self.style.WARNING('\nNo candidates found'))
                 return
             
-            progress.update("Scraping", 60, f"✅ Found {len(results)} candidates")
+            progress.update("Scraping", 60, f"Found {len(results)} candidates")
             
             progress.update("Saving", 65, "Writing CSV...")
             scraper.save_results_csv(csv_path)
-            progress.update("Saving", 70, "✅ CSV saved")
+            progress.update("Saving", 70, "CSV saved")
             
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'\n❌ Scraping failed: {e}'))
+            self.stdout.write(self.style.ERROR(f'\nScraping failed: {e}'))
             import traceback
             traceback.print_exc()
             return
@@ -561,20 +602,20 @@ class Command(BaseCommand):
                     transaction.set_rollback(True)
         
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'\n❌ DB loading failed: {e}'))
+            self.stdout.write(self.style.ERROR(f'\nDB loading failed: {e}'))
             return
         
-        progress.update("Complete", 100, "✅ Done!")
+        progress.update("Complete", 100, "Done!")
         
         self.stdout.write('\n' + '='*70)
-        self.stdout.write(self.style.SUCCESS('✅ COMPLETE!'))
+        self.stdout.write(self.style.SUCCESS('COMPLETE!'))
         self.stdout.write('='*70)
-        self.stdout.write(f'📊 Total: {stats["total_rows"]}')
+        self.stdout.write(f'Total: {stats["total_rows"]}')
         self.stdout.write(self.style.SUCCESS(f'✨ Created: {stats["created"]}'))
-        self.stdout.write(self.style.WARNING(f'🔄 Updated: {stats["updated"]}'))
+        self.stdout.write(self.style.WARNING(f'Updated: {stats["updated"]}'))
         self.stdout.write(f'⏭ Skipped: {stats["skipped"]}')
         if stats['errors'] > 0:
-            self.stdout.write(self.style.ERROR(f'❌ Errors: {stats["errors"]}'))
+            self.stdout.write(self.style.ERROR(f'Errors: {stats["errors"]}'))
 
     def process_candidate_row(self, row, dry_run=False):
         """Process candidate and create/update in database"""

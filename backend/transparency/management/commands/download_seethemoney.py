@@ -79,7 +79,7 @@ class Command(BaseCommand):
             )
 
             self.stdout.write(self.style.SUCCESS(
-                f"\n✅ Download completed successfully!\n"
+                f"\nDownload completed successfully!\n"
                 f"   File: {csv_path}\n"
             ))
 
@@ -98,7 +98,7 @@ class Command(BaseCommand):
                 )
 
                 if transform_result.returncode != 0:
-                    self.stdout.write(self.style.ERROR("\n❌ Transform failed:"))
+                    self.stdout.write(self.style.ERROR("\nTransform failed:"))
                     self.stdout.write(transform_result.stderr)
                     return
 
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                 from pathlib import Path
                 transformed_path = Path(csv_path).with_stem(f"{Path(csv_path).stem}_transformed")
 
-                self.stdout.write(self.style.SUCCESS(f"✓ Transformed: {transformed_path.name}"))
+                self.stdout.write(self.style.SUCCESS(f"Transformed: {transformed_path.name}"))
 
                 # STEP 2: Import transformed CSV
                 self.stdout.write(self.style.WARNING("\nImporting CSV to database..."))
@@ -122,10 +122,10 @@ class Command(BaseCommand):
                 )
 
                 if import_result.returncode == 0:
-                    self.stdout.write(self.style.SUCCESS("\n✅ Import completed!"))
+                    self.stdout.write(self.style.SUCCESS("\nImport completed!"))
                     self.stdout.write(import_result.stdout)
                 else:
-                    self.stdout.write(self.style.ERROR("\n❌ Import failed:"))
+                    self.stdout.write(self.style.ERROR("\nImport failed:"))
                     self.stdout.write(import_result.stderr)
 
             if not auto_import:
@@ -145,8 +145,8 @@ class Command(BaseCommand):
                 ))
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"\n❌ Error: {str(e)}"))
+            self.stdout.write(self.style.ERROR(f"\nError: {str(e)}"))
             logger.error(f"SeeTheMoney download failed: {str(e)}", exc_info=True)
             return
 
-        self.stdout.write(self.style.SUCCESS("✅ Done!"))
+        self.stdout.write(self.style.SUCCESS("Done!"))

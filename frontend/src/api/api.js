@@ -258,6 +258,30 @@ export async function getTopCandidatesByIE(params = {}) {
   }
 }
 
+/**
+ * Get aggregated candidate data (combines all committees for same candidate)
+ */
+export async function getCandidateAggregate(candidateId) {
+  try {
+    const res = await api.get(`/candidates/${candidateId}/aggregate/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load candidate aggregate data');
+  }
+}
+
+/**
+ * Get aggregated IE spending for candidate (combines all committees)
+ */
+export async function getCandidateAggregateIESpending(candidateId) {
+  try {
+    const res = await api.get(`/candidates/${candidateId}/aggregate/ie_spending/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load candidate aggregate IE spending');
+  }
+}
+
 
 // ==================== COMMITTEE ENDPOINTS ====================
 

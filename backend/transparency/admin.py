@@ -15,6 +15,7 @@ from .models import (
     ReportName,
     Report,
     CandidateStatementOfInterest,
+    AdBuy,
 )
 
 # ============================================================
@@ -244,3 +245,54 @@ list_display = (
 list_filter = ("office", "contact_status", "pledge_received")
 search_fields = ("candidate_name", "email")
 date_hierarchy = "filing_date"
+
+
+@admin.register(AdBuy)
+class AdBuyAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "ad_date",
+        "platform",
+        "approximate_spend",
+        "ie_committee",
+        "candidate",
+        "support_oppose",
+        "verified",
+        "reported_at",
+    )
+    list_filter = ("support_oppose", "platform", "how_known", "verified", "rejected")
+    search_fields = (
+        "ie_committee__name__last_name",
+        "ie_committee__name__first_name",
+        "candidate__name__last_name",
+        "candidate__name__first_name",
+        "paid_for_by",
+        "reported_by",
+        "admin_notes",
+    )
+    ordering = ("-ad_date", "-reported_at")
+    list_per_page = 50
+    date_hierarchy = "ad_date"
+    autocomplete_fields = ("ie_committee", "candidate", "verified_by")
+    readonly_fields = ("reported_at", "updated_at")
+    fieldsets = (
+        ("Ad Content", {
+            "fields": ("image", "url", "ad_date", "platform")
+        }),
+        ("Financial", {
+            "fields": ("paid_for_by", "approximate_spend", "how_known")
+        }),
+        ("Linked to IE", {
+            "fields": ("ie_committee", "candidate", "support_oppose")
+        }),
+        ("Volunteer Report", {
+            "fields": ("reported_by", "reported_at")
+        }),
+        ("Admin Review", {
+            "fields": ("verified", "verified_at", "verified_by", "rejected", "rejection_reason", "admin_notes")
+        }),
+        ("Metadata", {
+            "fields": ("updated_at",),
+            "classes": ("collapse",)
+        }),
+    )

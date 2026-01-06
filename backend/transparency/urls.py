@@ -30,6 +30,10 @@ from .views_primary_race import (
     primary_race_detail,
     available_primary_races
 )
+from .views_candidate_aggregate import (
+    candidate_aggregate,
+    candidate_aggregate_ie_spending
+)
 
 app_name = 'transparency'
 
@@ -85,7 +89,7 @@ urlpatterns = [
     path('email-tracking/open/<str:tracking_id>/', track_email_open, name='email-track-open'),
     path('email-tracking/click/<str:tracking_id>/', track_email_click, name='email-track-click'),
     
-    # === DASHBOARD - EXTREME MODE (🚀 FASTEST: Single unified endpoint) ===
+    # === DASHBOARD - EXTREME MODE (FASTEST: Single unified endpoint) ===
     path('dashboard/extreme/', dashboard_extreme, name='dashboard-extreme'),
     path('dashboard/streaming/', dashboard_streaming, name='dashboard-streaming'),
     path('dashboard/refresh-extreme/', refresh_extreme_cache, name='refresh-extreme-cache'),
@@ -116,6 +120,10 @@ urlpatterns = [
     path('validation/external-comparison/', external_comparison, name='validation-external'),
     path('validation/merge-entities/', merge_entities, name='validation-merge'),
     
+    # === CANDIDATE AGGREGATE (combines data from multiple committees per candidate) ===
+    path('candidates/<int:committee_id>/aggregate/', candidate_aggregate, name='candidate-aggregate'),
+    path('candidates/<int:committee_id>/aggregate/ie_spending/', candidate_aggregate_ie_spending, name='candidate-aggregate-ie'),
+
     # === FRONTEND ADAPTERS ===
     path('donors/top/', donors_top, name='donors-top'),
     path('committees/top/', committees_top, name='committees-top'),
@@ -126,6 +134,8 @@ urlpatterns = [
     # === SCRAPER TRIGGERS ===
     path('trigger-scrape/', trigger_scrape, name='trigger-scrape'),
     path('upload-scraped/', upload_scraped, name='upload-scraped'),
+    path('scraper-status/', scraper_status, name='scraper-status'),
+    path('scraper-complete/', scraper_complete, name='scraper-complete'),
     
     # Router MUST come last
     path('', include(router.urls)),

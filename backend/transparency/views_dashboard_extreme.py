@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 @permission_classes([AllowAny])
 def dashboard_extreme(request):
     """
-    🚀 EXTREME MODE: Single unified endpoint for entire dashboard
+    EXTREME MODE: Single unified endpoint for entire dashboard
 
     Returns everything in ONE request:
     - Summary metrics
@@ -46,7 +46,7 @@ def dashboard_extreme(request):
         logger.info("⚡ ZSTD CACHE HIT: Returning dashboard in <0.5ms")
         return Response(cached_data)
 
-    logger.info("🔥 EXTREME MODE: Building dashboard from materialized views...")
+    logger.info("EXTREME MODE: Building dashboard from materialized views...")
 
     try:
         with connection.cursor() as cursor:
@@ -204,7 +204,7 @@ def dashboard_extreme(request):
 
         # Benchmark compression (log stats)
         stats = benchmark_compression(response_data)
-        logger.info(f"✅ EXTREME MODE: Dashboard built in single query")
+        logger.info(f"EXTREME MODE: Dashboard built in single query")
         logger.info(f"   - {summary['num_expenditures']:,} expenditures")
         logger.info(f"   - {len(top_committees)} committees")
         logger.info(f"   - {len(top_donors)} donors")
@@ -214,7 +214,7 @@ def dashboard_extreme(request):
         return Response(response_data)
 
     except Exception as e:
-        logger.error(f"❌ EXTREME MODE ERROR: {e}", exc_info=True)
+        logger.error(f"EXTREME MODE ERROR: {e}", exc_info=True)
         # Return empty structure on error
         return Response({
             'summary': {
@@ -294,7 +294,7 @@ def refresh_extreme_cache(request):
     Refresh materialized views AND clear all caches for up-to-date data
     """
     try:
-        logger.info("🔄 Starting dashboard refresh (materialized views + caches)...")
+        logger.info("Starting dashboard refresh (materialized views + caches)...")
 
         # STEP 1: Refresh materialized views to get latest data
         with connection.cursor() as cursor:
@@ -317,7 +317,7 @@ def refresh_extreme_cache(request):
         cache.delete('dashboard_charts_fast_v2')
         cache.delete('dashboard_recent_exp_v1')
 
-        logger.info("✅ Dashboard refresh complete: materialized views updated + caches cleared")
+        logger.info("Dashboard refresh complete: materialized views updated + caches cleared")
 
         return Response({
             'success': True,
@@ -326,7 +326,7 @@ def refresh_extreme_cache(request):
         })
 
     except Exception as e:
-        logger.error(f"❌ Error refreshing dashboard: {e}", exc_info=True)
+        logger.error(f"Error refreshing dashboard: {e}", exc_info=True)
         return Response({
             'success': False,
             'error': str(e)
