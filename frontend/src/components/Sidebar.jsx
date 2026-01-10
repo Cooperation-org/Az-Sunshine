@@ -323,7 +323,7 @@ export default function Sidebar() {
           // Not logged in - Show login button
           <Link
             to="/login"
-            className={`flex items-center gap-3 w-full p-4 rounded-2xl transition-all bg-[#7163BA] hover:bg-[#5b4fa8] shadow-lg shadow-purple-500/20 group relative ${isCollapsed && !isMobile ? 'justify-center' : ''}`}
+            className={`flex items-center justify-center gap-3 w-full p-4 rounded-2xl transition-all bg-[#7163BA] hover:bg-[#5b4fa8] shadow-lg shadow-purple-500/20 group relative`}
           >
             <LogIn size={20} className="text-white" />
             {(!isCollapsed || isMobile) && (

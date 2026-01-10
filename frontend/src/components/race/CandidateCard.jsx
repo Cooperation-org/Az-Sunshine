@@ -1,5 +1,6 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { TrendingUp, TrendingDown, DollarSign, ExternalLink } from 'lucide-react';
 import { useDarkMode } from '../../context/DarkModeContext';
 import { getPartyInfo } from '../../utils/partyUtils';
 
@@ -14,17 +15,25 @@ export default function CandidateCard({ candidate }) {
   // Get party info with abbreviation and colors
   const partyInfo = getPartyInfo(candidate.subject_committee__candidate_party__name);
 
-  return (
-    <div className={`min-w-[280px] p-5 rounded-2xl border transition-all hover:scale-105 ${
-      darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'
-    }`}>
+  // Get candidate ID for linking (API returns subject_committee__committee_id)
+  const candidateId = candidate.subject_committee__committee_id || candidate.subject_committee_id || candidate.committee_id;
+
+  const cardClasses = `min-w-[280px] p-5 rounded-2xl border transition-all ${
+    candidateId ? 'hover:scale-105 hover:border-[#7163BA] cursor-pointer' : ''
+  } ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`;
+
+  const CardContent = () => (
+    <>
       {/* Candidate Name */}
       <div className="mb-4">
-        <h3 className={`text-lg font-bold ${
-          darkMode ? 'text-white' : 'text-gray-900'
-        }`}>
-          {candidate.subject_committee__name__first_name} {candidate.subject_committee__name__last_name}
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            {candidate.subject_committee__name__first_name} {candidate.subject_committee__name__last_name}
+          </h3>
+          {candidateId && (
+            <ExternalLink size={14} className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+          )}
+        </div>
         <div className="flex items-center gap-2 mt-1">
           <span className={`text-xs font-bold px-2 py-1 rounded-full ${partyInfo.colors.bgLight} ${partyInfo.colors.text}`}>
             ({partyInfo.abbr}) {partyInfo.fullName}
@@ -57,22 +66,42 @@ export default function CandidateCard({ candidate }) {
         </div>
 
         {/* Net Benefit */}
-        <div className={`pt-3 border-t ${
-          darkMode ? 'border-gray-700' : 'border-gray-100'
-        }`}>
+        <div className={`pt-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign size={16} className="text-[#7163BA]" />
               <span className="text-xs font-medium text-gray-500">Net Benefit</span>
             </div>
-            <span className={`text-lg font-bold ${
-              netBenefit >= 0 ? 'text-green-500' : 'text-red-500'
-            }`}>
+            <span className={`text-lg font-bold ${netBenefit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
               {netBenefit >= 0 ? '+' : ''}${netBenefit.toLocaleString()}
             </span>
           </div>
         </div>
       </div>
+
+      {/* View Details Link */}
+      {candidateId && (
+        <div className={`mt-4 pt-3 border-t text-center ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+          <span className="text-xs font-medium text-[#7163BA]">
+            Click to view candidate details
+          </span>
+        </div>
+      )}
+    </>
+  );
+
+  // Wrap in Link if we have a candidate ID
+  if (candidateId) {
+    return (
+      <Link to={`/candidate/${candidateId}`} className={cardClasses}>
+        <CardContent />
+      </Link>
+    );
+  }
+
+  return (
+    <div className={cardClasses}>
+      <CardContent />
     </div>
   );
 }

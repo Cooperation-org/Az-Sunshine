@@ -287,6 +287,70 @@ def dashboard_streaming(request):
     return response
 
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def dashboard_spending_trends(request):
+    """
+    Spending Trends Over Time
+    Returns IE spending aggregated by election cycle for trend visualization
+    """
+    cache_key = 'dashboard_spending_trends_v1'
+
+    cached_data = CompressedCache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
+    try:
+        with connection.cursor() as cursor:
+            # Get IE spending by cycle
+            cursor.execute("""
+                SELECT
+                    c.name as cycle_name,
+                    c.cycle_id,
+                    COALESCE(SUM(ABS(t.amount)), 0) as total_spending,
+                    COUNT(DISTINCT t.transaction_id) as transaction_count,
+                    COUNT(DISTINCT t.subject_committee_id) as candidates_affected
+                FROM "Cycles" c
+                LEFT JOIN "Transactions" t ON t.transaction_date >= c.begin_date
+                    AND t.transaction_date <= c.end_date
+                    AND t.subject_committee_id IS NOT NULL
+                    AND t.deleted = false
+                WHERE c.name >= '2006' AND c.name <= '2026'
+                GROUP BY c.cycle_id, c.name
+                ORDER BY c.name ASC
+            """)
+
+            trends = []
+            for row in cursor.fetchall():
+                trends.append({
+                    'cycle': row[0],
+                    'cycle_id': row[1],
+                    'total_spending': float(row[2] or 0),
+                    'transaction_count': int(row[3] or 0),
+                    'candidates_affected': int(row[4] or 0)
+                })
+
+        response_data = {
+            'trends': trends,
+            'metadata': {
+                'last_updated': timezone.now().isoformat(),
+                'cached': False
+            }
+        }
+
+        # Cache for 10 minutes
+        CompressedCache.set(cache_key, response_data, timeout=600)
+
+        return Response(response_data)
+
+    except Exception as e:
+        logger.error(f"Error fetching spending trends: {e}", exc_info=True)
+        return Response({
+            'trends': [],
+            'error': str(e)
+        }, status=200)
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def refresh_extreme_cache(request):

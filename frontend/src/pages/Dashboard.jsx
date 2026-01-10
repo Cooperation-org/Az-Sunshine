@@ -22,11 +22,13 @@ export default function Dashboard() {
   const { darkMode } = useDarkMode();
   const [metrics, setMetrics] = useState({});
   const [chartsData, setChartsData] = useState(null);
+  const [trendsData, setTrendsData] = useState([]);
   const [recentExpenditures, setRecentExpenditures] = useState([]);
   const [dateRange, setDateRange] = useState(null);
   const [loading, setLoading] = useState(true);
   const [metricsLoaded, setMetricsLoaded] = useState(false);
   const [chartsLoaded, setChartsLoaded] = useState(false);
+  const [trendsLoaded, setTrendsLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -38,13 +40,18 @@ export default function Dashboard() {
     setLoading(false);
     setMetricsLoaded(false);
     setChartsLoaded(false);
+    setTrendsLoaded(false);
 
     try {
       const startTime = performance.now();
 
-      // Single unified request for everything
-      const response = await api.get('dashboard/extreme/');
-      const data = response.data;
+      // Load main dashboard and trends in parallel
+      const [dashboardResponse, trendsResponse] = await Promise.all([
+        api.get('dashboard/extreme/'),
+        api.get('dashboard/spending-trends/').catch(() => ({ data: { trends: [] } }))
+      ]);
+
+      const data = dashboardResponse.data;
 
       const loadTime = ((performance.now() - startTime) / 1000).toFixed(2);
       console.log(`Dashboard loaded in ${loadTime}s:`, data.metadata);
@@ -61,6 +68,10 @@ export default function Dashboard() {
       // Parse charts (show charts after metrics)
       setChartsData(data.charts);
       setChartsLoaded(true);
+
+      // Parse trends data
+      setTrendsData(trendsResponse.data.trends || []);
+      setTrendsLoaded(true);
 
       // Parse recent expenditures
       setRecentExpenditures(data.recent_expenditures || []);
@@ -159,7 +170,11 @@ export default function Dashboard() {
     },
     xAxis: {
       type: 'category',
-      data: chartsData?.top_donors?.map((d, idx) => `#${idx + 1}`).slice(0, 10) || [],
+      data: chartsData?.top_donors?.map(d => {
+        const name = d.entity_name || 'Unknown';
+        // Truncate long names to fit chart
+        return name.length > 12 ? name.substring(0, 10) + '...' : name;
+      }).slice(0, 10) || [],
       boundaryGap: false,
       axisLine: {
         lineStyle: {
@@ -168,8 +183,10 @@ export default function Dashboard() {
       },
       axisLabel: {
         color: darkMode ? '#b8b3cc' : '#6B7280',
-        fontSize: 12,
-        fontWeight: 500
+        fontSize: 10,
+        fontWeight: 500,
+        rotate: 30,
+        interval: 0
       },
       axisTick: {
         show: false
@@ -292,7 +309,11 @@ export default function Dashboard() {
     },
     xAxis: {
       type: 'category',
-      data: chartsData?.top_ie_committees?.map((c, idx) => `#${idx + 1}`).slice(0, 10) || [],
+      data: chartsData?.top_ie_committees?.map(c => {
+        const name = c.committee || 'Unknown';
+        // Truncate long names to fit chart
+        return name.length > 12 ? name.substring(0, 10) + '...' : name;
+      }).slice(0, 10) || [],
       boundaryGap: false,
       axisLine: {
         lineStyle: {
@@ -301,8 +322,10 @@ export default function Dashboard() {
       },
       axisLabel: {
         color: darkMode ? '#b8b3cc' : '#6B7280',
-        fontSize: 12,
-        fontWeight: 500
+        fontSize: 10,
+        fontWeight: 500,
+        rotate: 30,
+        interval: 0
       },
       axisTick: {
         show: false
@@ -519,6 +542,80 @@ export default function Dashboard() {
             })}
           </div>
 
+          {/* Spending Trends Chart - Full Width */}
+          {trendsLoaded && trendsData.length > 0 && (
+            <div className={`${darkMode ? 'bg-[#2a2438]' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-[#7163BA]/20' : 'border-gray-200/80'}`} style={darkMode ? { boxShadow: '0 4px 12px rgba(0,0,0,0.3)' } : {}}>
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>IE Spending Trends Over Time</h3>
+                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Independent expenditures by election cycle</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className={`w-4 h-4 ${darkMode ? 'text-[#8b7cb8]' : 'text-[#7163BA]'}`} />
+                </div>
+              </div>
+              <div className="h-64">
+                <ReactECharts
+                  option={{
+                    grid: {
+                      left: '3%',
+                      right: '4%',
+                      bottom: '3%',
+                      top: '10%',
+                      containLabel: true
+                    },
+                    tooltip: {
+                      trigger: 'axis',
+                      backgroundColor: darkMode ? 'rgba(51, 45, 84, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+                      borderColor: darkMode ? '#4c3e7c' : '#E5E7EB',
+                      textStyle: { color: darkMode ? '#ffffff' : '#1F2937' },
+                      formatter: function(params) {
+                        const data = params[0];
+                        return `<div style="font-weight: 600; margin-bottom: 4px;">${data.name}</div><div style="color: #7163BA; font-size: 15px; font-weight: 700;">$${data.value.toLocaleString('en-US', { minimumFractionDigits: 0 })}</div>`;
+                      }
+                    },
+                    xAxis: {
+                      type: 'category',
+                      data: trendsData.map(t => t.cycle),
+                      axisLine: { lineStyle: { color: darkMode ? '#5f5482' : '#E5E7EB' } },
+                      axisLabel: { color: darkMode ? '#b8b3cc' : '#6B7280', fontSize: 11 }
+                    },
+                    yAxis: {
+                      type: 'value',
+                      axisLine: { show: false },
+                      splitLine: { lineStyle: { color: darkMode ? '#5f5482' : '#F3F4F6', type: 'dashed' } },
+                      axisLabel: {
+                        color: darkMode ? '#b8b3cc' : '#6B7280',
+                        formatter: (value) => value >= 1000000 ? `$${(value / 1000000).toFixed(1)}M` : value >= 1000 ? `$${(value / 1000).toFixed(0)}K` : `$${value}`
+                      }
+                    },
+                    series: [{
+                      name: 'IE Spending',
+                      type: 'bar',
+                      data: trendsData.map(t => t.total_spending),
+                      itemStyle: {
+                        color: {
+                          type: 'linear',
+                          x: 0, y: 0, x2: 0, y2: 1,
+                          colorStops: [
+                            { offset: 0, color: darkMode ? '#8b7cb8' : '#7163BA' },
+                            { offset: 1, color: darkMode ? '#6b5c98' : '#5b4fa8' }
+                          ]
+                        },
+                        borderRadius: [4, 4, 0, 0]
+                      },
+                      emphasis: {
+                        itemStyle: { color: darkMode ? '#a090d0' : '#8577c4' }
+                      }
+                    }]
+                  }}
+                  style={{ height: '100%', width: '100%' }}
+                  opts={{ renderer: 'canvas' }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Top Donors Chart */}
@@ -582,72 +679,14 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Bottom Row - Doughnut & Expenditures Table */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* IE Benefit Breakdown - Doughnut */}
-            <div className={`${darkMode ? 'bg-[#2a2438]' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-[#7163BA]/20' : 'border-gray-200/80'}`} style={darkMode ? { boxShadow: '0 4px 12px rgba(0,0,0,0.3)' } : {}}>
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>IE Spending Type</h3>
-                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Distribution by benefit</p>
-                </div>
+          {/* Recent Expenditures Table - Full Width */}
+          <div className={`${darkMode ? 'bg-[#2a2438]' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-[#7163BA]/20' : 'border-gray-200/80'} flex flex-col`} style={darkMode ? { boxShadow: '0 4px 12px rgba(0,0,0,0.3)' } : {}}>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Recent Independent Expenditures</h3>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Most recent transactions by date</p>
               </div>
-
-              {chartsData?.is_for_benefit_breakdown &&
-               chartsData.is_for_benefit_breakdown.for_benefit &&
-               chartsData.is_for_benefit_breakdown.not_for_benefit &&
-               (Math.abs(chartsData.is_for_benefit_breakdown.for_benefit.total) > 0 ||
-                Math.abs(chartsData.is_for_benefit_breakdown.not_for_benefit.total) > 0) ? (
-                <>
-                  <div className="h-64 flex items-center justify-center">
-                    <ReactECharts 
-                      option={benefitBreakdownOption} 
-                      style={{ height: '100%', width: '100%' }}
-                      opts={{ renderer: 'canvas' }}
-                    />
-                  </div>
-                  
-                  <div className="mt-6 space-y-3">
-                    <div className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-[#4a3f66]' : 'bg-purple-50'}`}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${darkMode ? 'bg-[#8b7cb8]' : 'bg-[#7163BA]'}`}></div>
-                        <span className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>For Benefit</span>
-                      </div>
-                      <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {chartsData?.is_for_benefit_breakdown?.for_benefit?.percentage || 0}%
-                      </span>
-                    </div>
-                    <div className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-[#4a3f66]' : 'bg-purple-50'}`}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${darkMode ? 'bg-[#c084fc]' : 'bg-[#800080]'}`}></div>
-                        <span className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Not For Benefit</span>
-                      </div>
-                      <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {chartsData?.is_for_benefit_breakdown?.not_for_benefit?.percentage || 0}%
-                      </span>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className={`h-64 flex items-center justify-center ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>
-                  <div className="text-center">
-                    <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${darkMode ? 'bg-[#4a3f66]' : 'bg-gray-100'}`}>
-                      <DollarSign className={`w-8 h-8 ${darkMode ? 'text-gray-500' : 'text-gray-300'}`} />
-                    </div>
-                    <p className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>No benefit data</p>
-                  </div>
-                </div>
-              )}
             </div>
-
-            {/* Expenditures Table */}
-            <div className={`lg:col-span-2 ${darkMode ? 'bg-[#2a2438]' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-[#7163BA]/20' : 'border-gray-200/80'} flex flex-col`} style={darkMode ? { boxShadow: '0 4px 12px rgba(0,0,0,0.3)' } : {}}>
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Independent Expenditures</h3>
-                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#b8b0d4]' : 'text-gray-500'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Historical database records (2023 and previous cycles)</p>
-                </div>
-              </div>
 
               {recentExpenditures.length > 0 ? (
                 <div className="flex-1 overflow-x-auto -mx-6">
@@ -729,7 +768,6 @@ export default function Dashboard() {
                   </div>
                 </div>
               )}
-            </div>
           </div>
         </div>
       </main>

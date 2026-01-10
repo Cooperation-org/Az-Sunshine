@@ -117,8 +117,8 @@ export default function Visualizations() {
   }
 
   const totalIE = topCandidates.reduce((sum, c) => sum + Math.abs(parseFloat(c.total_ie || 0)), 0);
-  const totalSupport = topCandidates.reduce((sum, c) => c.is_for_benefit ? sum + Math.abs(parseFloat(c.total_ie || 0)) : sum, 0);
-  const totalOppose = totalIE - totalSupport;
+  const totalSupport = topCandidates.reduce((sum, c) => sum + Math.abs(parseFloat(c.ie_for || 0)), 0);
+  const totalOppose = topCandidates.reduce((sum, c) => sum + Math.abs(parseFloat(c.ie_against || 0)), 0);
 
   const StatCard = ({ title, value, icon: Icon, color }) => (
     <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} p-5 rounded-2xl border shadow-sm flex items-center gap-4`}>
@@ -160,13 +160,30 @@ export default function Visualizations() {
                 <h3 className={`text-sm font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Independent Expenditure Breakdown</h3>
               </div>
               <div className="h-[400px]">
-                {/* Your Bar Component logic remains same */}
-                <Bar 
-                   data={{
+                <Bar
+                  data={{
                     labels: topCandidates.map(c => c.subject_committee__name__last_name || 'Unknown'),
-                    datasets: [{ label: 'Expenditure', data: topCandidates.map(c => Math.abs(c.total_ie)), backgroundColor: '#7667C1' }]
-                   }} 
-                   options={{ maintainAspectRatio: false }}
+                    datasets: [{
+                      label: 'Expenditure',
+                      data: topCandidates.map(c => Math.abs(c.total_ie)),
+                      backgroundColor: '#7667C1',
+                      minBarLength: 5
+                    }]
+                  }}
+                  options={{
+                    maintainAspectRatio: false,
+                    interaction: {
+                      mode: 'index',
+                      intersect: false
+                    },
+                    plugins: {
+                      tooltip: {
+                        callbacks: {
+                          label: (ctx) => `$${ctx.parsed.y.toLocaleString()}`
+                        }
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>

@@ -1,9 +1,11 @@
 import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { useDarkMode } from '../context/DarkModeContext';
+import { useAuth } from '../context/AuthContext';
 
 const ArizonaSunshineBanner = ({ onRefresh, refreshing = false }) => {
   const { darkMode } = useDarkMode();
+  const { isAuthenticated } = useAuth();
 
   return (
     <div
@@ -51,18 +53,20 @@ const ArizonaSunshineBanner = ({ onRefresh, refreshing = false }) => {
         </div>
       </div>
 
-      {/* RIGHT: Action Button */}
-      <div className="relative w-full md:w-1/3 h-auto md:h-full flex items-center justify-start md:justify-end px-6 md:pr-16 pb-8 md:pb-0">
-        <button
-          onClick={onRefresh}
-          disabled={refreshing}
-          className="flex items-center gap-2 md:gap-3 px-6 md:px-8 py-3 md:py-3.5 rounded-full text-white text-xs md:text-sm font-bold transition-all active:scale-95 shadow-xl shadow-[#7163BA]/20 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ backgroundColor: '#7163BA' }}
-        >
-          <RefreshCw className={`w-3.5 h-3.5 md:w-4 md:h-4 ${refreshing ? 'animate-spin' : ''}`} />
-          <span className="tracking-wide md:tracking-wider">{refreshing ? 'Syncing...' : 'Sync Data'}</span>
-        </button>
-      </div>
+      {/* RIGHT: Action Button - Only shown when authenticated */}
+      {isAuthenticated && (
+        <div className="relative w-full md:w-1/3 h-auto md:h-full flex items-center justify-start md:justify-end px-6 md:pr-16 pb-8 md:pb-0">
+          <button
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="flex items-center gap-2 md:gap-3 px-6 md:px-8 py-3 md:py-3.5 rounded-full text-white text-xs md:text-sm font-bold transition-all active:scale-95 shadow-xl shadow-[#7163BA]/20 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: '#7163BA' }}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 md:w-4 md:h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <span className="tracking-wide md:tracking-wider">{refreshing ? 'Syncing...' : 'Sync Data'}</span>
+          </button>
+        </div>
+      )}
 
     </div>
   );

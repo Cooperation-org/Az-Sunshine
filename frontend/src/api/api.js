@@ -198,6 +198,18 @@ export async function getRecentExpenditures(limit = 10) {
   }
 }
 
+/**
+ * Get spending trends over time (by election cycle)
+ */
+export async function getSpendingTrends() {
+  try {
+    const res = await api.get('/dashboard/spending-trends/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load spending trends');
+  }
+}
+
 
 // ==================== CANDIDATE ENDPOINTS ====================
 

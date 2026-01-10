@@ -127,7 +127,7 @@ def primary_race_detail(request):
                 'committee_id': spender['committee__committee_id'],
                 'name': spender_name,
                 'amount': abs(float(spender['total'])),
-                'benefit': 'FOR',
+                'benefit': 'Support',
                 'candidate': cand_name
             })
 
@@ -144,7 +144,7 @@ def primary_race_detail(request):
                 'committee_id': spender['committee__committee_id'],
                 'name': spender_name,
                 'amount': abs(float(spender['total'])),
-                'benefit': 'AGAINST',
+                'benefit': 'Oppose',
                 'candidate': cand_name
             })
 

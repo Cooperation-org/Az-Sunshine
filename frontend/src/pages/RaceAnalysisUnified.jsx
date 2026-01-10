@@ -265,7 +265,7 @@ export default function RaceAnalysisUnified() {
                   </div>
                   <div className={`p-4 rounded-lg ${darkMode ? 'bg-green-900/20' : 'bg-green-50'}`}>
                     <div className={`text-sm font-bold mb-1 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>
-                      IE FOR
+                      IE Support
                     </div>
                     <div className={`text-2xl font-bold ${darkMode ? 'text-green-300' : 'text-green-600'}`}>
                       {formatCurrency(raceData.race.total_ie_for)}
@@ -273,7 +273,7 @@ export default function RaceAnalysisUnified() {
                   </div>
                   <div className={`p-4 rounded-lg ${darkMode ? 'bg-red-900/20' : 'bg-red-50'}`}>
                     <div className={`text-sm font-bold mb-1 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
-                      IE AGAINST
+                      IE Oppose
                     </div>
                     <div className={`text-2xl font-bold ${darkMode ? 'text-red-300' : 'text-red-600'}`}>
                       {formatCurrency(raceData.race.total_ie_against)}
@@ -303,12 +303,12 @@ export default function RaceAnalysisUnified() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                        {/* IE FOR */}
+                        {/* IE Support */}
                         <div>
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingUp size={16} className="text-green-500" />
                             <span className={`text-sm font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                              IE FOR: {formatCurrency(candidate.ie_for)}
+                              IE Support: {formatCurrency(candidate.ie_for)}
                             </span>
                           </div>
                           {candidate.ie_for_spenders.length > 0 && (
@@ -330,12 +330,12 @@ export default function RaceAnalysisUnified() {
                           )}
                         </div>
 
-                        {/* IE AGAINST */}
+                        {/* IE Oppose */}
                         <div>
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingDown size={16} className="text-red-500" />
                             <span className={`text-sm font-bold ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
-                              IE AGAINST: {formatCurrency(candidate.ie_against)}
+                              IE Oppose: {formatCurrency(candidate.ie_against)}
                             </span>
                           </div>
                           {candidate.ie_against_spenders.length > 0 && (

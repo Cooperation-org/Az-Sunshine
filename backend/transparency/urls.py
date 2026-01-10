@@ -5,7 +5,7 @@ from .views import *
 from .views_soi import *
 from .views_email import *
 from .views_dashboard_optimized import *
-from .views_dashboard_extreme import *
+from .views_dashboard_extreme import dashboard_extreme, dashboard_streaming, refresh_extreme_cache, dashboard_spending_trends
 from .views_admin import DataImportViewSet, ScraperViewSet, SOSViewSet, SeeTheMoneyViewSet
 from .views_ad_buys import AdBuyViewSet
 from .views_validation import (
@@ -93,6 +93,7 @@ urlpatterns = [
     path('dashboard/extreme/', dashboard_extreme, name='dashboard-extreme'),
     path('dashboard/streaming/', dashboard_streaming, name='dashboard-streaming'),
     path('dashboard/refresh-extreme/', refresh_extreme_cache, name='refresh-extreme-cache'),
+    path('dashboard/spending-trends/', dashboard_spending_trends, name='dashboard-spending-trends'),
 
     # === DASHBOARD - OPTIMIZED ENDPOINTS (Use MV versions for performance) ===
     path('dashboard/summary-optimized/', dashboard_summary_optimized, name='dashboard-summary-optimized'),

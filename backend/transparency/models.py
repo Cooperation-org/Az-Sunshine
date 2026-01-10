@@ -421,18 +421,24 @@ class Committee(models.Model):
         Returns total IE spending for/against this candidate.
         FIXED: Single query to avoid race condition.
         FIXED: Explicitly handles NULL is_for_benefit values.
+        FIXED: Filter by income_expense_neutral=2 (expenses only) to exclude Pay a Bill entries.
+        FIXED: Use Abs() since expenses are stored as negative values.
         """
+        from django.db.models.functions import Abs
+
         # Single atomic query using conditional aggregation
         # NOTE: is_for_benefit=True means "for", is_for_benefit=False means "against"
         # NULL values are excluded from both counts (edge case handling)
+        # Filter by income_expense_neutral=2 to only count actual expenses (not Pay a Bill)
         totals = Transaction.objects.filter(
             subject_committee=self,
             deleted=False,
-            is_for_benefit__isnull=False  # FIXED: Exclude NULL values explicitly
+            is_for_benefit__isnull=False,
+            transaction_type__income_expense_neutral=2  # Only actual expenses
         ).aggregate(
-            for_total=Sum('amount', filter=Q(is_for_benefit=True)),
+            for_total=Sum(Abs('amount'), filter=Q(is_for_benefit=True)),
             for_count=Count('transaction_id', filter=Q(is_for_benefit=True)),
-            against_total=Sum('amount', filter=Q(is_for_benefit=False)),
+            against_total=Sum(Abs('amount'), filter=Q(is_for_benefit=False)),
             against_count=Count('transaction_id', filter=Q(is_for_benefit=False))
         )
 
@@ -934,17 +940,29 @@ class RaceAggregationManager:
     def get_race_ie_spending(office, cycle, party=None):
         """
         Get all IE spending for a specific race (office + cycle)
+        Consolidates FOR and AGAINST spending per candidate
+        Returns absolute values for proper display
+
+        Filter by transaction dates within the cycle, not committee's election_cycle.
+        This ensures candidates running in a cycle are included even if their
+        committee registration shows a different cycle.
         """
+        from django.db.models.functions import Abs
+
         filters = {
             'subject_committee__candidate_office': office,
-            'subject_committee__election_cycle': cycle,
             'deleted': False,
-            'subject_committee__isnull': False
+            'subject_committee__isnull': False,
+            'transaction_date__gte': cycle.begin_date,
+            'transaction_date__lte': cycle.end_date,
+            'transaction_type__income_expense_neutral': 2,  # Only count actual expenses (not Pay a Bill)
         }
-        
+
         if party:
             filters['subject_committee__candidate_party'] = party
-        
+
+        # Aggregate IE FOR and AGAINST separately per candidate
+        # Use Abs() since expenses are stored as negative values
         race_spending = Transaction.objects.filter(
             **filters
         ).values(
@@ -952,12 +970,15 @@ class RaceAggregationManager:
             'subject_committee__name__last_name',
             'subject_committee__name__first_name',
             'subject_committee__candidate_party__name',
-            'is_for_benefit'
         ).annotate(
-            total_ie=Sum('amount'),
+            ie_for=Sum(Abs('amount'), filter=Q(is_for_benefit=True)),
+            ie_against=Sum(Abs('amount'), filter=Q(is_for_benefit=False)),
             num_expenditures=Count('transaction_id')
+        ).annotate(
+            # Calculate totals from the absolute values
+            total_ie=Sum(Abs('amount'))
         ).order_by('-total_ie')
-        
+
         return race_spending
     
     @staticmethod
@@ -965,23 +986,31 @@ class RaceAggregationManager:
         """
         Ben requires: "Aggregate IE donors by race and candidate"
         Shows top donors impacting a specific race
+
+        Optimized to avoid slow subqueries by materializing intermediate results.
         """
-        # Get all candidates in this race
-        candidates = Committee.objects.filter(
+        # Step 1: Get candidate committee IDs (materialize to list)
+        candidate_ids = list(Committee.objects.filter(
             candidate_office=office,
             election_cycle=cycle,
             candidate__isnull=False
-        )
-        
-        # Get IE committees spending on this race
-        ie_committees = Committee.objects.filter(
-            transactions__subject_committee__in=candidates,
-            transactions__deleted=False
-        ).distinct()
-        
-        # Get donors to those IE committees
+        ).values_list('committee_id', flat=True))
+
+        if not candidate_ids:
+            return []
+
+        # Step 2: Get IE committee IDs that spent on these candidates (materialize)
+        ie_committee_ids = list(Transaction.objects.filter(
+            subject_committee_id__in=candidate_ids,
+            deleted=False
+        ).values_list('committee_id', flat=True).distinct()[:100])  # Limit to top 100 IE committees
+
+        if not ie_committee_ids:
+            return []
+
+        # Step 3: Get top donors to those IE committees
         top_donors = Transaction.objects.filter(
-            committee__in=ie_committees,
+            committee_id__in=ie_committee_ids,
             transaction_type__income_expense_neutral=1,
             deleted=False
         ).values(
@@ -994,7 +1023,7 @@ class RaceAggregationManager:
             total_contributed=Sum('amount'),
             num_contributions=Count('transaction_id')
         ).order_by('-total_contributed')[:limit]
-        
+
         return top_donors
 
 

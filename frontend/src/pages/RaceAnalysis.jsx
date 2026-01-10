@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getOffices, getCycles, getRaceIESpending, getRaceTopDonors, getAdBuys } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import { Bar } from "react-chartjs-2";
@@ -285,13 +286,27 @@ export default function RaceAnalysis() {
       if (dateFrom) params.date_from = dateFrom;
       if (effectiveDateTo) params.date_to = effectiveDateTo;
 
-      const [spending, donors] = await Promise.all([
-        getRaceIESpending(params),
-        getRaceTopDonors(params)
-      ]);
+      // Fetch race spending first (fast) - don't block on slow top-donors query
+      const spending = await getRaceIESpending(params);
       setRaceData(spending);
-      setTopDonors(donors.top_donors || []);
-    } catch (e) { console.error(e); } finally { setLoading(false); }
+      setLoading(false);
+
+      // Then fetch top donors separately (can be slow) with timeout
+      try {
+        const donorsPromise = getRaceTopDonors(params);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Top donors request timed out')), 10000)
+        );
+        const donors = await Promise.race([donorsPromise, timeoutPromise]);
+        setTopDonors(donors.top_donors || []);
+      } catch (donorError) {
+        console.warn('Top donors fetch failed or timed out:', donorError.message);
+        setTopDonors([]);
+      }
+    } catch (e) {
+      console.error('Race data load error:', e);
+      setLoading(false);
+    }
   }
 
   async function loadAdBuys() {
@@ -410,17 +425,31 @@ export default function RaceAnalysis() {
                     <h3 className={`text-sm font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Spending by Candidate</h3>
                   </div>
                   <div className="h-[350px]">
-                    <Bar 
+                    <Bar
                       data={{
                         labels: raceData.candidates.map(c => c.subject_committee__name__last_name),
-                        datasets: [{ 
-                          label: 'IE Spending', 
+                        datasets: [{
+                          label: 'IE Spending',
                           data: raceData.candidates.map(c => Math.abs(c.total_ie)),
                           backgroundColor: '#7667C1',
-                          borderRadius: 8
+                          borderRadius: 8,
+                          minBarLength: 5 // Ensure tiny bars are still visible and hoverable
                         }]
-                      }} 
-                      options={{ maintainAspectRatio: false }}
+                      }}
+                      options={{
+                        maintainAspectRatio: false,
+                        interaction: {
+                          mode: 'index', // Hover works on entire vertical slice, not just bar
+                          intersect: false // Don't require exact bar intersection
+                        },
+                        plugins: {
+                          tooltip: {
+                            callbacks: {
+                              label: (ctx) => `$${ctx.parsed.y.toLocaleString()}`
+                            }
+                          }
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -457,21 +486,40 @@ export default function RaceAnalysis() {
                   <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
                     {raceData.candidates.map((c, i) => {
                       const partyInfo = getPartyInfo(c.subject_committee__candidate_party__name);
+                      const candidateId = c.subject_committee__committee_id || c.subject_committee_id || c.committee_id;
                       return (
                         <tr key={i} className="hover:bg-purple-50/5 transition-colors">
                           <td className={`px-6 py-4 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {c.subject_committee__name__first_name} {c.subject_committee__name__last_name}
+                            {candidateId ? (
+                              <Link
+                                to={`/candidate/${candidateId}`}
+                                className="hover:text-[#7163BA] hover:underline transition-colors"
+                              >
+                                {c.subject_committee__name__first_name} {c.subject_committee__name__last_name}
+                              </Link>
+                            ) : (
+                              <span>{c.subject_committee__name__first_name} {c.subject_committee__name__last_name}</span>
+                            )}
                           </td>
                           <td className="px-6 py-4">
                             <span className={`text-xs font-bold px-2 py-1 rounded-full ${partyInfo.colors.bgLight} ${partyInfo.colors.text}`}>
                               ({partyInfo.abbr}) {partyInfo.fullName}
                             </span>
                           </td>
-                          <td className={`px-6 py-4 text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>${Math.abs(c.total_ie).toLocaleString()}</td>
+                          <td className={`px-6 py-4 text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            ${parseFloat(c.total_ie || 0).toLocaleString()}
+                          </td>
                           <td className="px-6 py-4">
-                            <span className={`text-sm font-bold ${c.is_for_benefit ? 'text-green-500' : 'text-red-500'}`}>
-                              {c.is_for_benefit ? '+' : '-'}${Math.abs(c.total_ie).toLocaleString()}
-                            </span>
+                            {(() => {
+                              const ieFor = parseFloat(c.ie_for || 0);
+                              const ieAgainst = parseFloat(c.ie_against || 0);
+                              const netIE = ieFor - ieAgainst;
+                              return (
+                                <span className={`text-sm font-bold ${netIE >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                  {netIE >= 0 ? '+' : ''}${Math.abs(netIE).toLocaleString()}
+                                </span>
+                              );
+                            })()}
                           </td>
                         </tr>
                       );

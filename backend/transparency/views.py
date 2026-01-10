@@ -615,9 +615,9 @@ class CommitteeViewSet(viewsets.ReadOnlyModelViewSet):
             'candidate_name': committee.name.full_name if committee.candidate else None,
             'office': committee.candidate_office.name if committee.candidate_office else None,
             'party': committee.candidate_party.name if committee.candidate_party else None,
-            'total_for': summary.get('total_for', 0),
-            'total_against': summary.get('total_against', 0),
-            'net_benefit': summary.get('net_benefit', 0),
+            'total_for': float(summary['for']['total']),
+            'total_against': float(summary['against']['total']),
+            'net_benefit': float(summary['net']),
         })
 
     @action(detail=True, methods=['get'])

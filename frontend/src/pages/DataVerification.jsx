@@ -189,10 +189,10 @@ export default function DataVerification() {
                       Party
                     </th>
                     <th className={`px-6 py-4 text-right text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      IE FOR
+                      IE Support
                     </th>
                     <th className={`px-6 py-4 text-right text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      IE AGAINST
+                      IE Oppose
                     </th>
                     <th className={`px-6 py-4 text-right text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       TOTAL IE
