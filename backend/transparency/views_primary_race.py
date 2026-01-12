@@ -6,9 +6,14 @@ Shows detailed primary race analysis with IE spending breakdown
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.db.models import Sum, Count, Q, F
+from django.db.models import Sum, Count, Q, F, Func, Value, CharField
+from django.db.models.functions import Abs, Coalesce
+from django.core.cache import cache
 from .models import Committee, Transaction, TransactionType, Cycle, Party, Office, Entity
 from decimal import Decimal
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
@@ -218,58 +223,89 @@ def primary_race_detail(request):
 def available_primary_races(request):
     """
     List all available primary races (races with 2+ candidates)
+    OPTIMIZED: Single aggregated query with caching
     """
-    # Get all IE transaction types
-    ie_types = TransactionType.objects.filter(
+    # Check cache first (cache for 5 minutes)
+    cache_key = 'available_primary_races_v2'
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return Response(cached_result)
+
+    # Get IE transaction type IDs in a single query
+    ie_type_ids = list(TransactionType.objects.filter(
         Q(name__icontains='Independent Expenditure') | Q(name__icontains='Ind. Expend')
+    ).values_list('transaction_type_id', flat=True))
+
+    # OPTIMIZED: Single query to get all candidate counts by office/party/cycle
+    # This replaces hundreds of individual queries
+    candidate_counts = Committee.objects.filter(
+        election_cycle__name__in=['2024', '2022', '2020', '2018', '2016'],
+        candidate_party__name__in=['Democratic', 'Republican'],
+        candidate__isnull=False,
+        candidate_office__isnull=False
+    ).values(
+        'candidate_office__name',
+        'candidate_party__name',
+        'election_cycle__name'
+    ).annotate(
+        candidate_count=Count('committee_id')
+    ).filter(candidate_count__gte=2)
+
+    # Convert to lookup dict for fast access
+    race_lookup = {}
+    for race in candidate_counts:
+        key = (race['candidate_office__name'], race['candidate_party__name'], race['election_cycle__name'])
+        race_lookup[key] = race['candidate_count']
+
+    # OPTIMIZED: Single query to get all IE spending aggregated by subject_committee's office/party/cycle
+    ie_spending = Transaction.objects.filter(
+        transaction_type_id__in=ie_type_ids,
+        deleted=False,
+        subject_committee__isnull=False,
+        subject_committee__candidate_office__isnull=False,
+        subject_committee__candidate_party__name__in=['Democratic', 'Republican'],
+        subject_committee__election_cycle__name__in=['2024', '2022', '2020', '2018', '2016']
+    ).values(
+        'subject_committee__candidate_office__name',
+        'subject_committee__candidate_party__name',
+        'subject_committee__election_cycle__name'
+    ).annotate(
+        total_ie=Sum('amount')
     )
 
-    # Get all cycles
-    cycles = Cycle.objects.filter(name__in=['2024', '2022', '2020', '2018', '2016']).order_by('-name')
+    # Convert to lookup dict
+    ie_lookup = {}
+    for ie in ie_spending:
+        key = (
+            ie['subject_committee__candidate_office__name'],
+            ie['subject_committee__candidate_party__name'],
+            ie['subject_committee__election_cycle__name']
+        )
+        ie_lookup[key] = abs(float(ie['total_ie'] or 0))
 
+    # Build final result
     primary_races = []
+    for key, candidate_count in race_lookup.items():
+        office_name, party_name, cycle_name = key
+        total_ie = ie_lookup.get(key, 0)
 
-    for cycle in cycles:
-        for party in Party.objects.filter(name__in=['Democratic', 'Republican']):
-            # Get all candidate committees for this cycle/party
-            committees = Committee.objects.filter(
-                election_cycle=cycle,
-                candidate_party=party,
-                candidate__isnull=False
-            ).select_related('candidate_office')
-
-            # Group by office
-            from collections import defaultdict
-            races_by_office = defaultdict(list)
-            for comm in committees:
-                if comm.candidate_office:
-                    races_by_office[comm.candidate_office.name].append(comm)
-
-            # Filter for primaries (2+ candidates)
-            for office_name, comms in races_by_office.items():
-                if len(comms) >= 2:
-                    # Calculate total IE spending in this race
-                    total_ie = 0
-                    for comm in comms:
-                        ie_amount = Transaction.objects.filter(
-                            subject_committee=comm,
-                            transaction_type__in=ie_types,
-                            deleted=False
-                        ).aggregate(total=Sum('amount'))['total'] or 0
-                        total_ie += abs(float(ie_amount))
-
-                    primary_races.append({
-                        'office': office_name,
-                        'party': party.name,
-                        'cycle': cycle.name,
-                        'candidate_count': len(comms),
-                        'total_ie': total_ie
-                    })
+        primary_races.append({
+            'office': office_name,
+            'party': party_name,
+            'cycle': cycle_name,
+            'candidate_count': candidate_count,
+            'total_ie': total_ie
+        })
 
     # Sort by total IE (highest first)
     primary_races.sort(key=lambda x: x['total_ie'], reverse=True)
 
-    return Response({
+    result = {
         'count': len(primary_races),
         'races': primary_races
-    })
+    }
+
+    # Cache for 5 minutes
+    cache.set(cache_key, result, 300)
+
+    return Response(result)
