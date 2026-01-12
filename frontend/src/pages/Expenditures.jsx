@@ -132,7 +132,7 @@ export default function Expenditures() {
       ];
       const csvData = allExpenditures.map(exp => ({
         ...exp,
-        'is_for_benefit': exp.is_for_benefit === true ? 'Support' : exp.is_for_benefit === false ? 'Oppose' : 'N/A',
+        'is_for_benefit': exp.is_for_benefit === true ? 'For Benefit' : exp.is_for_benefit === false ? 'Not For Benefit' : 'N/A',
       }));
       await exportToCSV(csvData, columns, `expenditures_${new Date().toISOString().split('T')[0]}.csv`, setExporting);
     } catch (error) {
@@ -202,7 +202,7 @@ export default function Expenditures() {
                               ? "bg-green-100 text-green-700" 
                               : exp.is_for_benefit === false ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"
                           }`}>
-                            {exp.is_for_benefit === true ? 'Support' : exp.is_for_benefit === false ? 'Oppose' : 'N/A'}
+                            {exp.is_for_benefit === true ? 'For Benefit' : exp.is_for_benefit === false ? 'Not For Benefit' : 'N/A'}
                           </span>
                         </td>
                         <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs truncate`}>

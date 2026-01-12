@@ -222,7 +222,7 @@ export default function ReportAdBuy() {
       }
     }
     if (!formData.support_oppose) {
-      setError('Please indicate if this ad supports or opposes the candidate.');
+      setError('Please indicate if this ad is for or not for benefit of the candidate.');
       return false;
     }
     if (!formData.reported_by.trim()) {
@@ -676,17 +676,17 @@ export default function ReportAdBuy() {
                     </div>
                   )}
 
-                  {/* Support/Oppose */}
+                  {/* For Benefit / Not For Benefit */}
                   <div className="mb-6">
                     <label className={`block text-sm font-medium mb-2 ${
                       darkMode ? 'text-white' : 'text-gray-900'
                     }`}>
-                      Does This Ad Support or Oppose the Candidate? <span className="text-red-400">*</span>
+                      Is This Ad For or Not For Benefit of the Candidate? <span className="text-red-400">*</span>
                     </label>
                     <div className="grid grid-cols-3 gap-3">
                       {[
-                        { value: 'support', label: 'Support' },
-                        { value: 'oppose', label: 'Oppose' },
+                        { value: 'support', label: 'For Benefit' },
+                        { value: 'oppose', label: 'Not For Benefit' },
                         { value: 'neutral', label: 'Neutral' }
                       ].map(option => (
                         <button

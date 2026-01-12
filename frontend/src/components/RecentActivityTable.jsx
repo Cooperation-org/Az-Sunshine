@@ -16,7 +16,7 @@ export default function RecentActivityTable({ rows = [] }) {
               <th>Donor</th>
               <th>Candidate</th>
               <th>Purpose</th>
-              <th>Support/Oppose</th>
+              <th>For/Not For Benefit</th>
             </tr>
           </thead>
           <tbody>
@@ -35,7 +35,7 @@ export default function RecentActivityTable({ rows = [] }) {
                   ) : (r.candidate_name || "—")}
                 </td>
                 <td>{r.purpose || "—"}</td>
-                <td>{r.support_oppose || "—"}</td>
+                <td>{r.support_oppose === 'Support' || r.is_for_benefit === true ? 'For Benefit' : r.support_oppose === 'Oppose' || r.is_for_benefit === false ? 'Not For Benefit' : (r.support_oppose || "—")}</td>
               </tr>
             ))}
           </tbody>

@@ -746,7 +746,7 @@ export default function Dashboard() {
                                 ? darkMode ? 'bg-red-900/40 text-red-300' : 'bg-red-100 text-red-800'
                                 : darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
                             }`}>
-                              {exp.is_for_benefit === true ? 'Support' : exp.is_for_benefit === false ? 'Oppose' : 'N/A'}
+                              {exp.is_for_benefit === true ? 'For Benefit' : exp.is_for_benefit === false ? 'Not For Benefit' : 'N/A'}
                             </span>
                           </td>
                           <td className="px-4 sm:px-6 lg:px-8 py-4 whitespace-nowrap text-right">

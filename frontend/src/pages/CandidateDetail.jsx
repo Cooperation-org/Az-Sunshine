@@ -135,7 +135,7 @@ export default function CandidateDetail() {
       { key: "date_of_transaction", label: "Date" },
       { key: "committee.name", label: "Committee" },
       { key: "amount", label: "Amount" },
-      { key: "support_oppose", label: "Support/Oppose" },
+      { key: "support_oppose", label: "For/Not For Benefit" },
       { key: "transaction_type", label: "Type" },
       { key: "description", label: "Description" },
     ];
@@ -207,7 +207,7 @@ export default function CandidateDetail() {
 
   // Pie chart data
   const pieChartData = {
-    labels: ["Support", "Oppose"],
+    labels: ["For Benefit", "Not For Benefit"],
     datasets: [
       {
         data: [totalIEFor, totalIEAgainst],
@@ -243,8 +243,8 @@ export default function CandidateDetail() {
   // Filter expenditures
   const filteredExpenditures = expenditures.filter((exp) => {
     if (expenditureFilter === "all") return true;
-    if (expenditureFilter === "for") return exp.support_oppose?.toLowerCase() === "support";
-    if (expenditureFilter === "against") return exp.support_oppose?.toLowerCase() === "oppose";
+    if (expenditureFilter === "for") return exp.support_oppose?.toLowerCase() === "support" || exp.is_for_benefit === true;
+    if (expenditureFilter === "against") return exp.support_oppose?.toLowerCase() === "oppose" || exp.is_for_benefit === false;
     return true;
   });
 
@@ -377,7 +377,7 @@ export default function CandidateDetail() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
                   icon={TrendingUp}
-                  label="IE Support"
+                  label="IE For Benefit"
                   value={`$${totalIEFor.toLocaleString()}`}
                   iconColor="text-green-600"
                   darkMode={darkMode}
@@ -385,7 +385,7 @@ export default function CandidateDetail() {
                 />
                 <StatCard
                   icon={TrendingDown}
-                  label="IE Oppose"
+                  label="IE Not For Benefit"
                   value={`$${totalIEAgainst.toLocaleString()}`}
                   iconColor="text-red-600"
                   darkMode={darkMode}
@@ -413,7 +413,7 @@ export default function CandidateDetail() {
                 <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl p-6 shadow-lg border`}>
                   <h3 className={`text-lg font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'} mb-4 flex items-center gap-2`}>
                     <Percent className={`w-5 h-5 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                    Support vs Oppose
+                    For Benefit vs Not For Benefit
                   </h3>
                   {totalIE > 0 ? (
                     <div className="h-64">
@@ -495,7 +495,7 @@ export default function CandidateDetail() {
                       <TrendingUp className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>IE Support</p>
+                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>IE For Benefit</p>
                       <p className={`text-3xl font-black text-green-600`}>
                         ${totalIEFor.toLocaleString()}
                       </p>
@@ -516,7 +516,7 @@ export default function CandidateDetail() {
                       <TrendingDown className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>IE Oppose</p>
+                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>IE Not For Benefit</p>
                       <p className={`text-3xl font-black text-red-600`}>
                         ${totalIEAgainst.toLocaleString()}
                       </p>
@@ -545,7 +545,7 @@ export default function CandidateDetail() {
                   </div>
                   <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
                     <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Support minus Oppose
+                      For Benefit minus Not For Benefit
                     </p>
                   </div>
                 </div>
@@ -570,10 +570,10 @@ export default function CandidateDetail() {
                           Total IE
                         </th>
                         <th className={`px-6 py-4 text-right text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                          Support
+                          For Benefit
                         </th>
                         <th className={`px-6 py-4 text-right text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                          Oppose
+                          Not For Benefit
                         </th>
                       </tr>
                     </thead>
@@ -627,8 +627,8 @@ export default function CandidateDetail() {
                     className={`px-4 py-2 border ${darkMode ? 'bg-[#4a3f66] border-[#4a3f66] text-gray-200' : 'border-gray-300 bg-white text-gray-900'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
                   >
                     <option value="all">All Expenditures</option>
-                    <option value="for">Support Only</option>
-                    <option value="against">Oppose Only</option>
+                    <option value="for">For Benefit Only</option>
+                    <option value="against">Not For Benefit Only</option>
                   </select>
                   <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     {filteredExpenditures.length} results
@@ -694,12 +694,12 @@ export default function CandidateDetail() {
                             <td className="px-6 py-4 text-center">
                               <span
                                 className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                                  exp.support_oppose?.toLowerCase() === "support"
+                                  exp.support_oppose?.toLowerCase() === "support" || exp.is_for_benefit === true
                                     ? "bg-green-100 text-green-800"
                                     : "bg-red-100 text-red-800"
                                 }`}
                               >
-                                {exp.support_oppose || "Unknown"}
+                                {exp.is_for_benefit === true ? "For Benefit" : exp.is_for_benefit === false ? "Not For Benefit" : (exp.support_oppose || "Unknown")}
                               </span>
                             </td>
                             <td className={`px-6 py-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs truncate`}>

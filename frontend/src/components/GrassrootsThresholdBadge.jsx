@@ -125,13 +125,13 @@ export default function GrassrootsThresholdBadge({
         <div className="pt-3 border-t border-gray-200">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <span className="text-gray-500 block mb-1">IE Support:</span>
+              <span className="text-gray-500 block mb-1">IE For Benefit:</span>
               <p className="font-bold text-green-600">
                 ${ieFor.toLocaleString()}
               </p>
             </div>
             <div>
-              <span className="text-gray-500 block mb-1">IE Oppose:</span>
+              <span className="text-gray-500 block mb-1">IE Not For Benefit:</span>
               <p className="font-bold text-red-600">
                 ${ieAgainst.toLocaleString()}
               </p>

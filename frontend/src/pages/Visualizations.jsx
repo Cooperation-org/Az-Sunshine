@@ -148,8 +148,8 @@ export default function Visualizations() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <StatCard title="Total IE Spending" value={totalIE} icon={DollarSign} color="#7667C1" />
-            <StatCard title="Total Support" value={totalSupport} icon={TrendingUp} color="#22c55e" />
-            <StatCard title="Total Oppose" value={totalOppose} icon={TrendingDown} color="#ef4444" />
+            <StatCard title="Total For Benefit" value={totalSupport} icon={TrendingUp} color="#22c55e" />
+            <StatCard title="Total Not For Benefit" value={totalOppose} icon={TrendingDown} color="#ef4444" />
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

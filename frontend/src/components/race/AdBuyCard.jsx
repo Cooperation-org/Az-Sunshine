@@ -15,8 +15,8 @@ export default function AdBuyCard({ adBuy }) {
     other: '📢'
   };
 
-  const supportColor = adBuy.support_oppose === 'support' ? 'text-green-500' : 'text-red-500';
-  const SupportIcon = adBuy.support_oppose === 'support' ? TrendingUp : TrendingDown;
+  const supportColor = adBuy.support_oppose === 'support' || adBuy.support_oppose === 'for_benefit' ? 'text-green-500' : 'text-red-500';
+  const SupportIcon = adBuy.support_oppose === 'support' || adBuy.support_oppose === 'for_benefit' ? TrendingUp : TrendingDown;
 
   return (
     <div className={`rounded-xl border overflow-hidden ${
@@ -66,7 +66,7 @@ export default function AdBuyCard({ adBuy }) {
           <div className="flex items-center gap-1">
             <SupportIcon size={16} className={supportColor} />
             <span className={`text-xs font-bold ${supportColor}`}>
-              {adBuy.support_oppose.toUpperCase()}
+              {adBuy.support_oppose === 'support' ? 'FOR BENEFIT' : adBuy.support_oppose === 'oppose' ? 'NOT FOR BENEFIT' : adBuy.support_oppose?.toUpperCase() || 'UNKNOWN'}
             </span>
           </div>
         </div>

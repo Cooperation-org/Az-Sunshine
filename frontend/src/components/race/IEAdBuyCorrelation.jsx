@@ -170,8 +170,8 @@ export default function IEAdBuyCorrelation({ officeId, cycleId, candidateId }) {
               {correlation.adCount}
             </div>
             <div className="flex gap-2 mt-1">
-              <span className="text-xs text-green-500">{correlation.supportAds} support</span>
-              <span className="text-xs text-red-500">{correlation.opposeAds} oppose</span>
+              <span className="text-xs text-green-500">{correlation.supportAds} for benefit</span>
+              <span className="text-xs text-red-500">{correlation.opposeAds} not for benefit</span>
             </div>
           </div>
 
