@@ -4,8 +4,8 @@ import { getOffices, getCandidates, submitAdBuy } from '../api/api';
 import Sidebar from '../components/Sidebar';
 import { useDarkMode } from '../context/DarkModeContext';
 import {
-  Upload, Calendar, Check, X, AlertCircle, 
-  Image as ImageIcon, Loader, Info, Megaphone
+  Upload, Calendar, Check, X, AlertCircle,
+  Image as ImageIcon, Loader, Info, Megaphone, Send
 } from 'lucide-react';
 
 // --- BANNER COMPONENT (Consistent with other pages) ---
@@ -589,7 +589,7 @@ export default function ReportAdBuy() {
                         } outline-none focus:ring-1 focus:ring-[#7667C1] transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         <option value="">Select office...</option>
-                        {offices.map(office => (
+                        {offices.filter(office => office.name?.toLowerCase() !== 'other').map(office => (
                           <option key={office.office_id} value={office.office_id}>
                             {office.name}
                           </option>
@@ -835,15 +835,18 @@ export default function ReportAdBuy() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 bg-[#7667C1] hover:bg-[#6556b0] text-white rounded-2xl text-sm font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
+                  className="mx-auto px-8 py-3 bg-[#7667C1] hover:bg-[#6556b0] text-white rounded-xl text-sm font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
                 >
                   {loading ? (
                     <>
-                      <Loader size={20} className="animate-spin" />
-                      Submitting Report...
+                      <Loader size={18} className="animate-spin" />
+                      Submitting...
                     </>
                   ) : (
-                    'Submit Report'
+                    <>
+                      <Send size={18} />
+                      Submit
+                    </>
                   )}
                 </button>
                 <p className={`text-center text-xs mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>

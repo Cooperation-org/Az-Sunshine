@@ -186,9 +186,10 @@ export default function Candidates() {
             onSearch={handleSearch}
           />
 
-          <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg overflow-hidden`}>
+          {/* Desktop Table */}
+          <div className={`hidden md:block ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg overflow-hidden`}>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 whitespace-nowrap">
                 <thead className={darkMode ? 'bg-[#373052]' : 'bg-gray-50'}>
                   <tr>
                     {["Candidate Name", "Race", "Party", "Status", "Election Cycle", "Role"].map((h) => (
@@ -217,12 +218,12 @@ export default function Candidates() {
                         <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{candidate.candidate_office?.name || "N/A"}</td>
                         <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{candidate.candidate_party?.name || "N/A"}</td>
                         <td className="py-4 px-6">
-                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${darkMode ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"}`}>Active</span>
+                           <span className={`whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium ${darkMode ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"}`}>Active</span>
                         </td>
                         <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{candidate.election_cycle?.name || "N/A"}</td>
                         <td className="py-4 px-6 text-sm">
-                          {candidate.is_incumbent ? 
-                            <span className="text-blue-400 font-medium">Incumbent</span> : 
+                          {candidate.is_incumbent ?
+                            <span className="text-blue-400 font-medium">Incumbent</span> :
                             <span className="text-gray-400">Challenger</span>
                           }
                         </td>
@@ -232,6 +233,66 @@ export default function Candidates() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4">
+            {loading ? (
+              <div className={`${darkMode ? 'bg-[#2D2844]' : 'bg-white'} rounded-2xl p-6 text-center`}>
+                <Loader className="w-6 h-6 animate-spin mx-auto text-[#7667C1]" />
+              </div>
+            ) : candidates.length === 0 ? (
+              <div className={`${darkMode ? 'bg-[#2D2844]' : 'bg-white'} rounded-2xl p-6 text-center text-gray-500 text-sm`}>
+                No candidates found.
+              </div>
+            ) : (
+              candidates.map((candidate, idx) => (
+                <Link
+                  key={candidate.committee_id || idx}
+                  to={`/candidate/${candidate.committee_id}`}
+                  className={`block ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg p-4 transition-colors ${darkMode ? 'hover:bg-[#373052]' : 'hover:bg-purple-50/50'}`}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-[#7667C1] flex items-center justify-center text-white text-sm font-bold">
+                      {(candidate.candidate?.full_name || "U").charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
+                        {candidate.candidate?.full_name || "Unknown"}
+                      </p>
+                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {candidate.candidate_office?.name || "N/A"}
+                      </p>
+                    </div>
+                    <span className={`whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium ${darkMode ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"}`}>Active</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Party</span>
+                      <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {candidate.candidate_party?.name || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Election Cycle</span>
+                      <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {candidate.election_cycle?.name || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Role</span>
+                      <span className="text-sm">
+                        {candidate.is_incumbent ?
+                          <span className="text-blue-400 font-medium">Incumbent</span> :
+                          <span className="text-gray-400">Challenger</span>
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
 
           <Pagination

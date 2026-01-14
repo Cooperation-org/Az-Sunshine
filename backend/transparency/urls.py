@@ -13,7 +13,9 @@ from .views_validation import (
     duplicate_entities,
     race_validation,
     external_comparison,
-    merge_entities
+    merge_entities,
+    verify_against_external,
+    verification_report
 )
 from .views_auth import (
     register,
@@ -24,7 +26,9 @@ from .views_auth import (
     disable_2fa,
     get_current_user,
     logout,
-    refresh_token
+    refresh_token,
+    update_profile,
+    change_password
 )
 from .views_primary_race import (
     primary_race_detail,
@@ -64,6 +68,8 @@ urlpatterns = [
     path('auth/logout/', logout, name='auth-logout'),
     path('auth/refresh/', refresh_token, name='auth-refresh'),
     path('auth/me/', get_current_user, name='auth-me'),
+    path('auth/profile/', update_profile, name='auth-profile-update'),
+    path('auth/change-password/', change_password, name='auth-change-password'),
     path('auth/2fa-setup/', setup_2fa, name='auth-2fa-setup'),
     path('auth/2fa-enable/', enable_2fa, name='auth-2fa-enable'),
     path('auth/2fa-verify/', verify_2fa, name='auth-2fa-verify'),
@@ -112,6 +118,13 @@ urlpatterns = [
     path('soi/candidates/', soi_candidates_list, name='soi-candidates-list'),
     path('candidate-soi/<int:pk>/mark_contacted/', mark_candidate_contacted, name='mark-candidate-contacted'),
     path('candidate-soi/<int:pk>/mark_pledge_received/', mark_pledge_received, name='mark-pledge-received'),
+
+    # === SOI Scraper URLs (Laptop Agent Integration) ===
+    path('soi/trigger-scrape/', trigger_soi_scrape, name='soi-trigger-scrape'),
+    path('soi/scrape-callback/', soi_scrape_callback, name='soi-scrape-callback'),
+    path('soi/scrape-status/<str:job_id>/', soi_scrape_status, name='soi-scrape-status'),
+    path('soi/scrape-history/', soi_scrape_history, name='soi-scrape-history'),
+    path('soi/agent-health/', soi_agent_health, name='soi-agent-health'),
     
     # === DATA VALIDATION ===
     path('validation/phase1/', validate_phase1_data, name='validate-phase1'),
@@ -120,6 +133,8 @@ urlpatterns = [
     path('validation/race/', race_validation, name='validation-race'),
     path('validation/external-comparison/', external_comparison, name='validation-external'),
     path('validation/merge-entities/', merge_entities, name='validation-merge'),
+    path('validation/verify-external/', verify_against_external, name='validation-verify-external'),
+    path('validation/verification-report/', verification_report, name='validation-verification-report'),
     
     # === CANDIDATE AGGREGATE (combines data from multiple committees per candidate) ===
     path('candidates/<int:committee_id>/aggregate/', candidate_aggregate, name='candidate-aggregate'),

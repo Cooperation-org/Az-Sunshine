@@ -60,6 +60,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('refresh_token');
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+  };
+
   const value = {
     user,
     loading,
@@ -67,6 +71,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     checkAuth,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

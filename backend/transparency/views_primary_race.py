@@ -46,52 +46,66 @@ def primary_race_detail(request):
             'error': f'Not found: {str(e)}'
         }, status=404)
 
-    # Get all IE transaction types
-    ie_types = TransactionType.objects.filter(
-        Q(name__icontains='Independent Expenditure') | Q(name__icontains='Ind. Expend')
-    )
-
-    # Get all candidates in this primary race
-    candidates = Committee.objects.filter(
+    # Get all candidate committees in this primary race
+    candidate_committees = Committee.objects.filter(
         election_cycle=cycle,
         candidate_party=party,
         candidate_office=office,
         candidate__isnull=False
     ).select_related('candidate', 'candidate_office', 'candidate_party')
 
-    if candidates.count() < 2:
+    # Group committees by candidate entity to avoid duplicates
+    # (same candidate may have multiple committees in the same race)
+    candidate_to_committees = {}
+    for comm in candidate_committees:
+        cand_id = comm.candidate.name_id
+        if cand_id not in candidate_to_committees:
+            candidate_to_committees[cand_id] = {
+                'candidate': comm.candidate,
+                'committees': []
+            }
+        candidate_to_committees[cand_id]['committees'].append(comm)
+
+    if len(candidate_to_committees) < 2:
         return Response({
             'error': 'Not a primary race (fewer than 2 candidates)',
-            'candidates_count': candidates.count()
+            'candidates_count': len(candidate_to_committees)
         }, status=404)
 
     # Build candidate data with IE spending
     candidates_data = []
     all_ie_spenders = []  # Track all IE committees for "biggest spenders" section
 
-    for comm in candidates:
-        cand_name = comm.candidate.full_name if comm.candidate else "Unknown"
+    for cand_id, cand_data in candidate_to_committees.items():
+        candidate = cand_data['candidate']
+        committees = cand_data['committees']
+        cand_name = candidate.full_name if candidate else "Unknown"
 
-        # Calculate IE FOR this candidate
+        # Get all committee IDs for this candidate
+        comm_ids = [c.committee_id for c in committees]
+
+        # Calculate IE FOR this candidate (across ALL their committees)
+        # FIXED: Use Abs() since expenses are stored as negative values
+        # FIXED: Use income_expense_neutral=2 to only count actual expenses (not Pay a Bill)
         ie_for_amount = Transaction.objects.filter(
-            subject_committee=comm,
-            transaction_type__in=ie_types,
+            subject_committee__committee_id__in=comm_ids,
+            transaction_type__income_expense_neutral=2,
             is_for_benefit=True,
             deleted=False
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        ).aggregate(total=Sum(Abs('amount')))['total'] or Decimal('0.00')
 
-        # Calculate IE AGAINST this candidate
+        # Calculate IE AGAINST this candidate (across ALL their committees)
         ie_against_amount = Transaction.objects.filter(
-            subject_committee=comm,
-            transaction_type__in=ie_types,
+            subject_committee__committee_id__in=comm_ids,
+            transaction_type__income_expense_neutral=2,
             is_for_benefit=False,
             deleted=False
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        ).aggregate(total=Sum(Abs('amount')))['total'] or Decimal('0.00')
 
-        # Get IE spenders FOR this candidate
+        # Get IE spenders FOR this candidate (across ALL their committees)
         ie_for_spenders = Transaction.objects.filter(
-            subject_committee=comm,
-            transaction_type__in=ie_types,
+            subject_committee__committee_id__in=comm_ids,
+            transaction_type__income_expense_neutral=2,
             is_for_benefit=True,
             deleted=False
         ).values(
@@ -99,14 +113,14 @@ def primary_race_detail(request):
             'committee__name__last_name',
             'committee__name__first_name'
         ).annotate(
-            total=Sum('amount'),
+            total=Sum(Abs('amount')),
             count=Count('transaction_id')
         ).order_by('-total')
 
-        # Get IE spenders AGAINST this candidate
+        # Get IE spenders AGAINST this candidate (across ALL their committees)
         ie_against_spenders = Transaction.objects.filter(
-            subject_committee=comm,
-            transaction_type__in=ie_types,
+            subject_committee__committee_id__in=comm_ids,
+            transaction_type__income_expense_neutral=2,
             is_for_benefit=False,
             deleted=False
         ).values(
@@ -114,7 +128,7 @@ def primary_race_detail(request):
             'committee__name__last_name',
             'committee__name__first_name'
         ).annotate(
-            total=Sum('amount'),
+            total=Sum(Abs('amount')),
             count=Count('transaction_id')
         ).order_by('-total')
 
@@ -132,7 +146,7 @@ def primary_race_detail(request):
                 'committee_id': spender['committee__committee_id'],
                 'name': spender_name,
                 'amount': abs(float(spender['total'])),
-                'benefit': 'Support',
+                'benefit': 'For Benefit',
                 'candidate': cand_name
             })
 
@@ -149,12 +163,15 @@ def primary_race_detail(request):
                 'committee_id': spender['committee__committee_id'],
                 'name': spender_name,
                 'amount': abs(float(spender['total'])),
-                'benefit': 'Oppose',
+                'benefit': 'Not For Benefit',
                 'candidate': cand_name
             })
 
+        # Use first committee's ID as representative (for backwards compatibility)
+        primary_comm_id = committees[0].committee_id
+
         candidates_data.append({
-            'committee_id': comm.committee_id,
+            'committee_id': primary_comm_id,
             'name': cand_name,
             'ie_for': float(abs(ie_for_amount)),
             'ie_against': float(abs(ie_against_amount)),
@@ -226,21 +243,17 @@ def available_primary_races(request):
     OPTIMIZED: Single aggregated query with caching
     """
     # Check cache first (cache for 5 minutes)
-    cache_key = 'available_primary_races_v2'
+    # FIXED: Bump cache version since we changed the query logic
+    cache_key = 'available_primary_races_v4'
     cached_result = cache.get(cache_key)
     if cached_result:
         return Response(cached_result)
 
-    # Get IE transaction type IDs in a single query
-    ie_type_ids = list(TransactionType.objects.filter(
-        Q(name__icontains='Independent Expenditure') | Q(name__icontains='Ind. Expend')
-    ).values_list('transaction_type_id', flat=True))
-
     # OPTIMIZED: Single query to get all candidate counts by office/party/cycle
     # This replaces hundreds of individual queries
+    # Include ALL parties (not just Dem/Rep) to capture Libertarian, etc.
     candidate_counts = Committee.objects.filter(
         election_cycle__name__in=['2024', '2022', '2020', '2018', '2016'],
-        candidate_party__name__in=['Democratic', 'Republican'],
         candidate__isnull=False,
         candidate_office__isnull=False
     ).values(
@@ -258,19 +271,21 @@ def available_primary_races(request):
         race_lookup[key] = race['candidate_count']
 
     # OPTIMIZED: Single query to get all IE spending aggregated by subject_committee's office/party/cycle
+    # Include ALL parties to capture Libertarian, independent candidates, etc.
+    # FIXED: Use income_expense_neutral=2 to only count actual expenses (not Pay a Bill)
+    # FIXED: Use Abs() since expenses are stored as negative values
     ie_spending = Transaction.objects.filter(
-        transaction_type_id__in=ie_type_ids,
+        transaction_type__income_expense_neutral=2,
         deleted=False,
         subject_committee__isnull=False,
         subject_committee__candidate_office__isnull=False,
-        subject_committee__candidate_party__name__in=['Democratic', 'Republican'],
         subject_committee__election_cycle__name__in=['2024', '2022', '2020', '2018', '2016']
     ).values(
         'subject_committee__candidate_office__name',
         'subject_committee__candidate_party__name',
         'subject_committee__election_cycle__name'
     ).annotate(
-        total_ie=Sum('amount')
+        total_ie=Sum(Abs('amount'))
     )
 
     # Convert to lookup dict
@@ -283,18 +298,47 @@ def available_primary_races(request):
         )
         ie_lookup[key] = abs(float(ie['total_ie'] or 0))
 
+    # ADDITIONAL: IE spending by office/cycle ONLY (all parties combined)
+    # This captures IE for candidates like Ylenia Aguilar who have no party affiliation
+    # FIXED: Use income_expense_neutral=2 to only count actual expenses (not Pay a Bill)
+    # FIXED: Use Abs() since expenses are stored as negative values
+    ie_spending_by_office = Transaction.objects.filter(
+        transaction_type__income_expense_neutral=2,
+        deleted=False,
+        subject_committee__isnull=False,
+        subject_committee__candidate_office__isnull=False,
+        subject_committee__election_cycle__name__in=['2024', '2022', '2020', '2018', '2016']
+    ).values(
+        'subject_committee__candidate_office__name',
+        'subject_committee__election_cycle__name'
+    ).annotate(
+        total_ie=Sum(Abs('amount'))
+    )
+
+    # Create lookup for office-level totals (all parties)
+    office_ie_lookup = {}
+    for ie in ie_spending_by_office:
+        key = (
+            ie['subject_committee__candidate_office__name'],
+            ie['subject_committee__election_cycle__name']
+        )
+        office_ie_lookup[key] = abs(float(ie['total_ie'] or 0))
+
     # Build final result
     primary_races = []
     for key, candidate_count in race_lookup.items():
         office_name, party_name, cycle_name = key
         total_ie = ie_lookup.get(key, 0)
+        # Include office-level total IE (all parties) for accurate race comparison
+        office_total_ie = office_ie_lookup.get((office_name, cycle_name), 0)
 
         primary_races.append({
             'office': office_name,
             'party': party_name,
             'cycle': cycle_name,
             'candidate_count': candidate_count,
-            'total_ie': total_ie
+            'total_ie': total_ie,
+            'office_total_ie': office_total_ie  # Total IE for this office/cycle across ALL parties
         })
 
     # Sort by total IE (highest first)

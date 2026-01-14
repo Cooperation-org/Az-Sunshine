@@ -19,7 +19,9 @@ from .serializers_auth import (
     RegisterSerializer,
     UserSerializer,
     TwoFactorSetupSerializer,
-    TwoFactorVerifySerializer
+    TwoFactorVerifySerializer,
+    ProfileUpdateSerializer,
+    PasswordChangeSerializer
 )
 from .models import UserProfile
 
@@ -323,3 +325,51 @@ def refresh_token(request):
         return Response({
             'error': 'Invalid or expired refresh token'
         }, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    """
+    Update user profile (username, email, first_name, last_name)
+    """
+    user = request.user
+    serializer = ProfileUpdateSerializer(
+        user,
+        data=request.data,
+        partial=True,
+        context={'request': request}
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'message': 'Profile updated successfully',
+            'user': UserSerializer(user).data
+        })
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """
+    Change user password
+    Requires current password for verification
+    """
+    serializer = PasswordChangeSerializer(
+        data=request.data,
+        context={'request': request}
+    )
+
+    if serializer.is_valid():
+        user = request.user
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+
+        return Response({
+            'message': 'Password changed successfully'
+        })
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

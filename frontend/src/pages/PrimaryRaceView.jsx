@@ -203,10 +203,10 @@ export default function PrimaryRaceView() {
                             </span>
                           );
                         })()}
-                        <span className="text-xs font-bold">{formatCurrency(race.total_ie)}</span>
+                        <span className="text-xs font-bold">{formatCurrency(race.office_total_ie || race.total_ie)}</span>
                       </div>
                       <div className="text-xs mt-1 opacity-70">
-                        {race.candidate_count} candidates
+                        {race.candidate_count} candidates • Party IE: {formatCurrency(race.total_ie)}
                       </div>
                     </button>
                   ))

@@ -28,6 +28,7 @@ import SOSAutomation from "./pages/SOSAutomation";
 import SeeTheMoney from "./pages/SeeTheMoney";
 import ReportAdBuy from "./pages/ReportAdBuy";
 import AdBuyReview from "./pages/AdBuyReview";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/admin/sos" element={<ProtectedRoute><SOSAutomation /></ProtectedRoute>} />
           <Route path="/admin/seethemoney" element={<ProtectedRoute><SeeTheMoney /></ProtectedRoute>} />
           <Route path="/admin/ad-review" element={<ProtectedRoute><AdBuyReview /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />

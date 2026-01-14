@@ -102,3 +102,59 @@ class TwoFactorVerifySerializer(serializers.Serializer):
         if not value.isdigit():
             raise serializers.ValidationError("Code must be 6 digits.")
         return value
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating user profile"""
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name')
+
+    def validate_username(self, value):
+        """Ensure username is unique (excluding current user)"""
+        user = self.context.get('request').user
+        if User.objects.filter(username=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("This username is already taken.")
+        return value
+
+    def validate_email(self, value):
+        """Ensure email is unique (excluding current user)"""
+        user = self.context.get('request').user
+        if User.objects.filter(email=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("This email is already in use.")
+        return value
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    """Serializer for changing password"""
+    current_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        style={'input_type': 'password'}
+    )
+    new_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        validators=[validate_password],
+        style={'input_type': 'password'}
+    )
+    confirm_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        style={'input_type': 'password'}
+    )
+
+    def validate(self, attrs):
+        """Validate password confirmation"""
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise serializers.ValidationError({
+                "confirm_password": "New passwords don't match."
+            })
+        return attrs
+
+    def validate_current_password(self, value):
+        """Verify current password is correct"""
+        user = self.context.get('request').user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Current password is incorrect.")
+        return value

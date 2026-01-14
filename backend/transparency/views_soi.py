@@ -1,18 +1,24 @@
 """
 SOI-specific views for Phase 1 completion
 """
+import uuid
+import requests
 from django.utils import timezone
 from django.db.models import Count, Q
+from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 import logging
 
-from .models import CandidateStatementOfInterest, EmailTemplate, EmailLog, EmailCampaign
+from .models import CandidateStatementOfInterest, EmailTemplate, EmailLog, EmailCampaign, SOIScrapeJob, Office
 from .serializers import CandidateSOISerializer, EmailTemplateSerializer
 
 logger = logging.getLogger(__name__)
+
+# Laptop agent configuration (via SSH tunnel)
+LAPTOP_AGENT_URL = getattr(settings, 'LAPTOP_AGENT_URL', 'http://localhost:5001')
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -262,4 +268,282 @@ def email_stats(request):
             'open_rate': 0,
             'click_rate': 0,
             'recent_campaigns': []
+        })
+
+
+# ==================== SOI SCRAPER ENDPOINTS ====================
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Can add auth later
+def trigger_soi_scrape(request):
+    """
+    Trigger SOI scrape via laptop agent (through SSH tunnel).
+
+    POST /api/soi/trigger-scrape/
+
+    Returns job_id to track progress.
+    """
+    try:
+        # Create job record
+        job_id = str(uuid.uuid4())
+        job = SOIScrapeJob.objects.create(
+            job_id=job_id,
+            status='pending',
+            triggered_by=request.META.get('REMOTE_ADDR', 'unknown')
+        )
+
+        # Try to trigger laptop agent
+        try:
+            response = requests.post(
+                f"{LAPTOP_AGENT_URL}/scrape",
+                json={
+                    'job_id': job_id,
+                    'callback_url': request.build_absolute_uri('/api/soi/scrape-callback/')
+                },
+                timeout=10
+            )
+
+            if response.status_code == 200:
+                job.status = 'running'
+                job.started_at = timezone.now()
+                job.save()
+
+                return Response({
+                    'success': True,
+                    'job_id': job_id,
+                    'status': 'running',
+                    'message': 'Scrape started on laptop agent'
+                })
+            else:
+                job.status = 'failed'
+                job.error_message = f"Laptop agent returned {response.status_code}: {response.text}"
+                job.save()
+
+                return Response({
+                    'success': False,
+                    'job_id': job_id,
+                    'status': 'failed',
+                    'message': f"Laptop agent error: {response.status_code}"
+                }, status=status.HTTP_502_BAD_GATEWAY)
+
+        except requests.exceptions.ConnectionError:
+            job.status = 'failed'
+            job.error_message = 'Cannot connect to laptop agent. Is the SSH tunnel running?'
+            job.save()
+
+            return Response({
+                'success': False,
+                'job_id': job_id,
+                'status': 'failed',
+                'message': 'Laptop agent not reachable. Check SSH tunnel.'
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        except requests.exceptions.Timeout:
+            job.status = 'failed'
+            job.error_message = 'Laptop agent request timed out'
+            job.save()
+
+            return Response({
+                'success': False,
+                'job_id': job_id,
+                'status': 'failed',
+                'message': 'Laptop agent timed out'
+            }, status=status.HTTP_504_GATEWAY_TIMEOUT)
+
+    except Exception as e:
+        logger.error(f"Error triggering SOI scrape: {e}")
+        return Response({
+            'success': False,
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Laptop agent callback
+def soi_scrape_callback(request):
+    """
+    Callback endpoint for laptop agent to submit scrape results.
+
+    POST /api/soi/scrape-callback/
+    {
+        "job_id": "uuid",
+        "status": "completed|failed",
+        "candidates": [...],
+        "error": "optional error message"
+    }
+    """
+    try:
+        job_id = request.data.get('job_id')
+        scrape_status = request.data.get('status')
+        candidates = request.data.get('candidates', [])
+        error = request.data.get('error', '')
+
+        if not job_id:
+            return Response({'error': 'job_id required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            job = SOIScrapeJob.objects.get(job_id=job_id)
+        except SOIScrapeJob.DoesNotExist:
+            return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        job.completed_at = timezone.now()
+        job.candidates_found = len(candidates)
+
+        if scrape_status == 'failed':
+            job.status = 'failed'
+            job.error_message = error
+            job.save()
+            return Response({'success': True, 'message': 'Job marked as failed'})
+
+        # Process candidates
+        created = 0
+        updated = 0
+
+        for candidate_data in candidates:
+            try:
+                name = candidate_data.get('name', '').strip()
+                office_name = candidate_data.get('office', '').strip()
+
+                if not name or len(name) < 2:
+                    continue
+
+                # Get or create office
+                office = None
+                if office_name and len(office_name) > 2:
+                    office, _ = Office.objects.get_or_create(
+                        name=office_name,
+                        defaults={'office_type': 'STATE'}
+                    )
+
+                if not office:
+                    continue
+
+                # Check if candidate exists
+                soi, was_created = CandidateStatementOfInterest.objects.get_or_create(
+                    candidate_name=name,
+                    office=office,
+                    defaults={
+                        'email': candidate_data.get('email', ''),
+                        'phone': candidate_data.get('phone', ''),
+                        'party': candidate_data.get('party', ''),
+                        'filing_date': timezone.now().date(),
+                        'contact_status': 'uncontacted',
+                        'pledge_received': False
+                    }
+                )
+
+                if was_created:
+                    created += 1
+                else:
+                    # Update if new info available
+                    changed = False
+                    if candidate_data.get('email') and not soi.email:
+                        soi.email = candidate_data['email']
+                        changed = True
+                    if candidate_data.get('phone') and not soi.phone:
+                        soi.phone = candidate_data['phone']
+                        changed = True
+                    if changed:
+                        soi.save()
+                        updated += 1
+
+            except Exception as e:
+                logger.error(f"Error processing candidate {candidate_data}: {e}")
+
+        job.status = 'completed'
+        job.candidates_created = created
+        job.candidates_updated = updated
+        job.save()
+
+        logger.info(f"SOI Scrape {job_id} completed: {created} created, {updated} updated")
+
+        return Response({
+            'success': True,
+            'created': created,
+            'updated': updated,
+            'total_found': len(candidates)
+        })
+
+    except Exception as e:
+        logger.error(f"Error processing scrape callback: {e}")
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def soi_scrape_status(request, job_id):
+    """
+    Get status of a scrape job.
+
+    GET /api/soi/scrape-status/<job_id>/
+    """
+    try:
+        job = SOIScrapeJob.objects.get(job_id=job_id)
+        return Response({
+            'job_id': job.job_id,
+            'status': job.status,
+            'candidates_found': job.candidates_found,
+            'candidates_created': job.candidates_created,
+            'candidates_updated': job.candidates_updated,
+            'error_message': job.error_message,
+            'started_at': job.started_at,
+            'completed_at': job.completed_at,
+            'created_at': job.created_at
+        })
+    except SOIScrapeJob.DoesNotExist:
+        return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def soi_scrape_history(request):
+    """
+    Get recent scrape job history.
+
+    GET /api/soi/scrape-history/
+    """
+    jobs = SOIScrapeJob.objects.all()[:20]
+    return Response([{
+        'job_id': job.job_id,
+        'status': job.status,
+        'candidates_found': job.candidates_found,
+        'candidates_created': job.candidates_created,
+        'candidates_updated': job.candidates_updated,
+        'created_at': job.created_at,
+        'completed_at': job.completed_at
+    } for job in jobs])
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def soi_agent_health(request):
+    """
+    Check if laptop agent is reachable via SSH tunnel.
+
+    GET /api/soi/agent-health/
+    """
+    try:
+        response = requests.get(f"{LAPTOP_AGENT_URL}/health", timeout=5)
+        if response.status_code == 200:
+            return Response({
+                'agent_status': 'online',
+                'agent_response': response.json()
+            })
+        else:
+            return Response({
+                'agent_status': 'error',
+                'message': f"Agent returned {response.status_code}"
+            })
+    except requests.exceptions.ConnectionError:
+        return Response({
+            'agent_status': 'offline',
+            'message': 'Cannot connect to laptop agent. SSH tunnel may be down.'
+        })
+    except requests.exceptions.Timeout:
+        return Response({
+            'agent_status': 'timeout',
+            'message': 'Laptop agent request timed out'
         })

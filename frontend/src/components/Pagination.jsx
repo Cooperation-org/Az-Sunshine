@@ -76,7 +76,7 @@ export default function Pagination({
   }`;
 
   return (
-    <div className="mt-6 flex items-center justify-between">
+    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
       {/* Results count */}
       <div className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
         <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -112,8 +112,8 @@ export default function Pagination({
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        {/* Page numbers */}
-        <div className="flex items-center gap-1 mx-1">
+        {/* Page numbers - hidden on mobile, show current/total instead */}
+        <div className="hidden sm:flex items-center gap-1 mx-1">
           {pages.map((page, idx) => (
             page === '...' ? (
               <span
@@ -133,6 +133,11 @@ export default function Pagination({
               </button>
             )
           ))}
+        </div>
+
+        {/* Mobile: show current page / total */}
+        <div className={`sm:hidden px-3 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          {currentPage} / {totalPages}
         </div>
 
         {/* Next */}

@@ -1276,3 +1276,38 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profile for {self.user.username}"
+
+
+# ==================== SOI SCRAPE JOB TRACKING ====================
+
+class SOIScrapeJob(models.Model):
+    """Track SOI scraping jobs triggered via laptop agent"""
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('running', 'Running'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    job_id = models.CharField(max_length=36, unique=True, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    # Results
+    candidates_found = models.IntegerField(default=0)
+    candidates_created = models.IntegerField(default=0)
+    candidates_updated = models.IntegerField(default=0)
+    error_message = models.TextField(blank=True)
+
+    # Metadata
+    triggered_by = models.CharField(max_length=100, default='web')
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'soi_scrape_jobs'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"SOI Scrape {self.job_id} - {self.status}"

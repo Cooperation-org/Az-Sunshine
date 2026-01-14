@@ -1194,6 +1194,36 @@ export async function logout() {
   }
 }
 
+/**
+ * Update user profile
+ */
+export async function updateProfile(profileData) {
+  try {
+    const res = await api.patch('/auth/profile/', profileData);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to update profile');
+    throw error;
+  }
+}
+
+/**
+ * Change user password
+ */
+export async function changePassword(currentPassword, newPassword, confirmPassword) {
+  try {
+    const res = await api.post('/auth/change-password/', {
+      current_password: currentPassword,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to change password');
+    throw error;
+  }
+}
+
 
 // Export the api instance for custom requests
 export { api };

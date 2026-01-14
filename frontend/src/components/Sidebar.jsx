@@ -323,15 +323,15 @@ export default function Sidebar() {
           // Not logged in - Show login button
           <Link
             to="/login"
-            className={`flex items-center justify-center gap-3 w-full p-4 rounded-2xl transition-all bg-[#7163BA] hover:bg-[#5b4fa8] shadow-lg shadow-purple-500/20 group relative`}
+            className={`relative flex items-center gap-3 px-3 py-3.5 rounded-xl transition-all duration-200 group text-white/80 hover:text-white hover:bg-white/5 ${isCollapsed && !isMobile ? 'justify-center' : ''}`}
           >
-            <LogIn size={20} className="text-white" />
+            <LogIn size={20} className="text-white/80 group-hover:text-white" />
             {(!isCollapsed || isMobile) && (
-              <span className="text-sm font-bold text-white">Admin Login</span>
+              <span className="text-sm font-medium">Staff Portal</span>
             )}
             {isCollapsed && !isMobile && (
-              <div className="absolute left-16 px-3 py-1.5 bg-gray-900 text-white text-[11px] font-medium rounded-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-all transform group-hover:translate-x-1 shadow-xl border border-white/10">
-                Admin Login
+              <div className="absolute left-16 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-900 text-white text-[11px] font-medium rounded-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-all transform group-hover:translate-x-1 shadow-xl border border-white/10">
+                Staff Portal
               </div>
             )}
           </Link>

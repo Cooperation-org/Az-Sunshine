@@ -168,9 +168,10 @@ export default function Donors() {
             onSearch={handleSearch} 
           />
           
-          <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg overflow-hidden`}>
+          {/* Desktop Table */}
+          <div className={`hidden md:block ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg overflow-hidden`}>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 whitespace-nowrap">
                 <thead className={darkMode ? 'bg-[#373052]' : 'bg-gray-50'}>
                   <tr>
                     {["Donor/Entity Name", "Entity Type", "Location"].map((h) => (
@@ -210,6 +211,47 @@ export default function Donors() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4">
+            {loading && currentPage === 1 ? (
+              <div className={`${darkMode ? 'bg-[#2D2844]' : 'bg-white'} rounded-2xl p-6 text-center`}>
+                <Loader className="w-6 h-6 animate-spin mx-auto text-[#7667C1]" />
+              </div>
+            ) : donors.length === 0 ? (
+              <div className={`${darkMode ? 'bg-[#2D2844]' : 'bg-white'} rounded-2xl p-6 text-center text-gray-500 text-sm`}>
+                No donors found.
+              </div>
+            ) : (
+              donors.map((donor, idx) => (
+                <div
+                  key={donor.name_id || idx}
+                  className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg p-4`}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#7667C1] flex items-center justify-center text-white text-sm font-bold">
+                      {(donor.full_name || donor.name || "?").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
+                        {donor.full_name || donor.name || "Unknown"}
+                      </p>
+                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {donor.entity_type?.name || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={`flex justify-between items-center pt-2 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Location</span>
+                    <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {donor.city && donor.state ? `${donor.city}, ${donor.state}` : "N/A"}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           <Pagination

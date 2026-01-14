@@ -460,3 +460,77 @@ def merge_entities(request):
         'merged_count': merged_count,
         'message': f'Successfully merged {merged_count} duplicate entities'
     })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_against_external(request):
+    """
+    Verify Az-Sunshine data against external sources (FollowTheMoney, SeeTheMoney)
+
+    GET /api/v1/validation/verify-external/
+    Query params:
+    - office: Office name (e.g., "Governor")
+    - cycle: Cycle year (e.g., "2022")
+    - party: Party name (optional)
+
+    Returns verification results with discrepancies
+    """
+    from transparency.utils.data_verification import DataVerificationEngine
+
+    office = request.GET.get('office')
+    cycle = request.GET.get('cycle')
+    party = request.GET.get('party')
+
+    engine = DataVerificationEngine()
+
+    if office and cycle:
+        # Verify specific race
+        result = engine.verify_race(
+            office_name=office,
+            cycle_year=cycle,
+            party_name=party
+        )
+        return Response(result.to_dict())
+    else:
+        # Return available races for verification
+        from transparency.models import Office, Cycle
+
+        offices = list(Office.objects.filter(
+            candidate_committees__subject_of_ies__isnull=False
+        ).distinct().values_list('name', flat=True))
+
+        cycles = list(Cycle.objects.filter(
+            name__in=['2016', '2018', '2020', '2022', '2024']
+        ).values_list('name', flat=True))
+
+        return Response({
+            'message': 'Provide office and cycle parameters to run verification',
+            'available_offices': offices,
+            'available_cycles': cycles,
+            'example': '/api/v1/validation/verify-external/?office=Governor&cycle=2022'
+        })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verification_report(request):
+    """
+    Run full verification and return comprehensive report
+
+    GET /api/v1/validation/verification-report/
+    Query params:
+    - cycles: Comma-separated cycle years (default: 2016,2018,2020,2022,2024)
+
+    Returns full verification report with all discrepancies
+    """
+    from transparency.utils.data_verification import DataVerificationEngine
+
+    cycles_param = request.GET.get('cycles', '2016,2018,2020,2022,2024')
+    cycles = [c.strip() for c in cycles_param.split(',')]
+
+    engine = DataVerificationEngine()
+    results = engine.verify_all_races(cycles=cycles)
+    report = engine.generate_verification_report(results)
+
+    return Response(report)

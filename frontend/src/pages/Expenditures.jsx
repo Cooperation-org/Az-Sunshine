@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import { ChevronRight, Download, Loader, Search } from "lucide-react";
+import { Download, Loader, Search } from "lucide-react";
 import { getExpenditures } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import { TableSkeleton } from "../components/SkeletonLoader";
 import { exportToCSV } from "../utils/csvExport";
 import { useDarkMode } from "../context/DarkModeContext";
+import Pagination from "../components/Pagination";
 
 // --- REFINED BANNER COMPONENT ---
 const Banner = ({ controls, searchTerm, setSearchTerm, onSearch }) => {
@@ -164,9 +165,10 @@ export default function Expenditures() {
             onSearch={handleSearch}
           />
           
-          <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg overflow-hidden`}>
+          {/* Desktop Table */}
+          <div className={`hidden md:block ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg overflow-hidden`}>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 whitespace-nowrap">
                 <thead className={darkMode ? 'bg-[#373052]' : 'bg-gray-50'}>
                   <tr>
                     {["Committee", "Candidate", "Date", "Amount", "Type", "Purpose"].map((h) => (
@@ -197,15 +199,15 @@ export default function Expenditures() {
                           ${Math.abs(parseFloat(exp.amount || 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </td>
                         <td className="py-4 px-6">
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            exp.is_for_benefit === true 
-                              ? "bg-green-100 text-green-700" 
+                          <span className={`whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            exp.is_for_benefit === true
+                              ? "bg-green-100 text-green-700"
                               : exp.is_for_benefit === false ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"
                           }`}>
                             {exp.is_for_benefit === true ? 'For Benefit' : exp.is_for_benefit === false ? 'Not For Benefit' : 'N/A'}
                           </span>
                         </td>
-                        <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs truncate`}>
+                        <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                           {exp.purpose || 'N/A'}
                         </td>
                       </tr>
@@ -216,24 +218,74 @@ export default function Expenditures() {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-between">
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{totalCount} Results</p>
-            <div className="flex gap-2">
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${
-                    currentPage === page
-                      ? 'bg-[#7667C1] text-white shadow-md'
-                      : darkMode ? 'bg-[#2D2844] text-gray-300 hover:bg-[#373052]' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                  }`}
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4">
+            {loading && currentPage === 1 ? (
+              <div className={`${darkMode ? 'bg-[#2D2844]' : 'bg-white'} rounded-2xl p-6 text-center`}>
+                <Loader className="w-6 h-6 animate-spin mx-auto text-[#7667C1]" />
+              </div>
+            ) : expenditures.length === 0 ? (
+              <div className={`${darkMode ? 'bg-[#2D2844]' : 'bg-white'} rounded-2xl p-6 text-center text-gray-500 text-sm`}>
+                No expenditures found.
+              </div>
+            ) : (
+              expenditures.map((exp, idx) => (
+                <div
+                  key={exp.transaction_id || idx}
+                  className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg p-4`}
                 >
-                  {page}
-                </button>
-              ))}
-            </div>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
+                        {exp.committee?.name?.full_name || 'N/A'}
+                      </p>
+                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
+                        {exp.transaction_date ? new Date(exp.transaction_date).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                    <span className={`whitespace-nowrap ml-2 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      exp.is_for_benefit === true
+                        ? "bg-green-100 text-green-700"
+                        : exp.is_for_benefit === false ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"
+                    }`}>
+                      {exp.is_for_benefit === true ? 'For Benefit' : exp.is_for_benefit === false ? 'Not For Benefit' : 'N/A'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Candidate</span>
+                      <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {exp.subject_committee?.name?.full_name || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Amount</span>
+                      <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        ${Math.abs(parseFloat(exp.amount || 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    {exp.purpose && (
+                      <div className={`pt-2 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>Purpose</p>
+                        <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {exp.purpose}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={setCurrentPage}
+            loading={loading}
+          />
         </div>
       </main>
     </div>
