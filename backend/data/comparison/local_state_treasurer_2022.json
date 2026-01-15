@@ -1,0 +1,23 @@
+{
+  "office": "State Treasurer",
+  "cycle": 2022,
+  "exported_at": "2026-01-13T13:15:34.830647",
+  "candidates": [
+    {
+      "committee_id": 100522,
+      "name": "Livingston for Treasurer ",
+      "party": "Republican",
+      "ie_for": 969.53,
+      "ie_against": 0.0,
+      "total_ie": 969.53
+    },
+    {
+      "committee_id": 100752,
+      "name": "People for Quezada",
+      "party": "Democratic",
+      "ie_for": 443.63,
+      "ie_against": 100.0,
+      "total_ie": 543.63
+    }
+  ]
+}

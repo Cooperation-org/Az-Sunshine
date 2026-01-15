@@ -1,0 +1,129 @@
+{
+  "generated_at": "2026-01-13T18:34:55.274522",
+  "period": "2016-2026",
+  "overall": {
+    "seethemoney_total": 127327885.11,
+    "az_sunshine_total": 125164597.78,
+    "variance": 2163287.33,
+    "variance_pct": 1.6989894461304462
+  },
+  "by_year": [
+    {
+      "year": 2016,
+      "seethemoney_total": 9974896.83,
+      "az_sunshine_total": 7735499.61,
+      "variance": 2239397.22,
+      "variance_pct": 22.450329644161343,
+      "status": "REVIEW NEEDED",
+      "stm_candidates": 84,
+      "az_candidates": 90
+    },
+    {
+      "year": 2017,
+      "seethemoney_total": 1992.22,
+      "az_sunshine_total": 0.0,
+      "variance": 1992.22,
+      "variance_pct": 100.0,
+      "status": "REVIEW NEEDED",
+      "stm_candidates": 3,
+      "az_candidates": 0
+    },
+    {
+      "year": 2018,
+      "seethemoney_total": 17347693.26,
+      "az_sunshine_total": 17633727.78,
+      "variance": 286034.52,
+      "variance_pct": 1.6488331659606483,
+      "status": "EXCELLENT",
+      "stm_candidates": 100,
+      "az_candidates": 155
+    },
+    {
+      "year": 2019,
+      "seethemoney_total": 83192.75,
+      "az_sunshine_total": 0.0,
+      "variance": 83192.75,
+      "variance_pct": 100.0,
+      "status": "REVIEW NEEDED",
+      "stm_candidates": 4,
+      "az_candidates": 0
+    },
+    {
+      "year": 2020,
+      "seethemoney_total": 18251369.95,
+      "az_sunshine_total": 22772821.01,
+      "variance": 4521451.06,
+      "variance_pct": 24.773214681345056,
+      "status": "REVIEW NEEDED",
+      "stm_candidates": 100,
+      "az_candidates": 175
+    },
+    {
+      "year": 2021,
+      "seethemoney_total": 344922.29,
+      "az_sunshine_total": 0.0,
+      "variance": 344922.29,
+      "variance_pct": 100.0,
+      "status": "REVIEW NEEDED",
+      "stm_candidates": 6,
+      "az_candidates": 0
+    },
+    {
+      "year": 2022,
+      "seethemoney_total": 59611810.35,
+      "az_sunshine_total": 57253115.8,
+      "variance": 2358694.55,
+      "variance_pct": 3.9567571193549567,
+      "status": "EXCELLENT",
+      "stm_candidates": 100,
+      "az_candidates": 196
+    },
+    {
+      "year": 2023,
+      "seethemoney_total": 5400.0,
+      "az_sunshine_total": 0.0,
+      "variance": 5400.0,
+      "variance_pct": 100.0,
+      "status": "REVIEW NEEDED",
+      "stm_candidates": 1,
+      "az_candidates": 0
+    },
+    {
+      "year": 2024,
+      "seethemoney_total": 20743028.94,
+      "az_sunshine_total": 19165883.0,
+      "variance": 1577145.94,
+      "variance_pct": 7.6032576754434205,
+      "status": "GOOD",
+      "stm_candidates": 99,
+      "az_candidates": 199
+    },
+    {
+      "year": 2025,
+      "seethemoney_total": 963578.52,
+      "az_sunshine_total": 0.0,
+      "variance": 963578.52,
+      "variance_pct": 100.0,
+      "status": "REVIEW NEEDED",
+      "stm_candidates": 3,
+      "az_candidates": 0
+    },
+    {
+      "year": 2026,
+      "seethemoney_total": 0.0,
+      "az_sunshine_total": 603550.58,
+      "variance": 603550.58,
+      "variance_pct": 100,
+      "status": "REVIEW NEEDED",
+      "stm_candidates": 0,
+      "az_candidates": 5
+    }
+  ],
+  "status_counts": {
+    "excellent": 2,
+    "good": 1,
+    "acceptable": 0,
+    "review_needed": 8,
+    "no_data": 0
+  }
+}

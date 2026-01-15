@@ -1352,13 +1352,23 @@ def candidates_list(request):
         )
     )
     
-    # Pagination
-    paginator = LargeResultsSetPagination()
-    page = paginator.paginate_queryset(queryset, request)
-    
+    # Get page parameters
+    page_num = int(request.query_params.get('page', 1))
+    page_size_param = int(request.query_params.get('page_size', 10))
+
+    # For deduplication, we need to fetch more data first, then paginate
+    if deduplicate:
+        # Fetch all candidates to deduplicate properly
+        all_committees = list(queryset.order_by('candidate__last_name', 'candidate__first_name', '-election_cycle__name')[:5000])
+    else:
+        # Normal pagination
+        paginator = LargeResultsSetPagination()
+        page = paginator.paginate_queryset(queryset, request)
+        all_committees = page if page is not None else queryset
+
     # Transform to match frontend expectations
     result_data = []
-    for committee in (page if page is not None else queryset):
+    for committee in all_committees:
         # Get contact status from CandidateSOI if exists
         try:
             soi = CandidateStatementOfInterest.objects.filter(
@@ -1424,25 +1434,36 @@ def candidates_list(request):
 
         result_data = deduplicated_data
 
-    # Build response data
-    total_count = len(result_data) if deduplicate else queryset.count()
-    if page is not None and not deduplicate:
+    # Build response data with proper pagination
+    if deduplicate:
+        # Paginate the deduplicated results
+        total_count = len(result_data)
+        start_idx = (page_num - 1) * page_size_param
+        end_idx = start_idx + page_size_param
+        paginated_results = result_data[start_idx:end_idx]
+
+        total_pages = (total_count + page_size_param - 1) // page_size_param
+
         response_data = {
-            'results': result_data,
-            'count': queryset.count(),
-            'next': None,  # Will be added by paginator
-            'previous': None  # Will be added by paginator
+            'results': paginated_results,
+            'count': total_count,
+            'next': f'/transparency/candidates/?page={page_num + 1}&page_size={page_size_param}' if page_num < total_pages else None,
+            'previous': f'/transparency/candidates/?page={page_num - 1}&page_size={page_size_param}' if page_num > 1 else None,
+            'total_pages': total_pages,
+            'current_page': page_num
         }
     else:
         response_data = {
             'results': result_data,
-            'count': len(result_data)
+            'count': queryset.count(),
+            'next': None,
+            'previous': None
         }
 
     # Cache for 10 minutes with Zstd compression
     CompressedCache.set(cache_key, response_data, timeout=600)
 
-    if page is not None and not deduplicate:
+    if not deduplicate and 'paginator' in locals():
         return paginator.get_paginated_response(result_data)
 
     return Response(response_data)

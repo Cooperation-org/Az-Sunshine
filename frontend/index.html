@@ -8,9 +8,79 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <title>Arizona Sunshine</title>
+    <style>
+      /* Disable text selection */
+      body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+      /* Allow selection in input fields */
+      input, textarea { -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Security Protection Layer
+      (function() {
+        'use strict';
+
+        // Disable right-click context menu
+        document.addEventListener('contextmenu', function(e) {
+          e.preventDefault();
+          return false;
+        }, false);
+
+        // Disable keyboard shortcuts for DevTools and View Source
+        document.addEventListener('keydown', function(e) {
+          // F12 - DevTools
+          if (e.keyCode === 123) { e.preventDefault(); return false; }
+          // Ctrl+Shift+I - DevTools
+          if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
+          // Ctrl+Shift+J - Console
+          if (e.ctrlKey && e.shiftKey && e.keyCode === 74) { e.preventDefault(); return false; }
+          // Ctrl+Shift+C - Element Inspector
+          if (e.ctrlKey && e.shiftKey && e.keyCode === 67) { e.preventDefault(); return false; }
+          // Ctrl+U - View Source
+          if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
+          // Ctrl+S - Save Page
+          if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
+          // Ctrl+P - Print
+          if (e.ctrlKey && e.keyCode === 80) { e.preventDefault(); return false; }
+        }, false);
+
+        // Detect DevTools opening
+        var devtools = { open: false, orientation: null };
+        var threshold = 160;
+        setInterval(function() {
+          if (window.outerHeight - window.innerHeight > threshold ||
+              window.outerWidth - window.innerWidth > threshold) {
+            if (!devtools.open) {
+              devtools.open = true;
+              console.clear();
+              console.log('%cStop!', 'color: red; font-size: 50px; font-weight: bold;');
+              console.log('%cThis browser feature is intended for developers.', 'font-size: 18px;');
+            }
+          } else {
+            devtools.open = false;
+          }
+        }, 500);
+
+        // Disable drag and drop
+        document.addEventListener('dragstart', function(e) {
+          e.preventDefault();
+          return false;
+        }, false);
+
+        // Disable copy (except in input fields)
+        document.addEventListener('copy', function(e) {
+          if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            return false;
+          }
+        }, false);
+
+        // Clear console periodically
+        setInterval(function() { console.clear(); }, 1000);
+      })();
+    </script>
   </body>
 </html>

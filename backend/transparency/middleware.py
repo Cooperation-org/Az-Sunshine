@@ -1,10 +1,128 @@
 """
-Zstandard Compression Middleware for Django
-Provides faster compression than gzip with better compression ratios
+Middleware for Django:
+- Zstandard Compression
+- Rate Limiting / Anti-Scraping Protection
 """
 
+import time
+import hashlib
+from collections import defaultdict
+from django.core.cache import cache
+from django.http import JsonResponse
 import zstandard as zstd
 from django.utils.deprecation import MiddlewareMixin
+
+
+class RateLimitMiddleware(MiddlewareMixin):
+    """
+    Rate limiting middleware to protect against scraping and abuse.
+
+    Limits:
+    - 100 requests per minute for normal users
+    - 30 requests per minute for API endpoints
+    - Blocks suspicious bot patterns
+    """
+
+    # Rate limits (requests per minute)
+    GENERAL_LIMIT = 100
+    API_LIMIT = 30
+
+    # Suspicious patterns that indicate scraping
+    BOT_USER_AGENTS = [
+        'scrapy', 'crawler', 'spider', 'bot', 'curl', 'wget',
+        'python-requests', 'httpx', 'aiohttp', 'selenium'
+    ]
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Get client identifier (IP + User Agent hash)
+        client_ip = self.get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+
+        # Check for bot user agents
+        if any(bot in user_agent for bot in self.BOT_USER_AGENTS):
+            return JsonResponse({
+                'error': 'Automated access is not permitted',
+                'status': 'blocked'
+            }, status=403)
+
+        # Check for missing user agent (often bots)
+        if not user_agent or len(user_agent) < 10:
+            return JsonResponse({
+                'error': 'Invalid request',
+                'status': 'blocked'
+            }, status=403)
+
+        # Determine rate limit based on path
+        is_api = '/transparency/' in request.path or '/api/' in request.path
+        limit = self.API_LIMIT if is_api else self.GENERAL_LIMIT
+
+        # Create cache key
+        cache_key = f"ratelimit:{client_ip}:{int(time.time() // 60)}"
+
+        # Get current request count
+        current_count = cache.get(cache_key, 0)
+
+        if current_count >= limit:
+            return JsonResponse({
+                'error': 'Rate limit exceeded. Please slow down.',
+                'retry_after': 60 - (int(time.time()) % 60)
+            }, status=429)
+
+        # Increment counter
+        cache.set(cache_key, current_count + 1, timeout=60)
+
+        response = self.get_response(request)
+
+        # Add rate limit headers
+        response['X-RateLimit-Limit'] = str(limit)
+        response['X-RateLimit-Remaining'] = str(max(0, limit - current_count - 1))
+
+        return response
+
+    def get_client_ip(self, request):
+        """Get the real client IP, handling proxies."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR', '0.0.0.0')
+
+
+class SecurityHeadersMiddleware(MiddlewareMixin):
+    """Add security headers to prevent scraping and protect data."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        # Prevent embedding in iframes (clickjacking protection)
+        response['X-Frame-Options'] = 'DENY'
+
+        # Prevent MIME type sniffing
+        response['X-Content-Type-Options'] = 'nosniff'
+
+        # XSS protection
+        response['X-XSS-Protection'] = '1; mode=block'
+
+        # Prevent caching of sensitive data
+        if '/transparency/' in request.path or '/api/' in request.path:
+            response['Cache-Control'] = 'private, no-store, must-revalidate'
+
+        # Content Security Policy
+        response['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' data:; "
+            "connect-src 'self' https://api.opencorporates.com;"
+        )
+
+        return response
 
 
 class ZstdMiddleware(MiddlewareMixin):

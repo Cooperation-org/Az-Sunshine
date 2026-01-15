@@ -20,10 +20,22 @@ else:
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
+DEBUG = False
+ALLOWED_HOSTS = [
+    "167.172.30.134",
+    "localhost",
+    "127.0.0.1",
+    "az-sunshine.org",
+    "www.az-sunshine.org",
+]
 USE_X_FORWARDED_HOST = True
 APPEND_SLASH = True
+
+# Security settings for production
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
 # Application definition
 INSTALLED_APPS = [
@@ -64,6 +76,8 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 MIDDLEWARE = [
+    "transparency.middleware.RateLimitMiddleware",  # Anti-scraping rate limiting
+    "transparency.middleware.SecurityHeadersMiddleware",  # Security headers
     "transparency.middleware.ZstdMiddleware",  # Zstandard compression (faster than gzip)
     "django.middleware.gzip.GZipMiddleware",  # Fallback for clients that don't support zstd
     "corsheaders.middleware.CorsMiddleware",

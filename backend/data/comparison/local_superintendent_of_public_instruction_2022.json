@@ -1,0 +1,39 @@
+{
+  "office": "Superintendent of Public Instruction",
+  "cycle": 2022,
+  "exported_at": "2026-01-13T13:15:34.856988",
+  "candidates": [
+    {
+      "committee_id": 201600496,
+      "name": "Elect Michelle Udall",
+      "party": "Republican",
+      "ie_for": 0.0,
+      "ie_against": 130000.0,
+      "total_ie": 130000.0
+    },
+    {
+      "committee_id": 100604,
+      "name": "Vote Sapir",
+      "party": "Republican",
+      "ie_for": 47032.88,
+      "ie_against": 0.0,
+      "total_ie": 47032.88
+    },
+    {
+      "committee_id": 100547,
+      "name": "Elect Kathy Hoffman for Superintendent",
+      "party": "Democratic",
+      "ie_for": 12859.68,
+      "ie_against": 1250.59,
+      "total_ie": 14110.27
+    },
+    {
+      "committee_id": -1303,
+      "name": "Thomas Horne for Superintendent of Public Instruction",
+      "party": null,
+      "ie_for": 0.0,
+      "ie_against": 4544.27,
+      "total_ie": 4544.27
+    }
+  ]
+}

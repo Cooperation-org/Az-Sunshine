@@ -1,0 +1,47 @@
+{
+  "office": "Governor",
+  "cycle": 2022,
+  "exported_at": "2026-01-13T13:15:34.690899",
+  "candidates": [
+    {
+      "committee_id": 100605,
+      "name": "Kari Lake for Arizona",
+      "party": "Republican",
+      "ie_for": 2492870.15,
+      "ie_against": 8443590.54,
+      "total_ie": 10936460.69
+    },
+    {
+      "committee_id": -445,
+      "name": "Elect Katie Hobbs",
+      "party": "Democratic",
+      "ie_for": 2091860.37,
+      "ie_against": 6565407.6,
+      "total_ie": 8657267.97
+    },
+    {
+      "committee_id": 201800057,
+      "name": "Elect Katie Hobbs",
+      "party": "Democratic",
+      "ie_for": 3328071.91,
+      "ie_against": 3547648.73,
+      "total_ie": 6875720.64
+    },
+    {
+      "committee_id": -787,
+      "name": "Karrin for Arizona",
+      "party": "Republican",
+      "ie_for": 2540897.09,
+      "ie_against": 1454200.0,
+      "total_ie": 3995097.09
+    },
+    {
+      "committee_id": 100554,
+      "name": "Marco Lopez for Governor",
+      "party": "Democratic",
+      "ie_for": 26000.0,
+      "ie_against": 0.0,
+      "total_ie": 26000.0
+    }
+  ]
+}

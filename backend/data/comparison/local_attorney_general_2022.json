@@ -1,0 +1,55 @@
+{
+  "office": "Attorney General",
+  "cycle": 2022,
+  "exported_at": "2026-01-13T13:15:34.760228",
+  "candidates": [
+    {
+      "committee_id": 100811,
+      "name": "Abraham Hamadeh for Attorney General",
+      "party": "Republican",
+      "ie_for": 970057.14,
+      "ie_against": 1385781.07,
+      "total_ie": 2355838.21
+    },
+    {
+      "committee_id": -830,
+      "name": "Kris Mayes for Arizona",
+      "party": "Democratic",
+      "ie_for": 122260.83,
+      "ie_against": 1862144.7,
+      "total_ie": 1984405.53
+    },
+    {
+      "committee_id": 100574,
+      "name": "Andrew Gould for Attorney General",
+      "party": "Republican",
+      "ie_for": 198721.57,
+      "ie_against": 0.0,
+      "total_ie": 198721.57
+    },
+    {
+      "committee_id": 100571,
+      "name": "Shedd for Attorney General",
+      "party": "Republican",
+      "ie_for": 7767.5,
+      "ie_against": 0.0,
+      "total_ie": 7767.5
+    },
+    {
+      "committee_id": 100716,
+      "name": "Glassman for Attorney General",
+      "party": "Republican",
+      "ie_for": 0.0,
+      "ie_against": 5000.0,
+      "total_ie": 5000.0
+    },
+    {
+      "committee_id": -38,
+      "name": "Abraham Hamadeh for Attorney General",
+      "party": null,
+      "ie_for": 1881.27,
+      "ie_against": 0.0,
+      "total_ie": 1881.27
+    }
+  ]
+}
