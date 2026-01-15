@@ -38,7 +38,7 @@ from .views_candidate_aggregate import (
     candidate_aggregate,
     candidate_aggregate_ie_spending
 )
-from .views_ie_analysis import dark_money_disclosures
+from .views_ie_analysis import dark_money_disclosures, race_ie_committees
 
 app_name = 'transparency'
 
@@ -82,6 +82,7 @@ urlpatterns = [
     path('races/money-flow/', races_money_flow, name='races-money-flow'),
     path('races/detailed-money-flow/', races_detailed_money_flow, name='races-detailed-money-flow'),
     path('races/dark-money-disclosures/', dark_money_disclosures, name='races-dark-money-disclosures'),
+    path('races/ie-committees/', race_ie_committees, name='race-ie-committees'),
     path('ie-analysis/dark-money-disclosures/', dark_money_disclosures, name='ie-analysis-dark-money'),
 
     # === PRIMARY RACE VIEW (Golda Demo) ===

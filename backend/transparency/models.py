@@ -937,7 +937,7 @@ class RaceAggregationManager:
     """
     
     @staticmethod
-    def get_race_ie_spending(office, cycle, party=None):
+    def get_race_ie_spending(office, cycle, party=None, date_from=None, date_to=None):
         """
         Get all IE spending for a specific race (office + cycle)
         Consolidates FOR and AGAINST spending per candidate
@@ -946,15 +946,21 @@ class RaceAggregationManager:
         Filter by transaction dates within the cycle, not committee's election_cycle.
         This ensures candidates running in a cycle are included even if their
         committee registration shows a different cycle.
+
+        Optional date_from/date_to parameters allow filtering for Primary Only view.
         """
         from django.db.models.functions import Abs
+
+        # Use custom dates if provided, otherwise use cycle dates
+        effective_date_from = date_from if date_from else cycle.begin_date
+        effective_date_to = date_to if date_to else cycle.end_date
 
         filters = {
             'subject_committee__candidate_office': office,
             'deleted': False,
             'subject_committee__isnull': False,
-            'transaction_date__gte': cycle.begin_date,
-            'transaction_date__lte': cycle.end_date,
+            'transaction_date__gte': effective_date_from,
+            'transaction_date__lte': effective_date_to,
             'transaction_type__income_expense_neutral': 2,  # Only count actual expenses (not Pay a Bill)
         }
 

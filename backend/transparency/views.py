@@ -823,13 +823,15 @@ def race_ie_spending(request):
     office_id = request.GET.get('office_id')
     cycle_id = request.GET.get('cycle_id')
     party_id = request.GET.get('party_id', None)
+    date_from = request.GET.get('date_from', None)
+    date_to = request.GET.get('date_to', None)
 
     if not office_id or not cycle_id:
         return Response(
             {'error': 'office_id and cycle_id parameters are required'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
     try:
         office = Office.objects.get(office_id=office_id)
         cycle = Cycle.objects.get(cycle_id=cycle_id)
@@ -839,13 +841,17 @@ def race_ie_spending(request):
             {'error': 'Invalid office, cycle, or party ID'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
-    race_spending = RaceAggregationManager.get_race_ie_spending(office, cycle, party)
-    
+
+    race_spending = RaceAggregationManager.get_race_ie_spending(
+        office, cycle, party, date_from=date_from, date_to=date_to
+    )
+
     return Response({
         'office': office.name,
         'cycle': cycle.name,
         'party': party.name if party else 'All Parties',
+        'date_from': date_from,
+        'date_to': date_to,
         'candidates': list(race_spending)
     })
 
@@ -1302,7 +1308,8 @@ def candidates_list(request):
     party_id = request.query_params.get('party', '')
     cycle_id = request.query_params.get('cycle', '')
     search = request.query_params.get('search', '')
-    cache_key = f'candidates_list_p{page_num}_s{page_size}_o{office_id}_pt{party_id}_c{cycle_id}_q{search}'
+    deduplicate = request.query_params.get('deduplicate', 'true').lower() == 'true'  # Default to deduplicated
+    cache_key = f'candidates_list_p{page_num}_s{page_size}_o{office_id}_pt{party_id}_c{cycle_id}_q{search}_d{deduplicate}'
 
     # Try to get from Zstd-compressed cache (10 minute cache)
     cached_data = CompressedCache.get(cache_key)
@@ -1387,8 +1394,39 @@ def candidates_list(request):
             'ie_total_against': float(committee.ie_total_against or 0),
         })
 
+    # Deduplicate by candidate name if requested (default: true)
+    if deduplicate:
+        seen_candidates = {}
+        deduplicated_data = []
+        for item in result_data:
+            candidate_name = item.get('candidate', {}).get('full_name') if item.get('candidate') else None
+            if not candidate_name:
+                candidate_name = item.get('name', {}).get('full_name') if item.get('name') else 'Unknown'
+
+            if candidate_name not in seen_candidates:
+                # First occurrence - add to results
+                item['all_cycles'] = [item.get('election_cycle', {}).get('name')] if item.get('election_cycle') else []
+                seen_candidates[candidate_name] = len(deduplicated_data)
+                deduplicated_data.append(item)
+            else:
+                # Duplicate - merge cycles and aggregate IE totals
+                existing_idx = seen_candidates[candidate_name]
+                existing = deduplicated_data[existing_idx]
+
+                # Add cycle to list if not already there
+                new_cycle = item.get('election_cycle', {}).get('name') if item.get('election_cycle') else None
+                if new_cycle and new_cycle not in existing.get('all_cycles', []):
+                    existing.setdefault('all_cycles', []).append(new_cycle)
+
+                # Aggregate IE totals
+                existing['ie_total_for'] = existing.get('ie_total_for', 0) + item.get('ie_total_for', 0)
+                existing['ie_total_against'] = existing.get('ie_total_against', 0) + item.get('ie_total_against', 0)
+
+        result_data = deduplicated_data
+
     # Build response data
-    if page is not None:
+    total_count = len(result_data) if deduplicate else queryset.count()
+    if page is not None and not deduplicate:
         response_data = {
             'results': result_data,
             'count': queryset.count(),
@@ -1404,7 +1442,7 @@ def candidates_list(request):
     # Cache for 10 minutes with Zstd compression
     CompressedCache.set(cache_key, response_data, timeout=600)
 
-    if page is not None:
+    if page is not None and not deduplicate:
         return paginator.get_paginated_response(result_data)
 
     return Response(response_data)

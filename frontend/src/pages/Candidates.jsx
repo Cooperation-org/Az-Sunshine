@@ -220,7 +220,22 @@ export default function Candidates() {
                         <td className="py-4 px-6">
                            <span className={`whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium ${darkMode ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"}`}>Active</span>
                         </td>
-                        <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{candidate.election_cycle?.name || "N/A"}</td>
+                        <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {candidate.all_cycles && candidate.all_cycles.length > 1 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {candidate.all_cycles.slice(0, 3).map((cycle, i) => (
+                                <span key={i} className={`px-1.5 py-0.5 rounded text-xs ${darkMode ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-700'}`}>
+                                  {cycle}
+                                </span>
+                              ))}
+                              {candidate.all_cycles.length > 3 && (
+                                <span className="text-xs text-gray-500">+{candidate.all_cycles.length - 3}</span>
+                              )}
+                            </div>
+                          ) : (
+                            candidate.election_cycle?.name || "N/A"
+                          )}
+                        </td>
                         <td className="py-4 px-6 text-sm">
                           {candidate.is_incumbent ?
                             <span className="text-blue-400 font-medium">Incumbent</span> :
@@ -274,10 +289,12 @@ export default function Candidates() {
                         {candidate.candidate_party?.name || "N/A"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-start">
                       <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Election Cycle</span>
                       <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {candidate.election_cycle?.name || "N/A"}
+                        {candidate.all_cycles && candidate.all_cycles.length > 1
+                          ? candidate.all_cycles.join(', ')
+                          : candidate.election_cycle?.name || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between">

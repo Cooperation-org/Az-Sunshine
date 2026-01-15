@@ -843,3 +843,94 @@ def dark_money_disclosures(request):
         },
         'disclosures': disclosure_list
     })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def race_ie_committees(request):
+    """
+    Get all IE committees (Super PACs) that spent money in a specific race.
+
+    GET /api/v1/races/ie-committees/?office_id=1&cycle_id=1
+
+    Returns list of IE committees with their spending for/against candidates.
+    """
+    office_id = request.GET.get('office_id')
+    cycle_id = request.GET.get('cycle_id')
+
+    if not office_id or not cycle_id:
+        return Response({
+            'error': 'office_id and cycle_id are required'
+        }, status=400)
+
+    # Get all candidates in this race
+    candidate_committees = Committee.objects.filter(
+        candidate_office_id=office_id,
+        election_cycle_id=cycle_id,
+        candidate__isnull=False
+    ).values_list('committee_id', flat=True)
+
+    # Get all IE transactions targeting these candidates
+    ie_transactions = Transaction.objects.filter(
+        subject_committee_id__in=candidate_committees,
+        deleted=False
+    ).select_related('committee__name')
+
+    # Aggregate by IE committee
+    ie_committee_data = {}
+    for txn in ie_transactions:
+        committee_id = txn.committee_id
+        if committee_id not in ie_committee_data:
+            ie_committee_data[committee_id] = {
+                'committee_id': committee_id,
+                'name': txn.committee.name.full_name if txn.committee and txn.committee.name else 'Unknown',
+                'ie_for': Decimal('0'),
+                'ie_against': Decimal('0'),
+                'num_transactions': 0,
+                'candidates_supported': set(),
+                'candidates_opposed': set()
+            }
+
+        amount = abs(txn.amount or Decimal('0'))
+        ie_committee_data[committee_id]['num_transactions'] += 1
+
+        if txn.is_for_benefit:
+            ie_committee_data[committee_id]['ie_for'] += amount
+            if txn.subject_committee_id:
+                ie_committee_data[committee_id]['candidates_supported'].add(txn.subject_committee_id)
+        else:
+            ie_committee_data[committee_id]['ie_against'] += amount
+            if txn.subject_committee_id:
+                ie_committee_data[committee_id]['candidates_opposed'].add(txn.subject_committee_id)
+
+    # Convert to list and calculate totals
+    results = []
+    total_for = Decimal('0')
+    total_against = Decimal('0')
+
+    for committee_id, data in ie_committee_data.items():
+        total_for += data['ie_for']
+        total_against += data['ie_against']
+        results.append({
+            'committee_id': data['committee_id'],
+            'name': data['name'],
+            'ie_for': float(data['ie_for']),
+            'ie_against': float(data['ie_against']),
+            'total_spending': float(data['ie_for'] + data['ie_against']),
+            'num_transactions': data['num_transactions'],
+            'candidates_supported': len(data['candidates_supported']),
+            'candidates_opposed': len(data['candidates_opposed'])
+        })
+
+    # Sort by total spending descending
+    results.sort(key=lambda x: x['total_spending'], reverse=True)
+
+    return Response({
+        'summary': {
+            'total_ie_committees': len(results),
+            'total_ie_for': float(total_for),
+            'total_ie_against': float(total_against),
+            'total_spending': float(total_for + total_against)
+        },
+        'ie_committees': results
+    })

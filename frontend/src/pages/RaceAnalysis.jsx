@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getOffices, getCycles, getRaceIESpending, getRaceTopDonors, getAdBuys } from "../api/api";
+import { getOffices, getCycles, getRaceIESpending, getRaceTopDonors, getAdBuys, getRaceIECommittees } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import { Bar } from "react-chartjs-2";
 import { ChartSkeleton, TableSkeleton } from "../components/SkeletonLoader";
@@ -15,6 +15,7 @@ import RaceSummaryPanel from "../components/race/RaceSummaryPanel";
 import AdBuyCard from "../components/race/AdBuyCard";
 import IEAdBuyCorrelation from "../components/race/IEAdBuyCorrelation";
 import DarkMoneyDisclosurePanel from "../components/race/DarkMoneyDisclosurePanel";
+import IECommitteesPanel from "../components/race/IECommitteesPanel";
 import { getPartyInfo } from "../utils/partyUtils";
 
 // Arizona Primary Election Dates (day before primary to capture all pre-primary spending)
@@ -244,6 +245,7 @@ export default function RaceAnalysis() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('candidate');
   const [adBuys, setAdBuys] = useState([]);
+  const [ieCommittees, setIECommittees] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'total_ie', direction: 'desc' });
 
   // Get cycle name for primary date lookup
@@ -275,6 +277,7 @@ export default function RaceAnalysis() {
   useEffect(() => {
     if (selectedOffice && selectedCycle) {
       loadRaceData();
+      loadIECommittees();
       if (view === 'race') {
         loadAdBuys();
       }
@@ -320,6 +323,19 @@ export default function RaceAnalysis() {
       setAdBuys(data.results || []);
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  async function loadIECommittees() {
+    try {
+      const data = await getRaceIECommittees({
+        office_id: selectedOffice,
+        cycle_id: selectedCycle
+      });
+      setIECommittees(data.ie_committees || []);
+    } catch (e) {
+      console.error(e);
+      setIECommittees([]);
     }
   }
 
@@ -417,6 +433,14 @@ export default function RaceAnalysis() {
                   electionYear={selectedCycleName}
                 />
 
+                {/* IE Committees (Super PACs) Panel */}
+                {ieCommittees.length > 0 && (
+                  <IECommitteesPanel
+                    committees={ieCommittees}
+                    title="Super PACs & IE Committees in This Race"
+                  />
+                )}
+
                 {/* Candidate Cards - Responsive Grid */}
                 <div>
                   <h3 className={`text-sm font-bold uppercase tracking-widest mb-4 ${
@@ -465,6 +489,14 @@ export default function RaceAnalysis() {
                 officeId={selectedOffice}
                 electionYear={selectedCycleName}
               />
+
+              {/* IE Committees (Super PACs) Panel */}
+              {ieCommittees.length > 0 && (
+                <IECommitteesPanel
+                  committees={ieCommittees}
+                  title="Super PACs & IE Committees in This Race"
+                />
+              )}
 
               {/* Stat Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

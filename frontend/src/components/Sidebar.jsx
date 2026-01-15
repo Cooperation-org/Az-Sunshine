@@ -6,7 +6,7 @@ import {
   HelpCircle, Moon, Sun, Upload, Globe,
   FileCheck, PanelLeftClose, PanelLeft, Bell,
   ChevronUp, Eye, Megaphone, ShieldCheck, Database,
-  Menu, X, LogOut, LogIn, Target, CheckCircle
+  Menu, X, LogOut, LogIn, CheckCircle
 } from "lucide-react";
 import { useDarkMode } from "../context/DarkModeContext";
 import { useAuth } from "../context/AuthContext";
@@ -70,7 +70,6 @@ export default function Sidebar() {
     { path: "/expenditures", icon: FileText, label: "Expenditures", badge: null },
     { path: "/visualizations", icon: BarChart3, label: "Visualizations", badge: null },
     { path: "/race-analysis", icon: GitBranch, label: "Race Analysis", badge: null },
-    { path: "/primary-race", icon: Target, label: "Race View", badge: "Demo" },
     { path: "/verification", icon: CheckCircle, label: "Data Verification", badge: null },
     { path: "/report-ad", icon: Megaphone, label: "Report Ad Buy", badge: null },
   ];

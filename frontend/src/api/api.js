@@ -439,6 +439,20 @@ export async function getDarkMoneyDisclosures(params = {}) {
 }
 
 /**
+ * Get IE committees (Super PACs) spending in a race
+ */
+export async function getRaceIECommittees(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/races/ie-committees/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load IE committees');
+    return { ie_committees: [], summary: {} };
+  }
+}
+
+/**
  * Get money flow for Sankey diagram
  */
 export async function getMoneyFlow(params = {}) {
