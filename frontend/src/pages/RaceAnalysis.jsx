@@ -6,7 +6,7 @@ import { Bar } from "react-chartjs-2";
 import { ChartSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import { useDarkMode } from "../context/DarkModeContext";
 import {
-  ChevronDown, SlidersHorizontal, BarChart3, Users,
+  ChevronDown, ChevronUp, SlidersHorizontal, BarChart3, Users,
   TrendingUp, TrendingDown, DollarSign, Target, Calendar, ToggleLeft, ToggleRight
 } from "lucide-react";
 import ViewToggle from "../components/ViewToggle";
@@ -244,6 +244,7 @@ export default function RaceAnalysis() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('candidate');
   const [adBuys, setAdBuys] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: 'total_ie', direction: 'desc' });
 
   // Get cycle name for primary date lookup
   const selectedCycleName = cycles.find(c => String(c.cycle_id) === String(selectedCycle))?.name || '';
@@ -325,6 +326,52 @@ export default function RaceAnalysis() {
   // Statistics Calculation
   const totalSpending = raceData?.candidates?.reduce((sum, c) => sum + Math.abs(parseFloat(c.total_ie || 0)), 0) || 0;
   const topCandidate = raceData?.candidates?.sort((a, b) => b.total_ie - a.total_ie)[0];
+
+  // Sorting function for candidates table
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
+    }));
+  };
+
+  const getSortedCandidates = () => {
+    if (!raceData?.candidates) return [];
+    const sorted = [...raceData.candidates].sort((a, b) => {
+      let aVal, bVal;
+      switch (sortConfig.key) {
+        case 'name':
+          aVal = (a.subject_committee__name__last_name || '').toLowerCase();
+          bVal = (b.subject_committee__name__last_name || '').toLowerCase();
+          break;
+        case 'party':
+          aVal = (a.subject_committee__candidate_party__name || '').toLowerCase();
+          bVal = (b.subject_committee__candidate_party__name || '').toLowerCase();
+          break;
+        case 'total_ie':
+          aVal = Math.abs(parseFloat(a.total_ie || 0));
+          bVal = Math.abs(parseFloat(b.total_ie || 0));
+          break;
+        case 'net_ie':
+          aVal = Math.abs(parseFloat(a.ie_for || 0)) - Math.abs(parseFloat(a.ie_against || 0));
+          bVal = Math.abs(parseFloat(b.ie_for || 0)) - Math.abs(parseFloat(b.ie_against || 0));
+          break;
+        default:
+          return 0;
+      }
+      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  };
+
+  const SortIcon = ({ column }) => {
+    if (sortConfig.key !== column) return <ChevronDown size={14} className="opacity-30" />;
+    return sortConfig.direction === 'desc'
+      ? <ChevronDown size={14} className="text-purple-400" />
+      : <ChevronUp size={14} className="text-purple-400" />;
+  };
 
   const StatCard = ({ title, value, icon: Icon, color }) => (
     <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} p-5 rounded-2xl border shadow-sm flex items-center gap-4`}>
@@ -431,30 +478,57 @@ export default function RaceAnalysis() {
                 <div className={`lg:col-span-2 p-6 rounded-2xl border ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`}>
                   <div className="flex items-center gap-3 mb-6">
                     <BarChart3 size={18} className="text-[#7667C1]" />
-                    <h3 className={`text-sm font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Spending by Candidate</h3>
+                    <h3 className={`text-sm font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Spending Distribution</h3>
                   </div>
                   <div className="h-[350px]">
                     <Bar
                       data={{
                         labels: raceData.candidates.map(c => c.subject_committee__name__last_name),
-                        datasets: [{
-                          label: 'IE Spending',
-                          data: raceData.candidates.map(c => Math.abs(c.total_ie)),
-                          backgroundColor: '#7667C1',
-                          borderRadius: 8,
-                          minBarLength: 5 // Ensure tiny bars are still visible and hoverable
-                        }]
+                        datasets: [
+                          {
+                            label: 'IE For Benefit',
+                            data: raceData.candidates.map(c => Math.abs(parseFloat(c.ie_for || 0))),
+                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                            borderRadius: 4,
+                            minBarLength: 2
+                          },
+                          {
+                            label: 'IE Against',
+                            data: raceData.candidates.map(c => Math.abs(parseFloat(c.ie_against || 0))),
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderRadius: 4,
+                            minBarLength: 2
+                          }
+                        ]
                       }}
                       options={{
                         maintainAspectRatio: false,
                         interaction: {
-                          mode: 'index', // Hover works on entire vertical slice, not just bar
-                          intersect: false // Don't require exact bar intersection
+                          mode: 'index',
+                          intersect: false
                         },
                         plugins: {
                           tooltip: {
                             callbacks: {
-                              label: (ctx) => `$${ctx.parsed.y.toLocaleString()}`
+                              label: (ctx) => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+                            }
+                          },
+                          legend: {
+                            position: 'top',
+                            labels: {
+                              usePointStyle: true,
+                              padding: 15
+                            }
+                          }
+                        },
+                        scales: {
+                          x: {
+                            stacked: true
+                          },
+                          y: {
+                            stacked: true,
+                            ticks: {
+                              callback: (value) => `$${value.toLocaleString()}`
                             }
                           }
                         }
@@ -464,7 +538,7 @@ export default function RaceAnalysis() {
                 </div>
 
                 <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`}>
-                   <h3 className={`text-sm font-bold uppercase tracking-widest mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Top Race Donors</h3>
+                   <h3 className={`text-sm font-bold uppercase tracking-widest mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Top Race Donors to IE's</h3>
                    <div className="space-y-4">
                       {topDonors.slice(0, 6).map((donor, idx) => (
                         <div key={idx} className="flex justify-between items-center group">
@@ -487,13 +561,27 @@ export default function RaceAnalysis() {
                 <table className="w-full text-left border-collapse">
                   <thead className={darkMode ? 'bg-[#1F1B31]' : 'bg-gray-50'}>
                     <tr>
-                      {["Candidate", "Party", "Total IE", "Net IE"].map((h) => (
-                        <th key={h} className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">{h}</th>
+                      {[
+                        { label: 'Candidate', key: 'name' },
+                        { label: 'Party', key: 'party' },
+                        { label: 'Total IE', key: 'total_ie' },
+                        { label: 'Net IE', key: 'net_ie' }
+                      ].map((col) => (
+                        <th
+                          key={col.key}
+                          onClick={() => handleSort(col.key)}
+                          className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 cursor-pointer hover:text-purple-400 transition-colors select-none"
+                        >
+                          <div className="flex items-center gap-1">
+                            {col.label}
+                            <SortIcon column={col.key} />
+                          </div>
+                        </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                    {raceData.candidates.map((c, i) => {
+                    {getSortedCandidates().map((c, i) => {
                       const partyInfo = getPartyInfo(c.subject_committee__candidate_party__name);
                       const candidateId = c.subject_committee__committee_id || c.subject_committee_id || c.committee_id;
                       return (
