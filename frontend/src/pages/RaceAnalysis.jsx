@@ -14,6 +14,7 @@ import CandidateCard from "../components/race/CandidateCard";
 import RaceSummaryPanel from "../components/race/RaceSummaryPanel";
 import AdBuyCard from "../components/race/AdBuyCard";
 import IEAdBuyCorrelation from "../components/race/IEAdBuyCorrelation";
+import DarkMoneyDisclosurePanel from "../components/race/DarkMoneyDisclosurePanel";
 import { getPartyInfo } from "../utils/partyUtils";
 
 // Arizona Primary Election Dates (day before primary to capture all pre-primary spending)
@@ -363,21 +364,23 @@ export default function RaceAnalysis() {
             view === 'race' ? (
               // ============ RACE VIEW ============
               <div className="space-y-8">
-                {/* Candidate Cards - Horizontal Scroll */}
+                {/* Dark Money Disclosure Panel */}
+                <DarkMoneyDisclosurePanel
+                  officeId={selectedOffice}
+                  electionYear={selectedCycleName}
+                />
+
+                {/* Candidate Cards - Responsive Grid */}
                 <div>
                   <h3 className={`text-sm font-bold uppercase tracking-widest mb-4 ${
                     darkMode ? 'text-gray-400' : 'text-gray-500'
                   }`}>
                     Candidates in This Race
                   </h3>
-                  <div className="overflow-x-auto -mx-4 px-4">
-                    <div className="flex gap-4 pb-4" style={{ scrollSnapType: 'x mandatory' }}>
-                      {raceData.candidates.map((candidate, idx) => (
-                        <div key={idx} style={{ scrollSnapAlign: 'start' }}>
-                          <CandidateCard candidate={candidate} />
-                        </div>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                    {raceData.candidates.map((candidate, idx) => (
+                      <CandidateCard key={idx} candidate={candidate} />
+                    ))}
                   </div>
                 </div>
 
@@ -410,6 +413,12 @@ export default function RaceAnalysis() {
             ) : (
               // ============ CANDIDATE VIEW (original) ============
               <div className="space-y-8">
+              {/* Dark Money Disclosure Panel */}
+              <DarkMoneyDisclosurePanel
+                officeId={selectedOffice}
+                electionYear={selectedCycleName}
+              />
+
               {/* Stat Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatCard title="Total Race IE" value={`$${totalSpending.toLocaleString()}`} icon={DollarSign} color="#7667C1" />
@@ -507,12 +516,12 @@ export default function RaceAnalysis() {
                             </span>
                           </td>
                           <td className={`px-6 py-4 text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            ${parseFloat(c.total_ie || 0).toLocaleString()}
+                            ${Math.abs(parseFloat(c.total_ie || 0)).toLocaleString()}
                           </td>
                           <td className="px-6 py-4">
                             {(() => {
-                              const ieFor = parseFloat(c.ie_for || 0);
-                              const ieAgainst = parseFloat(c.ie_against || 0);
+                              const ieFor = Math.abs(parseFloat(c.ie_for || 0));
+                              const ieAgainst = Math.abs(parseFloat(c.ie_against || 0));
                               const netIE = ieFor - ieAgainst;
                               return (
                                 <span className={`text-sm font-bold ${netIE >= 0 ? 'text-green-500' : 'text-red-500'}`}>

@@ -26,7 +26,7 @@ export default function RecentActivityTable({ rows = [] }) {
             {rows.map(r => (
               <tr key={r.id}>
                 <td>{r.date || "—"}</td>
-                <td>${Number(r.amount || 0).toLocaleString()}</td>
+                <td>${Math.abs(Number(r.amount || 0)).toLocaleString()}</td>
                 <td>{r.committee?.name || r.ie_committee?.name || "—"}</td>
                 <td>{r.donor?.name || "—"}</td>
                 <td>

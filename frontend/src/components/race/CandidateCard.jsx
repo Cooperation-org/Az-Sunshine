@@ -7,9 +7,9 @@ import { getPartyInfo } from '../../utils/partyUtils';
 export default function CandidateCard({ candidate }) {
   const { darkMode } = useDarkMode();
 
-  // Parse IE spending data
-  const ieFor = parseFloat(candidate.ie_for || 0);
-  const ieAgainst = parseFloat(candidate.ie_against || 0);
+  // Parse IE spending data - use Math.abs() since DB stores negative values
+  const ieFor = Math.abs(parseFloat(candidate.ie_for || 0));
+  const ieAgainst = Math.abs(parseFloat(candidate.ie_against || 0));
   const netBenefit = ieFor - ieAgainst;
 
   // Get party info with abbreviation and colors
@@ -18,8 +18,8 @@ export default function CandidateCard({ candidate }) {
   // Get candidate ID for linking (API returns subject_committee__committee_id)
   const candidateId = candidate.subject_committee__committee_id || candidate.subject_committee_id || candidate.committee_id;
 
-  const cardClasses = `min-w-[280px] p-5 rounded-2xl border transition-all ${
-    candidateId ? 'hover:scale-105 hover:border-[#7163BA] cursor-pointer' : ''
+  const cardClasses = `w-full p-5 rounded-2xl border transition-all ${
+    candidateId ? 'hover:scale-[1.02] hover:border-[#7163BA] hover:shadow-lg cursor-pointer' : ''
   } ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`;
 
   const CardContent = () => (

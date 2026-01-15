@@ -751,7 +751,7 @@ export default function Dashboard() {
                           </td>
                           <td className="px-4 sm:px-6 lg:px-8 py-4 whitespace-nowrap text-right">
                             <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                              ${(exp.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              ${Math.abs(exp.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </p>
                           </td>
                         </tr>

@@ -18,7 +18,7 @@ from decimal import Decimal
 from django.core.cache import cache
 
 from .models import (
-    Committee, Transaction, Entity, Office, Cycle, Party
+    Committee, Transaction, Entity, Office, Cycle, Party, DarkMoneyDisclosure
 )
 
 
@@ -753,7 +753,7 @@ def money_flow_through_pacs(request):
     
     # Sort by total amount descending
     flows.sort(key=lambda x: x['total_amount'], reverse=True)
-    
+
     return Response({
         'summary': {
             'total_donors': len(total_donors),
@@ -763,4 +763,83 @@ def money_flow_through_pacs(request):
             'num_flows': len(flows)
         },
         'flows': flows[:limit]
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def dark_money_disclosures(request):
+    """
+    Get dark money disclosures for a race or committee.
+
+    These are retroactive disclosures where dark money funding sources
+    were later revealed (e.g., APS funding in 2014 Corp Commission race).
+
+    GET /api/v1/races/dark-money-disclosures/?office_id=1&election_year=2014
+    GET /api/v1/ie-analysis/dark-money-disclosures/?committee_id=123
+
+    Query params:
+    - office_id: Filter by office
+    - election_year: Filter by election year
+    - committee_id: Filter by IE committee
+    """
+    office_id = request.GET.get('office_id')
+    election_year = request.GET.get('election_year')
+    committee_id = request.GET.get('committee_id')
+
+    # Build filters
+    filters = Q()
+
+    if office_id:
+        filters &= Q(office_id=office_id)
+
+    if election_year:
+        filters &= Q(election_year=election_year)
+
+    if committee_id:
+        filters &= Q(ie_committee_id=committee_id)
+
+    # Get disclosures
+    disclosures = DarkMoneyDisclosure.objects.filter(filters).select_related(
+        'ie_committee__name',
+        'office',
+        'funding_source_entity'
+    ).order_by('-amount')
+
+    # Build response
+    disclosure_list = []
+    total_amount = Decimal('0')
+
+    for d in disclosures:
+        total_amount += d.amount
+        disclosure_list.append({
+            'id': d.id,
+            'funding_source': d.funding_source_name,
+            'funding_source_entity_id': d.funding_source_entity.name_id if d.funding_source_entity else None,
+            'ie_committee': {
+                'id': d.ie_committee.committee_id,
+                'name': d.ie_committee.name.full_name if d.ie_committee.name else 'Unknown'
+            },
+            'amount': float(d.amount),
+            'election_year': d.election_year,
+            'office': d.office.name if d.office else None,
+            'target_candidates': d.target_candidates,
+            'is_for_benefit': d.is_for_benefit,
+            'disclosure_date': d.disclosure_date.isoformat() if d.disclosure_date else None,
+            'disclosure_source': d.disclosure_source,
+            'source_url': d.source_url,
+            'notes': d.notes
+        })
+
+    return Response({
+        'summary': {
+            'total_disclosures': len(disclosure_list),
+            'total_amount': float(total_amount),
+            'filters': {
+                'office_id': office_id,
+                'election_year': election_year,
+                'committee_id': committee_id
+            }
+        },
+        'disclosures': disclosure_list
     })

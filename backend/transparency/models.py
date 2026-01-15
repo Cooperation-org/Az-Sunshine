@@ -1311,3 +1311,109 @@ class SOIScrapeJob(models.Model):
 
     def __str__(self):
         return f"SOI Scrape {self.job_id} - {self.status}"
+
+
+# ==================== DARK MONEY DISCLOSURE TRACKING ====================
+
+class DarkMoneyDisclosure(models.Model):
+    """
+    Track retroactive disclosures of dark money funding sources.
+
+    When dark money groups are later forced to reveal their funding sources
+    (e.g., through lawsuits, investigations, or voluntary disclosure),
+    this model tracks that information to provide historical context.
+
+    Example: APS revealed in 2019 that they funded $10.7M to Arizona Public
+    Service Partners / Save Our Future Arizona for the 2014 Corporation
+    Commission race, which wasn't disclosed at the time.
+    """
+
+    # The IE committee that spent the dark money
+    ie_committee = models.ForeignKey(
+        Committee,
+        on_delete=models.CASCADE,
+        related_name='dark_money_disclosures',
+        help_text='The IE committee that received/spent the dark money'
+    )
+
+    # The actual funding source revealed later
+    funding_source_name = models.CharField(
+        max_length=255,
+        help_text='Name of the entity that was the actual funding source'
+    )
+    funding_source_entity = models.ForeignKey(
+        Entity,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='dark_money_funded',
+        help_text='Link to Entity if they exist in our database'
+    )
+
+    # Financial details
+    amount = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        help_text='Amount contributed by the funding source'
+    )
+
+    # Election context
+    election_year = models.IntegerField(
+        db_index=True,
+        help_text='Year of the election this spending was for'
+    )
+    office = models.ForeignKey(
+        Office,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text='Office/race this spending was targeting'
+    )
+
+    # Target candidates (who the IE spending was for/against)
+    target_candidates = models.TextField(
+        blank=True,
+        help_text='Names of candidates targeted (comma-separated)'
+    )
+    is_for_benefit = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text='True if spending supported candidates, False if opposed'
+    )
+
+    # Disclosure details
+    disclosure_date = models.DateField(
+        db_index=True,
+        help_text='Date the funding source was publicly revealed'
+    )
+    disclosure_source = models.TextField(
+        help_text='How the disclosure came about (lawsuit, investigation, etc.)'
+    )
+    source_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text='URL to news article or document about the disclosure'
+    )
+
+    # Metadata
+    notes = models.TextField(
+        blank=True,
+        help_text='Additional context about this disclosure'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'dark_money_disclosures'
+        ordering = ['-disclosure_date', '-amount']
+        verbose_name = 'Dark Money Disclosure'
+        verbose_name_plural = 'Dark Money Disclosures'
+        indexes = [
+            models.Index(fields=['election_year'], name='idx_darkmoney_year'),
+            models.Index(fields=['ie_committee'], name='idx_darkmoney_committee'),
+            models.Index(fields=['disclosure_date'], name='idx_darkmoney_disclosed'),
+            models.Index(fields=['election_year', 'office'], name='idx_darkmoney_race'),
+        ]
+
+    def __str__(self):
+        return f"{self.funding_source_name} -> {self.ie_committee.name.full_name} (${self.amount:,.0f})"

@@ -426,6 +426,19 @@ export async function getRaceTopDonors(params = {}) {
 }
 
 /**
+ * Get dark money disclosures for a race
+ */
+export async function getDarkMoneyDisclosures(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/races/dark-money-disclosures/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load dark money disclosures');
+  }
+}
+
+/**
  * Get money flow for Sankey diagram
  */
 export async function getMoneyFlow(params = {}) {

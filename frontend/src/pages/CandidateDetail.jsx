@@ -149,7 +149,7 @@ export default function CandidateDetail() {
 
   if (loading) {
     return (
-      <div className={`flex min-h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
+      <div className={`flex min-h-screen ${darkMode ? 'bg-[#1A1625]' : 'bg-gray-50'}`}>
         <Sidebar />
         <main className="flex-1 lg:ml-0">
           
@@ -168,7 +168,7 @@ export default function CandidateDetail() {
 
   if (error || !candidate) {
     return (
-      <div className={`flex min-h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
+      <div className={`flex min-h-screen ${darkMode ? 'bg-[#1A1625]' : 'bg-gray-50'}`}>
         <Sidebar />
         <main className="flex-1 lg:ml-0">
           <Header title="Error" subtitle="Failed to load candidate" />
@@ -249,7 +249,7 @@ export default function CandidateDetail() {
   });
 
   return (
-    <div className={`flex min-h-screen ${darkMode ? 'bg-[#6b5f87]' : 'bg-gray-50'}`}>
+    <div className={`flex min-h-screen ${darkMode ? 'bg-[#1A1625]' : 'bg-gray-50'}`}>
       <Sidebar />
 
       <main className="flex-1 lg:ml-0">
@@ -257,18 +257,18 @@ export default function CandidateDetail() {
           {/* Back Button */}
           <button
             onClick={() => navigate("/candidates")}
-            className={`mb-6 px-4 py-2 ${darkMode ? 'bg-[#3d3559] text-gray-300 border-[#4a3f66] hover:bg-[#4a3f66]' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'} rounded-xl font-medium transition-all inline-flex items-center gap-2 shadow-sm border hover:shadow-md`}
+            className={`mb-6 px-4 py-2 ${darkMode ? 'bg-[#2D2844] text-gray-300 border-gray-700 hover:bg-[#373052]' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'} rounded-xl font-medium transition-all inline-flex items-center gap-2 shadow-sm border hover:shadow-md`}
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Candidates
           </button>
 
           {/* Candidate Header Card */}
-          <div className={`${darkMode ? 'bg-[#3d3559] border border-[#4a3f66]' : 'bg-gradient-to-r from-[#6B5B95] to-[#4C3D7D]'} rounded-2xl p-8 mb-6 text-white shadow-2xl`}>
+          <div className={`${darkMode ? 'bg-[#2D2844] border border-gray-700' : 'bg-gradient-to-r from-[#6B5B95] to-[#4C3D7D]'} rounded-2xl p-8 mb-6 text-white shadow-2xl`}>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={`${darkMode ? 'bg-[#4a3f66]' : 'bg-white/20'} backdrop-blur-sm p-3 rounded-xl`}>
+                  <div className={`${darkMode ? 'bg-[#373052]' : 'bg-white/20'} backdrop-blur-sm p-3 rounded-xl`}>
                     <Users className="w-8 h-8" />
                   </div>
                   <div>
@@ -282,19 +282,19 @@ export default function CandidateDetail() {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                  <div className={`${darkMode ? 'bg-[#4a3f66]' : 'bg-white/10'} backdrop-blur-sm rounded-xl p-3`}>
+                  <div className={`${darkMode ? 'bg-[#373052]' : 'bg-white/10'} backdrop-blur-sm rounded-xl p-3`}>
                     <p className={`${darkMode ? 'text-gray-400' : 'text-purple-100'} text-xs mb-1`}>Party</p>
                     <p className="font-bold text-lg">{candidate.party?.name || "Unknown"}</p>
                   </div>
-                  <div className={`${darkMode ? 'bg-[#4a3f66]' : 'bg-white/10'} backdrop-blur-sm rounded-xl p-3`}>
+                  <div className={`${darkMode ? 'bg-[#373052]' : 'bg-white/10'} backdrop-blur-sm rounded-xl p-3`}>
                     <p className={`${darkMode ? 'text-gray-400' : 'text-purple-100'} text-xs mb-1`}>Cycle</p>
                     <p className="font-bold text-lg">{candidate.cycle?.name || "N/A"}</p>
                   </div>
-                  <div className={`${darkMode ? 'bg-[#4a3f66]' : 'bg-white/10'} backdrop-blur-sm rounded-xl p-3`}>
+                  <div className={`${darkMode ? 'bg-[#373052]' : 'bg-white/10'} backdrop-blur-sm rounded-xl p-3`}>
                     <p className={`${darkMode ? 'text-gray-400' : 'text-purple-100'} text-xs mb-1`}>Committee ID</p>
                     <p className="font-bold text-lg">{candidate.committee_id || "N/A"}</p>
                   </div>
-                  <div className={`${darkMode ? 'bg-[#4a3f66]' : 'bg-white/10'} backdrop-blur-sm rounded-xl p-3`}>
+                  <div className={`${darkMode ? 'bg-[#373052]' : 'bg-white/10'} backdrop-blur-sm rounded-xl p-3`}>
                     <p className={`${darkMode ? 'text-gray-400' : 'text-purple-100'} text-xs mb-1`}>Type</p>
                     <p className="font-bold text-lg">{candidate.committee_type || "N/A"}</p>
                   </div>
@@ -302,7 +302,7 @@ export default function CandidateDetail() {
               </div>
 
               {/* Quick Stats */}
-              <div className={`${darkMode ? 'bg-[#4a3f66] border-[#5f5482]' : 'bg-white/10 border-white/20'} backdrop-blur-sm rounded-2xl p-6 border-2`}>
+              <div className={`${darkMode ? 'bg-[#373052] border-gray-600' : 'bg-white/10 border-white/20'} backdrop-blur-sm rounded-2xl p-6 border-2`}>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-purple-100'} text-sm mb-2`}>Total IE Spending</p>
                 <p className="text-4xl font-black mb-2">${totalIE.toLocaleString()}</p>
                 <div className="flex items-center gap-2 text-sm">
@@ -342,8 +342,8 @@ export default function CandidateDetail() {
           )}
 
           {/* Tab Navigation */}
-          <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl shadow-lg border mb-6 overflow-hidden`}>
-            <div className={`flex ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'} border-b overflow-x-auto`}>
+          <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-lg border mb-6 overflow-hidden`}>
+            <div className={`flex ${darkMode ? 'border-gray-700' : 'border-gray-200'} border-b overflow-x-auto`}>
               {[
                 { id: "overview", label: "Overview", icon: BarChart3 },
                 { id: "spending", label: "IE Spending", icon: DollarSign },
@@ -356,10 +356,10 @@ export default function CandidateDetail() {
                   className={`flex-1 min-w-[140px] px-6 py-4 font-semibold transition-all inline-flex items-center justify-center gap-2 ${
                     activeTab === tab.id
                       ? darkMode
-                        ? "bg-[#4a3f66] text-purple-300 border-b-4 border-purple-400"
+                        ? "bg-[#373052] text-purple-300 border-b-4 border-purple-400"
                         : "bg-purple-50 text-purple-700 border-b-4 border-purple-600"
                       : darkMode
-                      ? "text-gray-300 hover:bg-[#4a3f66] hover:text-gray-100"
+                      ? "text-gray-300 hover:bg-[#373052] hover:text-gray-100"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
@@ -410,7 +410,7 @@ export default function CandidateDetail() {
               {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Pie Chart */}
-                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl p-6 shadow-lg border`}>
+                <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-6 shadow-lg border`}>
                   <h3 className={`text-lg font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'} mb-4 flex items-center gap-2`}>
                     <Percent className={`w-5 h-5 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                     For Benefit vs Not For Benefit
@@ -442,7 +442,7 @@ export default function CandidateDetail() {
                 </div>
 
                 {/* Bar Chart */}
-                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl p-6 shadow-lg border`}>
+                <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-6 shadow-lg border`}>
                   <h3 className={`text-lg font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'} mb-4 flex items-center gap-2`}>
                     <BarChart3 className={`w-5 h-5 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                     Top IE Committees
@@ -489,7 +489,7 @@ export default function CandidateDetail() {
             <div className="space-y-6">
               {/* IE Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 border-2 shadow-lg hover:shadow-xl transition-all`}>
+                <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl p-6 border-2 shadow-lg hover:shadow-xl transition-all`}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="bg-green-600 p-3 rounded-xl">
                       <TrendingUp className="w-6 h-6 text-white" />
@@ -501,7 +501,7 @@ export default function CandidateDetail() {
                       </p>
                     </div>
                   </div>
-                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
+                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {totalIE > 0
                         ? `${((totalIEFor / totalIE) * 100).toFixed(1)}% of total IE`
@@ -510,7 +510,7 @@ export default function CandidateDetail() {
                   </div>
                 </div>
 
-                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 border-2 shadow-lg hover:shadow-xl transition-all`}>
+                <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl p-6 border-2 shadow-lg hover:shadow-xl transition-all`}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="bg-red-600 p-3 rounded-xl">
                       <TrendingDown className="w-6 h-6 text-white" />
@@ -522,7 +522,7 @@ export default function CandidateDetail() {
                       </p>
                     </div>
                   </div>
-                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
+                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {totalIE > 0
                         ? `${((totalIEAgainst / totalIE) * 100).toFixed(1)}% of total IE`
@@ -531,7 +531,7 @@ export default function CandidateDetail() {
                   </div>
                 </div>
 
-                <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-100'} rounded-2xl p-6 border-2 shadow-lg hover:shadow-xl transition-all`}>
+                <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl p-6 border-2 shadow-lg hover:shadow-xl transition-all`}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="bg-purple-600 p-3 rounded-xl">
                       <DollarSign className="w-6 h-6 text-white" />
@@ -543,7 +543,7 @@ export default function CandidateDetail() {
                       </p>
                     </div>
                   </div>
-                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#4a3f66]' : 'border-gray-200'}`}>
+                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       For Benefit minus Not For Benefit
                     </p>
@@ -552,8 +552,8 @@ export default function CandidateDetail() {
               </div>
 
               {/* Committee Breakdown Table */}
-              <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl shadow-lg border overflow-hidden`}>
-                <div className={`p-6 ${darkMode ? 'border-[#4a3f66] bg-[#4a3f66]' : 'border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50'} border-b`}>
+              <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-lg border overflow-hidden`}>
+                <div className={`p-6 ${darkMode ? 'border-gray-700 bg-[#373052]' : 'border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50'} border-b`}>
                   <h3 className={`text-lg font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'} flex items-center gap-2`}>
                     <Building2 className={`w-5 h-5 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                     IE Spending by Committee
@@ -561,7 +561,7 @@ export default function CandidateDetail() {
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className={`${darkMode ? 'bg-[#4a3f66] border-[#4a3f66]' : 'bg-gray-50 border-gray-200'} border-b`}>
+                    <thead className={`${darkMode ? 'bg-[#373052] border-gray-700' : 'bg-gray-50 border-gray-200'} border-b`}>
                       <tr>
                         <th className={`px-6 py-4 text-left text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                           Committee
@@ -577,12 +577,12 @@ export default function CandidateDetail() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className={`divide-y ${darkMode ? 'divide-[#4a3f66]' : 'divide-gray-200'}`}>
+                    <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                       {committeeData.length > 0 ? (
                         committeeData.map((committee, idx) => (
                           <tr
                             key={idx}
-                            className={`${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-purple-50'} transition-colors`}
+                            className={`${darkMode ? 'hover:bg-[#373052]' : 'hover:bg-purple-50'} transition-colors`}
                           >
                             <td className={`px-6 py-4 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-900'}`}>
                               {committee.committee__name || "Unknown Committee"}
@@ -618,13 +618,13 @@ export default function CandidateDetail() {
           {activeTab === "expenditures" && (
             <div className="space-y-6">
               {/* Filter Bar */}
-              <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl p-4 shadow-lg border flex flex-wrap items-center justify-between gap-4`}>
+              <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-4 shadow-lg border flex flex-wrap items-center justify-between gap-4`}>
                 <div className="flex items-center gap-3">
                   <Filter className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                   <select
                     value={expenditureFilter}
                     onChange={(e) => setExpenditureFilter(e.target.value)}
-                    className={`px-4 py-2 border ${darkMode ? 'bg-[#4a3f66] border-[#4a3f66] text-gray-200' : 'border-gray-300 bg-white text-gray-900'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`px-4 py-2 border ${darkMode ? 'bg-[#373052] border-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-900'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
                   >
                     <option value="all">All Expenditures</option>
                     <option value="for">For Benefit Only</option>
@@ -644,10 +644,10 @@ export default function CandidateDetail() {
               </div>
 
               {/* Expenditures Table */}
-              <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl shadow-lg border overflow-hidden`}>
+              <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-lg border overflow-hidden`}>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className={`${darkMode ? 'bg-[#4a3f66] border-[#4a3f66]' : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-gray-200'} border-b`}>
+                    <thead className={`${darkMode ? 'bg-[#373052] border-gray-700' : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-gray-200'} border-b`}>
                       <tr>
                         <th className={`px-6 py-4 text-left text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                           Date
@@ -666,7 +666,7 @@ export default function CandidateDetail() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className={`divide-y ${darkMode ? 'divide-[#4a3f66]' : 'divide-gray-200'}`}>
+                    <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                       {expendituresLoading ? (
                         <tr>
                           <td colSpan="5" className="px-6 py-8 text-center">
@@ -678,7 +678,7 @@ export default function CandidateDetail() {
                         filteredExpenditures.map((exp, idx) => (
                           <tr
                             key={idx}
-                            className={`${darkMode ? 'hover:bg-[#4a3f66]' : 'hover:bg-purple-50'} transition-colors`}
+                            className={`${darkMode ? 'hover:bg-[#373052]' : 'hover:bg-purple-50'} transition-colors`}
                           >
                             <td className={`px-6 py-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-900'}`}>
                               {exp.date_of_transaction
@@ -734,7 +734,7 @@ export default function CandidateDetail() {
               />
 
               {/* Additional Threshold Info */}
-              <div className={`${darkMode ? 'bg-[#3d3559] border-[#4a3f66]' : 'bg-white border-gray-200'} rounded-2xl p-6 shadow-lg border`}>
+              <div className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-6 shadow-lg border`}>
                 <h3 className={`text-lg font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'} mb-4 flex items-center gap-2`}>
                   <Award className={`w-5 h-5 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                   What is the Grassroots Threshold?
@@ -774,9 +774,9 @@ export default function CandidateDetail() {
 
 function StatCard({ icon: Icon, label, value, iconColor, darkMode, percentage }) {
   return (
-    <div className={`${darkMode ? 'bg-[#3d3559]' : 'bg-white'} rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 border ${darkMode ? 'border-[#4a3f66]' : 'border-gray-100'}`}>
+    <div className={`${darkMode ? 'bg-[#2D2844]' : 'bg-white'} rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 border ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
       <div className="flex items-center justify-between mb-3">
-        <div className={`${darkMode ? 'bg-[#4a3f66]' : 'bg-gray-100'} p-3 rounded-xl`}>
+        <div className={`${darkMode ? 'bg-[#373052]' : 'bg-gray-100'} p-3 rounded-xl`}>
           <Icon className={`w-6 h-6 ${iconColor}`} />
         </div>
         {percentage !== undefined && (

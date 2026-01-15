@@ -21,7 +21,7 @@ export default function MetricCards({ metrics }) {
     last_updated = null,
   } = metrics;
 
-  const formattedMoney = (v) => `$${Number(v || 0).toLocaleString()}`;
+  const formattedMoney = (v) => `$${Math.abs(Number(v || 0)).toLocaleString()}`;
 
   const cards = [
     {

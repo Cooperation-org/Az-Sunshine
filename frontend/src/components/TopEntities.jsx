@@ -12,7 +12,7 @@ export default function TopEntities({ topDonors = [], topCommittees = [] }) {
             <li key={d.id}>
               <div className="entity-row">
                 <div className="entity-name">{d.name}</div>
-                <div className="entity-amount">${Number(d.total_contribution || d.total || 0).toLocaleString()}</div>
+                <div className="entity-amount">${Math.abs(Number(d.total_contribution || d.total || 0)).toLocaleString()}</div>
               </div>
             </li>
           ))}
@@ -27,7 +27,7 @@ export default function TopEntities({ topDonors = [], topCommittees = [] }) {
             <li key={c.id}>
               <div className="entity-row">
                 <div className="entity-name">{c.name}</div>
-                <div className="entity-amount">${Number(c.total || c.total_expenditure || 0).toLocaleString()}</div>
+                <div className="entity-amount">${Math.abs(Number(c.total || c.total_expenditure || 0)).toLocaleString()}</div>
               </div>
             </li>
           ))}
