@@ -209,3 +209,190 @@ class ZstdMiddleware(MiddlewareMixin):
             pass
 
         return response
+
+
+class AnalyticsMiddleware(MiddlewareMixin):
+    """
+    Analytics tracking middleware - captures site visits for the analytics dashboard.
+    Similar to Google Analytics but self-hosted.
+    """
+
+    # Paths to exclude from tracking (static files, API health checks, etc.)
+    EXCLUDE_PATHS = [
+        '/static/',
+        '/media/',
+        '/admin/',
+        '/favicon.ico',
+        '/robots.txt',
+        '/api/v1/analytics/',  # Don't track analytics endpoints
+        '/health/',
+    ]
+
+    # Paths to exclude from full tracking (only count, don't store details)
+    API_PATHS = [
+        '/transparency/',
+        '/api/',
+    ]
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Process the response first
+        response = self.get_response(request)
+
+        # Only track successful GET requests
+        if request.method != 'GET' or response.status_code >= 400:
+            return response
+
+        # Skip excluded paths
+        path = request.path
+        if any(path.startswith(exc) for exc in self.EXCLUDE_PATHS):
+            return response
+
+        # Track the visit asynchronously to not slow down the response
+        try:
+            self.track_visit(request, path)
+        except Exception:
+            pass  # Don't let analytics tracking break the site
+
+        return response
+
+    def track_visit(self, request, path):
+        """Record the visit in the database."""
+        import uuid
+        from threading import Thread
+
+        # Get client info
+        client_ip = self.get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        referrer = request.META.get('HTTP_REFERER', '')
+
+        # Generate session ID from IP + User Agent (stable for same visitor)
+        session_data = f"{client_ip}:{user_agent}:{request.session.session_key or ''}"
+        session_id = hashlib.md5(session_data.encode()).hexdigest()
+
+        # Get or create visitor ID from cookie
+        visitor_id = request.COOKIES.get('_az_vid', '')
+        if not visitor_id:
+            visitor_id = str(uuid.uuid4())[:32]
+
+        # Parse user agent for device/browser info
+        device_type, browser, os = self.parse_user_agent(user_agent)
+
+        # Run the database insert in a separate thread to not block response
+        def save_visit():
+            from transparency.models import SiteVisit
+
+            # Get geolocation from IP (using free IP-API service)
+            geo_data = self.get_geolocation(client_ip)
+
+            SiteVisit.objects.create(
+                session_id=session_id,
+                visitor_id=visitor_id,
+                path=path[:500],
+                referrer=referrer[:1000] if referrer else '',
+                ip_address=client_ip,
+                user_agent=user_agent[:500] if user_agent else '',
+                device_type=device_type,
+                browser=browser,
+                os=os,
+                country=geo_data.get('country', ''),
+                country_code=geo_data.get('country_code', ''),
+                region=geo_data.get('region', ''),
+                city=geo_data.get('city', ''),
+                latitude=geo_data.get('lat'),
+                longitude=geo_data.get('lon'),
+                user=request.user if request.user.is_authenticated else None,
+            )
+
+        # Run in background thread
+        Thread(target=save_visit, daemon=True).start()
+
+    def get_client_ip(self, request):
+        """Get the real client IP, handling proxies."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR', '0.0.0.0')
+
+    def parse_user_agent(self, user_agent):
+        """Parse user agent string to extract device, browser, and OS."""
+        ua = user_agent.lower()
+
+        # Device type
+        if 'mobile' in ua or 'android' in ua and 'tablet' not in ua:
+            device_type = 'mobile'
+        elif 'tablet' in ua or 'ipad' in ua:
+            device_type = 'tablet'
+        else:
+            device_type = 'desktop'
+
+        # Browser detection
+        if 'edg' in ua:
+            browser = 'Edge'
+        elif 'chrome' in ua and 'chromium' not in ua:
+            browser = 'Chrome'
+        elif 'firefox' in ua:
+            browser = 'Firefox'
+        elif 'safari' in ua and 'chrome' not in ua:
+            browser = 'Safari'
+        elif 'opera' in ua or 'opr' in ua:
+            browser = 'Opera'
+        else:
+            browser = 'Other'
+
+        # OS detection
+        if 'windows' in ua:
+            os = 'Windows'
+        elif 'mac os' in ua or 'macintosh' in ua:
+            os = 'macOS'
+        elif 'linux' in ua and 'android' not in ua:
+            os = 'Linux'
+        elif 'android' in ua:
+            os = 'Android'
+        elif 'iphone' in ua or 'ipad' in ua:
+            os = 'iOS'
+        else:
+            os = 'Other'
+
+        return device_type, browser, os
+
+    def get_geolocation(self, ip_address):
+        """Get geolocation data from IP address using free IP-API service."""
+        import requests
+
+        # Skip for local/private IPs
+        if ip_address in ['127.0.0.1', '0.0.0.0', 'localhost'] or ip_address.startswith('192.168.') or ip_address.startswith('10.'):
+            return {}
+
+        # Check cache first (avoid hitting API repeatedly for same IP)
+        cache_key = f"geo:{ip_address}"
+        cached = cache.get(cache_key)
+        if cached:
+            return cached
+
+        try:
+            # Free IP geolocation API (no API key needed, 45 requests/minute)
+            response = requests.get(
+                f"http://ip-api.com/json/{ip_address}?fields=status,country,countryCode,region,city,lat,lon",
+                timeout=2
+            )
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    result = {
+                        'country': data.get('country', ''),
+                        'country_code': data.get('countryCode', ''),
+                        'region': data.get('region', ''),
+                        'city': data.get('city', ''),
+                        'lat': data.get('lat'),
+                        'lon': data.get('lon'),
+                    }
+                    # Cache for 24 hours
+                    cache.set(cache_key, result, timeout=86400)
+                    return result
+        except Exception:
+            pass
+
+        return {}

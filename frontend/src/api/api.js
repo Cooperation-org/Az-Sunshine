@@ -404,7 +404,9 @@ export async function getTransactions(params = {}) {
  */
 export async function getRaceIESpending(params = {}) {
   try {
-    const queryString = buildQueryString(params);
+    // Add cache-busting timestamp to prevent browser caching
+    const paramsWithCacheBust = { ...params, _t: Date.now() };
+    const queryString = buildQueryString(paramsWithCacheBust);
     const res = await api.get(`/races/ie-spending/?${queryString}`);
     return res.data;
   } catch (error) {
@@ -1248,6 +1250,45 @@ export async function changePassword(currentPassword, newPassword, confirmPasswo
   } catch (error) {
     handleError(error, 'Failed to change password');
     throw error;
+  }
+}
+
+
+// ==================== SITE ANALYTICS ====================
+
+/**
+ * Get analytics dashboard data
+ */
+export async function getAnalyticsDashboard(days = 30) {
+  try {
+    const res = await api.get(`/analytics/dashboard/?days=${days}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load analytics dashboard');
+  }
+}
+
+/**
+ * Get real-time visitor data
+ */
+export async function getAnalyticsRealtime() {
+  try {
+    const res = await api.get('/analytics/realtime/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load realtime analytics');
+  }
+}
+
+/**
+ * Get geographic analytics data
+ */
+export async function getAnalyticsGeo(days = 30) {
+  try {
+    const res = await api.get(`/analytics/geo/?days=${days}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load geographic analytics');
   }
 }
 

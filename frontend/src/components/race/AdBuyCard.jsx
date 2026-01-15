@@ -73,7 +73,7 @@ export default function AdBuyCard({ adBuy }) {
 
         {adBuy.approximate_spend && (
           <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Est. Spend: <span className="font-mono font-bold">${parseFloat(adBuy.approximate_spend).toLocaleString()}</span>
+            Est. Spend: <span className="font-mono font-bold">${Math.abs(parseFloat(adBuy.approximate_spend)).toLocaleString()}</span>
           </div>
         )}
 

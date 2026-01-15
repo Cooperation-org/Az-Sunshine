@@ -274,22 +274,15 @@ export default function RaceAnalysis() {
     }
   }, [selectedCycle, primaryCutoffDate]);
 
-  useEffect(() => {
-    if (selectedOffice && selectedCycle) {
-      loadRaceData();
-      loadIECommittees();
-      if (view === 'race') {
-        loadAdBuys();
-      }
-    }
-  }, [selectedOffice, selectedCycle, view, dateFrom, effectiveDateTo, primaryOnly]);
-
-  async function loadRaceData() {
+  // Load race data with explicit parameters to avoid closure issues
+  async function loadRaceData(officeId, cycleId, fromDate, toDate) {
+    // Clear previous data to show loading state and prevent stale data
+    setRaceData(null);
     setLoading(true);
     try {
-      const params = { office_id: selectedOffice, cycle_id: selectedCycle };
-      if (dateFrom) params.date_from = dateFrom;
-      if (effectiveDateTo) params.date_to = effectiveDateTo;
+      const params = { office_id: officeId, cycle_id: cycleId };
+      if (fromDate) params.date_from = fromDate;
+      if (toDate) params.date_to = toDate;
 
       // Fetch race spending first (fast) - don't block on slow top-donors query
       const spending = await getRaceIESpending(params);
@@ -313,6 +306,17 @@ export default function RaceAnalysis() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (selectedOffice && selectedCycle) {
+      // Pass all values explicitly to avoid closure issues
+      loadRaceData(selectedOffice, selectedCycle, dateFrom, effectiveDateTo);
+      loadIECommittees();
+      if (view === 'race') {
+        loadAdBuys();
+      }
+    }
+  }, [selectedOffice, selectedCycle, view, dateFrom, effectiveDateTo, primaryOnly]);
 
   async function loadAdBuys() {
     try {
@@ -500,7 +504,7 @@ export default function RaceAnalysis() {
 
               {/* Stat Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <StatCard title="Total Race IE" value={`$${totalSpending.toLocaleString()}`} icon={DollarSign} color="#7667C1" />
+                <StatCard title="Total Race IE" value={`$${Math.abs(totalSpending).toLocaleString()}`} icon={DollarSign} color="#7667C1" />
                 <StatCard title="Top Recipient" value={topCandidate ? topCandidate.subject_committee__name__last_name : "N/A"} icon={TrendingUp} color="#22c55e" />
                 <StatCard title="Total Donors" value={topDonors.length} icon={Users} color="#3b82f6" />
               </div>
@@ -578,7 +582,7 @@ export default function RaceAnalysis() {
                             <p className={`text-sm font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{donor.entity__first_name} {donor.entity__last_name}</p>
                             <p className="text-xs text-gray-500">{donor.entity__occupation || "Individual"}</p>
                           </div>
-                          <span className="text-sm font-mono font-bold text-[#7667C1]">${parseFloat(donor.total_contributed).toLocaleString()}</span>
+                          <span className="text-sm font-mono font-bold text-[#7667C1]">${Math.abs(parseFloat(donor.total_contributed)).toLocaleString()}</span>
                         </div>
                       ))}
                    </div>

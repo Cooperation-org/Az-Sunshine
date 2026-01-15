@@ -1423,3 +1423,106 @@ class DarkMoneyDisclosure(models.Model):
 
     def __str__(self):
         return f"{self.funding_source_name} -> {self.ie_committee.name.full_name} (${self.amount:,.0f})"
+
+
+# ==================== SITE ANALYTICS ====================
+
+class SiteVisit(models.Model):
+    """
+    Individual page visit tracking (Google Analytics-like)
+    Captures visitor information, location, and behavior
+    """
+    # Visit identification
+    session_id = models.CharField(max_length=64, db_index=True)
+    visitor_id = models.CharField(max_length=64, db_index=True, blank=True, help_text='Persistent visitor ID from cookie')
+
+    # Page information
+    path = models.CharField(max_length=500, db_index=True)
+    page_title = models.CharField(max_length=200, blank=True)
+    referrer = models.URLField(max_length=1000, blank=True)
+
+    # Visitor information
+    ip_address = models.GenericIPAddressField(db_index=True)
+    user_agent = models.TextField(blank=True)
+    device_type = models.CharField(max_length=20, blank=True, db_index=True)  # desktop, mobile, tablet
+    browser = models.CharField(max_length=50, blank=True, db_index=True)
+    os = models.CharField(max_length=50, blank=True, db_index=True)
+
+    # Geolocation (derived from IP)
+    country = models.CharField(max_length=100, blank=True, db_index=True)
+    country_code = models.CharField(max_length=2, blank=True, db_index=True)
+    region = models.CharField(max_length=100, blank=True)  # State/Province
+    city = models.CharField(max_length=100, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
+    # Timing
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    time_on_page = models.IntegerField(null=True, blank=True, help_text='Seconds spent on page')
+
+    # User (if authenticated)
+    user = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='site_visits'
+    )
+
+    class Meta:
+        db_table = 'site_visits'
+        ordering = ['-timestamp']
+        verbose_name = 'Site Visit'
+        verbose_name_plural = 'Site Visits'
+        indexes = [
+            models.Index(fields=['timestamp', 'path'], name='idx_visit_time_path'),
+            models.Index(fields=['country_code'], name='idx_visit_country'),
+            models.Index(fields=['device_type'], name='idx_visit_device'),
+            models.Index(fields=['session_id'], name='idx_visit_session'),
+            models.Index(fields=['-timestamp'], name='idx_visit_recent'),
+        ]
+
+    def __str__(self):
+        return f"{self.path} - {self.ip_address} ({self.timestamp})"
+
+
+class DailyAnalytics(models.Model):
+    """
+    Aggregated daily analytics for fast dashboard queries
+    Updated periodically via management command or celery task
+    """
+    date = models.DateField(primary_key=True)
+
+    # Traffic metrics
+    total_visits = models.IntegerField(default=0)
+    unique_visitors = models.IntegerField(default=0)
+    page_views = models.IntegerField(default=0)
+
+    # Top pages (JSON)
+    top_pages = models.JSONField(default=dict, help_text='{"path": count, ...}')
+
+    # Geographic breakdown (JSON)
+    countries = models.JSONField(default=dict, help_text='{"country_code": count, ...}')
+    regions = models.JSONField(default=dict, help_text='{"region": count, ...}')
+
+    # Device breakdown
+    desktop_visits = models.IntegerField(default=0)
+    mobile_visits = models.IntegerField(default=0)
+    tablet_visits = models.IntegerField(default=0)
+
+    # Browser breakdown (JSON)
+    browsers = models.JSONField(default=dict, help_text='{"browser": count, ...}')
+
+    # Traffic sources (JSON)
+    referrers = models.JSONField(default=dict, help_text='{"referrer": count, ...}')
+
+    # Timing
+    avg_time_on_site = models.FloatField(null=True, blank=True, help_text='Average seconds per session')
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'daily_analytics'
+        ordering = ['-date']
+        verbose_name = 'Daily Analytics'
+        verbose_name_plural = 'Daily Analytics'
+
+    def __str__(self):
+        return f"Analytics for {self.date}: {self.total_visits} visits"

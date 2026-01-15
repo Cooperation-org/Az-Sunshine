@@ -234,7 +234,7 @@ export default function AdBuyReview() {
                             <p className={`text-sm font-mono font-bold ${
                               darkMode ? 'text-white' : 'text-gray-900'
                             }`}>
-                              ${parseFloat(ad.approximate_spend).toLocaleString()}
+                              ${Math.abs(parseFloat(ad.approximate_spend)).toLocaleString()}
                             </p>
                           </div>
                         )}

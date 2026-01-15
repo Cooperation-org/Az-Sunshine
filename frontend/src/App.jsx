@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { DarkModeProvider } from "./context/DarkModeContext";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { useSecurityProtection } from "./hooks/useSecurityProtection";
 
 // Auth Pages
 import Login from "./pages/Login";
@@ -28,10 +29,14 @@ import SOSAutomation from "./pages/SOSAutomation";
 import SeeTheMoney from "./pages/SeeTheMoney";
 import ReportAdBuy from "./pages/ReportAdBuy";
 import AdBuyReview from "./pages/AdBuyReview";
+import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
+  // Apply security protection (right-click, DevTools, etc.)
+  useSecurityProtection();
+
   return (
     <DarkModeProvider>
       <AuthProvider>
@@ -59,6 +64,7 @@ export default function App() {
           <Route path="/admin/sos" element={<ProtectedRoute><SOSAutomation /></ProtectedRoute>} />
           <Route path="/admin/seethemoney" element={<ProtectedRoute><SeeTheMoney /></ProtectedRoute>} />
           <Route path="/admin/ad-review" element={<ProtectedRoute><AdBuyReview /></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
           {/* 404 */}

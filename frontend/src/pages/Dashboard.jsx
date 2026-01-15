@@ -102,7 +102,7 @@ export default function Dashboard() {
   const statCards = [
     {
       title: "Total IE Spending",
-      value: `$${(metrics.total_expenditures || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+      value: `$${Math.abs(metrics.total_expenditures || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
       subtitle: "All historical cycles combined",
       icon: DollarSign,
       color: "#7163BA",
@@ -163,7 +163,7 @@ export default function Dashboard() {
         if (params && params.length > 0) {
           const donorName = chartsData?.top_donors?.[params[0].dataIndex]?.entity_name || 'Unknown';
           const value = params[0].value;
-          return `<div style="font-weight: 600; margin-bottom: 4px;">${donorName}</div><div style="color: #7163BA; font-size: 15px; font-weight: 700;">$${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>`;
+          return `<div style="font-weight: 600; margin-bottom: 4px;">${donorName}</div><div style="color: #7163BA; font-size: 15px; font-weight: 700;">$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>`;
         }
         return '';
       }
@@ -302,7 +302,7 @@ export default function Dashboard() {
         if (params && params.length > 0) {
           const committeeName = chartsData?.top_ie_committees?.[params[0].dataIndex]?.committee || 'Unknown';
           const value = params[0].value;
-          return `<div style="font-weight: 600; margin-bottom: 4px;">${committeeName}</div><div style="color: #c084fc; font-size: 15px; font-weight: 700;">$${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>`;
+          return `<div style="font-weight: 600; margin-bottom: 4px;">${committeeName}</div><div style="color: #c084fc; font-size: 15px; font-weight: 700;">$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>`;
         }
         return '';
       }
@@ -429,7 +429,7 @@ export default function Dashboard() {
       },
       padding: 16,
       formatter: function(params) {
-        return `<div style="font-weight: 600; margin-bottom: 4px;">${params.name}</div><div style="font-size: 15px; font-weight: 700; color: ${params.color};">$${params.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div><div style="color: #6B7280; font-size: 12px; margin-top: 2px;">${params.percent}%</div>`;
+        return `<div style="font-weight: 600; margin-bottom: 4px;">${params.name}</div><div style="font-size: 15px; font-weight: 700; color: ${params.color};">$${Math.abs(params.value).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div><div style="color: #6B7280; font-size: 12px; margin-top: 2px;">${params.percent}%</div>`;
       }
     },
     legend: {
@@ -571,7 +571,7 @@ export default function Dashboard() {
                       textStyle: { color: darkMode ? '#ffffff' : '#1F2937' },
                       formatter: function(params) {
                         const data = params[0];
-                        return `<div style="font-weight: 600; margin-bottom: 4px;">${data.name}</div><div style="color: #7163BA; font-size: 15px; font-weight: 700;">$${data.value.toLocaleString('en-US', { minimumFractionDigits: 0 })}</div>`;
+                        return `<div style="font-weight: 600; margin-bottom: 4px;">${data.name}</div><div style="color: #7163BA; font-size: 15px; font-weight: 700;">$${Math.abs(data.value).toLocaleString('en-US', { minimumFractionDigits: 0 })}</div>`;
                       }
                     },
                     xAxis: {

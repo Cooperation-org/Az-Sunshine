@@ -1298,7 +1298,13 @@ def donors_top(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def candidates_list(request):
-    """Adapter endpoint: /api/candidates/ -> maps to committees with candidates + Zstd compression"""
+    """Adapter endpoint: /api/candidates/ -> maps to committees with candidates + Zstd compression
+
+    OPTIMIZED:
+    - Removed N+1 SOI queries (was making 5000 DB queries per request!)
+    - Limited initial fetch to 2000 for faster response
+    - SOI contact status fetched in bulk via single query
+    """
     from transparency.utils.compressed_cache import CompressedCache
 
     # Build cache key from request parameters
@@ -1339,7 +1345,7 @@ def candidates_list(request):
             Q(name__last_name__icontains=search) |
             Q(candidate_office__name__icontains=search)
         )
-    
+
     # Annotate with IE totals
     queryset = queryset.annotate(
         ie_total_for=Sum(
@@ -1351,35 +1357,44 @@ def candidates_list(request):
             filter=Q(subject_of_ies__is_for_benefit=False, subject_of_ies__deleted=False)
         )
     )
-    
+
     # Get page parameters
     page_num = int(request.query_params.get('page', 1))
     page_size_param = int(request.query_params.get('page_size', 10))
 
     # For deduplication, we need to fetch more data first, then paginate
     if deduplicate:
-        # Fetch all candidates to deduplicate properly
-        all_committees = list(queryset.order_by('candidate__last_name', 'candidate__first_name', '-election_cycle__name')[:5000])
+        # Fetch candidates to deduplicate (limit to 2000 for performance)
+        all_committees = list(queryset.order_by('candidate__last_name', 'candidate__first_name', '-election_cycle__name')[:2000])
     else:
         # Normal pagination
         paginator = LargeResultsSetPagination()
         page = paginator.paginate_queryset(queryset, request)
         all_committees = page if page is not None else queryset
 
+    # OPTIMIZATION: Bulk fetch SOI contact status in a single query instead of N+1
+    candidate_ids = [c.candidate_id for c in all_committees if c.candidate_id]
+    soi_contact_map = {}
+    if candidate_ids:
+        # Get the most recent SOI for each candidate in one query
+        soi_records = CandidateStatementOfInterest.objects.filter(
+            entity_id__in=candidate_ids
+        ).values('entity_id', 'contact_status', 'contact_date').order_by('entity_id', '-filing_date')
+
+        # Build lookup map (only keep first/most recent per entity)
+        for soi in soi_records:
+            if soi['entity_id'] not in soi_contact_map:
+                soi_contact_map[soi['entity_id']] = {
+                    'contacted': soi['contact_status'] == 'contacted',
+                    'contacted_at': soi['contact_date'].isoformat() if soi['contact_date'] else None
+                }
+
     # Transform to match frontend expectations
     result_data = []
     for committee in all_committees:
-        # Get contact status from CandidateSOI if exists
-        try:
-            soi = CandidateStatementOfInterest.objects.filter(
-                entity=committee.candidate
-            ).order_by('-filing_date').first()
-            contacted = soi.contact_status == 'contacted' if soi else False
-            contacted_at = soi.contact_date.isoformat() if soi and soi.contact_date else None
-        except:
-            contacted = False
-            contacted_at = None
-        
+        # Get contact status from pre-fetched map (no DB query here!)
+        soi_info = soi_contact_map.get(committee.candidate_id, {'contacted': False, 'contacted_at': None})
+
         result_data.append({
             'committee_id': committee.committee_id,
             'candidate': {
@@ -1398,13 +1413,15 @@ def candidates_list(request):
                 'name': committee.election_cycle.name if committee.election_cycle else None,
             } if committee.election_cycle else None,
             'is_incumbent': committee.candidate.is_incumbent if committee.candidate and hasattr(committee.candidate, 'is_incumbent') else False,
-            'contacted': contacted,
-            'contacted_at': contacted_at,
+            'contacted': soi_info['contacted'],
+            'contacted_at': soi_info['contacted_at'],
             'ie_total_for': float(committee.ie_total_for or 0),
             'ie_total_against': float(committee.ie_total_against or 0),
         })
 
-    # Deduplicate by candidate name if requested (default: true)
+    # Deduplicate by candidate name + office if requested (default: true)
+    # Same person with multiple committees for same office = merged
+    # Same person running for different offices = separate entries
     if deduplicate:
         seen_candidates = {}
         deduplicated_data = []
@@ -1413,15 +1430,25 @@ def candidates_list(request):
             if not candidate_name:
                 candidate_name = item.get('name', {}).get('full_name') if item.get('name') else 'Unknown'
 
-            if candidate_name not in seen_candidates:
+            # Use name + office as key for deduplication
+            office_name = item.get('candidate_office', {}).get('name') if item.get('candidate_office') else 'Unknown'
+            dedup_key = f"{candidate_name}|{office_name}"
+
+            if dedup_key not in seen_candidates:
                 # First occurrence - add to results
                 item['all_cycles'] = [item.get('election_cycle', {}).get('name')] if item.get('election_cycle') else []
-                seen_candidates[candidate_name] = len(deduplicated_data)
+                item['all_committee_ids'] = [item.get('committee_id')]  # Track all committee IDs for this candidate
+                seen_candidates[dedup_key] = len(deduplicated_data)
                 deduplicated_data.append(item)
             else:
                 # Duplicate - merge cycles and aggregate IE totals
-                existing_idx = seen_candidates[candidate_name]
+                existing_idx = seen_candidates[dedup_key]
                 existing = deduplicated_data[existing_idx]
+
+                # Add committee_id to list
+                new_committee_id = item.get('committee_id')
+                if new_committee_id and new_committee_id not in existing.get('all_committee_ids', []):
+                    existing.setdefault('all_committee_ids', []).append(new_committee_id)
 
                 # Add cycle to list if not already there
                 new_cycle = item.get('election_cycle', {}).get('name') if item.get('election_cycle') else None
@@ -2186,14 +2213,189 @@ def email_stats(request):
     total_sent = EmailLog.objects.filter(status='sent').count()
     total_opened = EmailLog.objects.filter(opened_at__isnull=False).count()
     total_clicked = EmailLog.objects.filter(clicked_at__isnull=False).count()
-    
+
     open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
     click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
-    
+
     return Response({
         'total_sent': total_sent,
         'total_opened': total_opened,
         'total_clicked': total_clicked,
         'open_rate': round(open_rate, 1),
         'click_rate': round(click_rate, 1),
+    })
+
+
+# ==================== SITE ANALYTICS ENDPOINTS ====================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def analytics_dashboard(request):
+    """
+    Main analytics dashboard endpoint - returns comprehensive site analytics.
+    Similar to Google Analytics dashboard.
+    Requires authentication (admin only).
+    """
+    from .models import SiteVisit, DailyAnalytics
+    from django.db.models.functions import TruncDate, TruncHour
+    from collections import Counter
+
+    # Get date range from query params
+    days = int(request.query_params.get('days', 30))
+    end_date = timezone.now()
+    start_date = end_date - timedelta(days=days)
+
+    # Get visits in date range
+    visits = SiteVisit.objects.filter(timestamp__gte=start_date, timestamp__lte=end_date)
+
+    # Summary metrics
+    total_visits = visits.count()
+    unique_visitors = visits.values('visitor_id').distinct().count()
+    unique_sessions = visits.values('session_id').distinct().count()
+
+    # Visits by day (for chart)
+    visits_by_day = list(visits.annotate(
+        date=TruncDate('timestamp')
+    ).values('date').annotate(
+        count=Count('id')
+    ).order_by('date'))
+
+    # Format dates for JSON
+    for item in visits_by_day:
+        item['date'] = item['date'].strftime('%Y-%m-%d')
+
+    # Top pages
+    top_pages = list(visits.values('path').annotate(
+        count=Count('id')
+    ).order_by('-count')[:10])
+
+    # Country breakdown
+    countries = list(visits.exclude(country='').values('country', 'country_code').annotate(
+        count=Count('id')
+    ).order_by('-count')[:10])
+
+    # Device breakdown
+    devices = {
+        'desktop': visits.filter(device_type='desktop').count(),
+        'mobile': visits.filter(device_type='mobile').count(),
+        'tablet': visits.filter(device_type='tablet').count(),
+    }
+
+    # Browser breakdown
+    browsers = list(visits.exclude(browser='').values('browser').annotate(
+        count=Count('id')
+    ).order_by('-count')[:5])
+
+    # OS breakdown
+    operating_systems = list(visits.exclude(os='').values('os').annotate(
+        count=Count('id')
+    ).order_by('-count')[:5])
+
+    # Referrer sources
+    referrers = list(visits.exclude(referrer='').values('referrer').annotate(
+        count=Count('id')
+    ).order_by('-count')[:10])
+
+    # Parse referrer domains
+    referrer_domains = Counter()
+    for v in visits.exclude(referrer='').values_list('referrer', flat=True):
+        try:
+            from urllib.parse import urlparse
+            domain = urlparse(v).netloc
+            if domain:
+                referrer_domains[domain] += 1
+        except:
+            pass
+    top_referrer_domains = [
+        {'domain': d, 'count': c}
+        for d, c in referrer_domains.most_common(10)
+    ]
+
+    # Real-time visitors (last 5 minutes)
+    realtime_cutoff = timezone.now() - timedelta(minutes=5)
+    realtime_visitors = visits.filter(timestamp__gte=realtime_cutoff).values('session_id').distinct().count()
+
+    # Recent visits
+    recent_visits = list(visits.order_by('-timestamp')[:20].values(
+        'path', 'country', 'city', 'device_type', 'browser', 'timestamp', 'ip_address'
+    ))
+    for v in recent_visits:
+        v['timestamp'] = v['timestamp'].isoformat()
+        # Mask IP for privacy
+        ip = v['ip_address']
+        v['ip_address'] = '.'.join(ip.split('.')[:2]) + '.x.x' if ip else ''
+
+    return Response({
+        'summary': {
+            'total_visits': total_visits,
+            'unique_visitors': unique_visitors,
+            'unique_sessions': unique_sessions,
+            'realtime_visitors': realtime_visitors,
+            'date_range': {
+                'start': start_date.strftime('%Y-%m-%d'),
+                'end': end_date.strftime('%Y-%m-%d'),
+                'days': days
+            }
+        },
+        'visits_by_day': visits_by_day,
+        'top_pages': top_pages,
+        'countries': countries,
+        'devices': devices,
+        'browsers': browsers,
+        'operating_systems': operating_systems,
+        'referrer_domains': top_referrer_domains,
+        'recent_visits': recent_visits,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def analytics_realtime(request):
+    """Get real-time visitor data (last 5 minutes)."""
+    from .models import SiteVisit
+
+    cutoff = timezone.now() - timedelta(minutes=5)
+    recent = SiteVisit.objects.filter(timestamp__gte=cutoff)
+
+    visitors = list(recent.values(
+        'path', 'country', 'city', 'device_type', 'browser', 'timestamp'
+    ).order_by('-timestamp')[:50])
+
+    for v in visitors:
+        v['timestamp'] = v['timestamp'].isoformat()
+
+    return Response({
+        'count': recent.values('session_id').distinct().count(),
+        'visitors': visitors
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def analytics_geo(request):
+    """Get geographic distribution of visitors."""
+    from .models import SiteVisit
+
+    days = int(request.query_params.get('days', 30))
+    start_date = timezone.now() - timedelta(days=days)
+
+    visits = SiteVisit.objects.filter(timestamp__gte=start_date)
+
+    # Countries with coordinates for map
+    countries = list(visits.exclude(country='').values(
+        'country', 'country_code'
+    ).annotate(
+        count=Count('id')
+    ).order_by('-count'))
+
+    # Cities with coordinates for map
+    cities = list(visits.exclude(city='').exclude(latitude__isnull=True).values(
+        'city', 'region', 'country', 'latitude', 'longitude'
+    ).annotate(
+        count=Count('id')
+    ).order_by('-count')[:50])
+
+    return Response({
+        'countries': countries,
+        'cities': cities
     })

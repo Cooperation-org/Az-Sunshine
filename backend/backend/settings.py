@@ -88,6 +88,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "transparency.middleware.AnalyticsMiddleware",  # Site analytics tracking (Google Analytics-like)
 ]
 
 ROOT_URLCONF = "backend.urls"

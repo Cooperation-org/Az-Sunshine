@@ -6,7 +6,7 @@ import {
   HelpCircle, Moon, Sun, Upload, Globe,
   FileCheck, PanelLeftClose, PanelLeft, Bell,
   ChevronUp, Eye, Megaphone, ShieldCheck, Database,
-  Menu, X, LogOut, LogIn, CheckCircle
+  Menu, X, LogOut, LogIn, CheckCircle, Activity
 } from "lucide-react";
 import { useDarkMode } from "../context/DarkModeContext";
 import { useAuth } from "../context/AuthContext";
@@ -70,7 +70,6 @@ export default function Sidebar() {
     { path: "/expenditures", icon: FileText, label: "Expenditures", badge: null },
     { path: "/visualizations", icon: BarChart3, label: "Visualizations", badge: null },
     { path: "/race-analysis", icon: GitBranch, label: "Race Analysis", badge: null },
-    { path: "/verification", icon: CheckCircle, label: "Data Verification", badge: null },
     { path: "/report-ad", icon: Megaphone, label: "Report Ad Buy", badge: null },
   ];
 
@@ -79,6 +78,7 @@ export default function Sidebar() {
     { path: "/soi", icon: CheckSquare, label: "SOI Tracking", badge: null },
     { path: "/email-campaign", icon: Mail, label: "Email Campaign", badge: null },
     { path: "/data-validation", icon: Database, label: "Data Validation", badge: null },
+    { path: "/admin/analytics", icon: Activity, label: "Site Analytics", badge: "NEW" },
     { path: "/admin/seethemoney", icon: Eye, label: "SeeTheMoney", badge: "FREE" },
     { path: "/admin/import", icon: Upload, label: "Data Import", badge: null },
     { path: "/admin/scrapers", icon: Globe, label: "County Scrapers", badge: null },
@@ -395,3 +395,4 @@ export default function Sidebar() {
     </>
   );
 }
+

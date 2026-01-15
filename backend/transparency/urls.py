@@ -156,7 +156,12 @@ urlpatterns = [
     path('upload-scraped/', upload_scraped, name='upload-scraped'),
     path('scraper-status/', scraper_status, name='scraper-status'),
     path('scraper-complete/', scraper_complete, name='scraper-complete'),
-    
+
+    # === SITE ANALYTICS (Google Analytics-like) ===
+    path('analytics/dashboard/', analytics_dashboard, name='analytics-dashboard'),
+    path('analytics/realtime/', analytics_realtime, name='analytics-realtime'),
+    path('analytics/geo/', analytics_geo, name='analytics-geo'),
+
     # Router MUST come last
     path('', include(router.urls)),
 ]

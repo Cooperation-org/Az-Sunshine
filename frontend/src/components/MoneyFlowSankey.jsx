@@ -259,7 +259,7 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
                         {targetName}
                       </p>
                       <p className={`text-sm font-bold ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-                        ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        ${Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </p>
                     </>
                   ) : (
@@ -269,7 +269,7 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
                         {item.name || 'Unknown'}
                       </p>
                       <p className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-                        Total: ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        Total: ${Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </p>
                     </>
                   )}

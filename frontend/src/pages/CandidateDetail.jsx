@@ -65,6 +65,7 @@ export default function CandidateDetail() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [expenditureFilter, setExpenditureFilter] = useState("all"); // all, for, against
+  const [expenditureSort, setExpenditureSort] = useState({ key: 'amount', direction: 'desc' }); // Default sort by amount descending
 
   useEffect(() => {
     loadCandidateData();
@@ -240,13 +241,53 @@ export default function CandidateDetail() {
     ],
   };
 
-  // Filter expenditures
-  const filteredExpenditures = expenditures.filter((exp) => {
-    if (expenditureFilter === "all") return true;
-    if (expenditureFilter === "for") return exp.support_oppose?.toLowerCase() === "support" || exp.is_for_benefit === true;
-    if (expenditureFilter === "against") return exp.support_oppose?.toLowerCase() === "oppose" || exp.is_for_benefit === false;
-    return true;
-  });
+  // Filter and sort expenditures
+  const filteredExpenditures = expenditures
+    .filter((exp) => {
+      if (expenditureFilter === "all") return true;
+      if (expenditureFilter === "for") return exp.support_oppose?.toLowerCase() === "support" || exp.is_for_benefit === true;
+      if (expenditureFilter === "against") return exp.support_oppose?.toLowerCase() === "oppose" || exp.is_for_benefit === false;
+      return true;
+    })
+    .sort((a, b) => {
+      const { key, direction } = expenditureSort;
+      let aVal, bVal;
+
+      switch (key) {
+        case 'date':
+          aVal = new Date(a.date_of_transaction || 0).getTime();
+          bVal = new Date(b.date_of_transaction || 0).getTime();
+          break;
+        case 'committee':
+          aVal = (a.committee?.name || '').toLowerCase();
+          bVal = (b.committee?.name || '').toLowerCase();
+          break;
+        case 'amount':
+          aVal = parseFloat(a.amount || 0);
+          bVal = parseFloat(b.amount || 0);
+          break;
+        default:
+          return 0;
+      }
+
+      if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+  // Toggle sort handler
+  const handleExpenditureSort = (key) => {
+    setExpenditureSort(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
+    }));
+  };
+
+  // Sort indicator component
+  const SortIndicator = ({ column }) => {
+    if (expenditureSort.key !== column) return null;
+    return expenditureSort.direction === 'desc' ? ' ▼' : ' ▲';
+  };
 
   return (
     <div className={`flex min-h-screen ${darkMode ? 'bg-[#1A1625]' : 'bg-gray-50'}`}>
@@ -310,14 +351,14 @@ export default function CandidateDetail() {
                     <>
                       <TrendingUp className="w-4 h-4 text-green-300" />
                       <span className="text-green-300 font-semibold">
-                        Net +${netIE.toLocaleString()}
+                        Net +${Math.abs(netIE).toLocaleString()}
                       </span>
                     </>
                   ) : (
                     <>
                       <TrendingDown className="w-4 h-4 text-red-300" />
                       <span className="text-red-300 font-semibold">
-                        Net ${netIE.toLocaleString()}
+                        Net -${Math.abs(netIE).toLocaleString()}
                       </span>
                     </>
                   )}
@@ -539,7 +580,7 @@ export default function CandidateDetail() {
                     <div>
                       <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Net IE</p>
                       <p className={`text-3xl font-black text-purple-600`}>
-                        {netIE >= 0 ? "+" : ""}${netIE.toLocaleString()}
+                        {netIE >= 0 ? "+" : "-"}${Math.abs(netIE).toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -588,13 +629,13 @@ export default function CandidateDetail() {
                               {committee.committee__name || "Unknown Committee"}
                             </td>
                             <td className={`px-6 py-4 text-sm text-right font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                              ${parseFloat(committee.total_ie || 0).toLocaleString()}
+                              ${Math.abs(parseFloat(committee.total_ie || 0)).toLocaleString()}
                             </td>
                             <td className="px-6 py-4 text-sm text-right text-green-600 font-semibold">
-                              ${parseFloat(committee.total_for || 0).toLocaleString()}
+                              ${Math.abs(parseFloat(committee.total_for || 0)).toLocaleString()}
                             </td>
                             <td className="px-6 py-4 text-sm text-right text-red-600 font-semibold">
-                              ${parseFloat(committee.total_against || 0).toLocaleString()}
+                              ${Math.abs(parseFloat(committee.total_against || 0)).toLocaleString()}
                             </td>
                           </tr>
                         ))
@@ -649,14 +690,23 @@ export default function CandidateDetail() {
                   <table className="w-full">
                     <thead className={`${darkMode ? 'bg-[#373052] border-gray-700' : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-gray-200'} border-b`}>
                       <tr>
-                        <th className={`px-6 py-4 text-left text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                          Date
+                        <th
+                          onClick={() => handleExpenditureSort('date')}
+                          className={`px-6 py-4 text-left text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider cursor-pointer hover:text-purple-500 transition-colors`}
+                        >
+                          Date<SortIndicator column="date" />
                         </th>
-                        <th className={`px-6 py-4 text-left text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                          Committee
+                        <th
+                          onClick={() => handleExpenditureSort('committee')}
+                          className={`px-6 py-4 text-left text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider cursor-pointer hover:text-purple-500 transition-colors`}
+                        >
+                          Committee<SortIndicator column="committee" />
                         </th>
-                        <th className={`px-6 py-4 text-right text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                          Amount
+                        <th
+                          onClick={() => handleExpenditureSort('amount')}
+                          className={`px-6 py-4 text-right text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider cursor-pointer hover:text-purple-500 transition-colors`}
+                        >
+                          Amount<SortIndicator column="amount" />
                         </th>
                         <th className={`px-6 py-4 text-center text-xs font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                           Type
@@ -689,7 +739,7 @@ export default function CandidateDetail() {
                               {exp.committee?.name || "Unknown"}
                             </td>
                             <td className={`px-6 py-4 text-sm text-right font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                              ${parseFloat(exp.amount || 0).toLocaleString()}
+                              ${Math.abs(parseFloat(exp.amount || 0)).toLocaleString()}
                             </td>
                             <td className="px-6 py-4 text-center">
                               <span

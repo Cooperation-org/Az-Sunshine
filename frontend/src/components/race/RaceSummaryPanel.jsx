@@ -83,7 +83,7 @@ export default function RaceSummaryPanel({ raceData, topDonors }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-mono font-bold text-[#7163BA]">
-                    ${parseFloat(donor.total_contributed || 0).toLocaleString()}
+                    ${Math.abs(parseFloat(donor.total_contributed || 0)).toLocaleString()}
                   </span>
                   <ExternalLink size={14} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>

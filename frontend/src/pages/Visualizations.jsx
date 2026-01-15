@@ -128,7 +128,7 @@ export default function Visualizations() {
       <div>
         <p className={`text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{title}</p>
         <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          ${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 0 })}
         </p>
       </div>
     </div>
@@ -153,7 +153,7 @@ export default function Visualizations() {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* Chart Container 1 */}
+            {/* Chart Container 1 - Styled like Dashboard */}
             <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'}`}>
               <div className="flex items-center gap-3 mb-6">
                 <BarChart3 size={18} className="text-[#7667C1]" />
@@ -162,24 +162,74 @@ export default function Visualizations() {
               <div className="h-[400px]">
                 <Bar
                   data={{
-                    labels: topCandidates.map(c => c.subject_committee__name__last_name || 'Unknown'),
+                    labels: topCandidates.map(c => {
+                      // Truncate long names for cleaner display
+                      const name = c.subject_committee__name__last_name || 'Unknown';
+                      return name.length > 20 ? name.substring(0, 18) + '...' : name;
+                    }),
                     datasets: [{
                       label: 'Expenditure',
                       data: topCandidates.map(c => Math.abs(c.total_ie)),
-                      backgroundColor: '#7667C1',
-                      minBarLength: 5
+                      backgroundColor: 'rgba(118, 103, 193, 0.8)',
+                      hoverBackgroundColor: 'rgba(118, 103, 193, 1)',
+                      borderRadius: 4,
+                      barThickness: 40,
+                      maxBarThickness: 50
                     }]
                   }}
                   options={{
                     maintainAspectRatio: false,
+                    responsive: true,
                     interaction: {
                       mode: 'index',
                       intersect: false
                     },
+                    scales: {
+                      x: {
+                        grid: {
+                          display: false
+                        },
+                        ticks: {
+                          color: darkMode ? '#9CA3AF' : '#6B7280',
+                          font: { size: 10 },
+                          maxRotation: 45,
+                          minRotation: 45
+                        }
+                      },
+                      y: {
+                        grid: {
+                          color: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                          drawBorder: false
+                        },
+                        ticks: {
+                          color: darkMode ? '#9CA3AF' : '#6B7280',
+                          font: { size: 11 },
+                          callback: (value) => {
+                            if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
+                            if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'K';
+                            return '$' + value;
+                          }
+                        }
+                      }
+                    },
                     plugins: {
+                      legend: {
+                        display: false
+                      },
                       tooltip: {
+                        backgroundColor: darkMode ? '#1F1B31' : '#fff',
+                        titleColor: darkMode ? '#fff' : '#111',
+                        bodyColor: darkMode ? '#9CA3AF' : '#6B7280',
+                        borderColor: darkMode ? '#374151' : '#E5E7EB',
+                        borderWidth: 1,
+                        padding: 12,
                         callbacks: {
-                          label: (ctx) => `$${ctx.parsed.y.toLocaleString()}`
+                          title: (items) => {
+                            // Show full name in tooltip
+                            const idx = items[0].dataIndex;
+                            return topCandidates[idx]?.subject_committee__name__last_name || 'Unknown';
+                          },
+                          label: (ctx) => `Total: $${Math.abs(ctx.parsed.y).toLocaleString()}`
                         }
                       }
                     }

@@ -149,7 +149,7 @@ export default function IEAdBuyCorrelation({ officeId, cycleId, candidateId }) {
               Total IE Spending
             </div>
             <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              ${correlation.totalIE.toLocaleString()}
+              ${Math.abs(correlation.totalIE).toLocaleString()}
             </div>
           </div>
 
@@ -158,7 +158,7 @@ export default function IEAdBuyCorrelation({ officeId, cycleId, candidateId }) {
               Tracked Ad Spend
             </div>
             <div className={`text-xl font-bold ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-              ${correlation.totalAdSpend.toLocaleString()}
+              ${Math.abs(correlation.totalAdSpend).toLocaleString()}
             </div>
           </div>
 
@@ -208,7 +208,7 @@ export default function IEAdBuyCorrelation({ officeId, cycleId, candidateId }) {
                   {platform}
                 </span>
                 <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  ({data.count}) ${data.spend.toLocaleString()}
+                  ({data.count}) ${Math.abs(data.spend).toLocaleString()}
                 </span>
               </div>
             ))}
@@ -257,7 +257,7 @@ export default function IEAdBuyCorrelation({ officeId, cycleId, candidateId }) {
                       {monthData.ads.length} ads
                     </span>
                     <span className={`text-sm font-bold ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
-                      ${monthData.totalSpend.toLocaleString()}
+                      ${Math.abs(monthData.totalSpend).toLocaleString()}
                     </span>
                   </div>
                 </div>

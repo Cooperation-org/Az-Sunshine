@@ -6,13 +6,16 @@ import { AlertTriangle, CheckCircle, TrendingUp } from "lucide-react";
  * Grassroots Threshold Badge
  * Phase 1 Task 2d-2e: Compare candidate IE spending to grassroots threshold
  */
-export default function GrassrootsThresholdBadge({ 
-  ieFor = 0, 
-  ieAgainst = 0, 
+export default function GrassrootsThresholdBadge({
+  ieFor = 0,
+  ieAgainst = 0,
   threshold = 5000,
-  detailed = false 
+  detailed = false
 }) {
-  const total = ieFor + ieAgainst;
+  // Ensure all values are positive
+  const absIeFor = Math.abs(ieFor);
+  const absIeAgainst = Math.abs(ieAgainst);
+  const total = absIeFor + absIeAgainst;
   const exceedsThreshold = total > threshold;
   const percentage = ((total / threshold) * 100).toFixed(0);
 
@@ -127,13 +130,13 @@ export default function GrassrootsThresholdBadge({
             <div>
               <span className="text-gray-500 block mb-1">IE For Benefit:</span>
               <p className="font-bold text-green-600">
-                ${ieFor.toLocaleString()}
+                ${absIeFor.toLocaleString()}
               </p>
             </div>
             <div>
               <span className="text-gray-500 block mb-1">IE Not For Benefit:</span>
               <p className="font-bold text-red-600">
-                ${ieAgainst.toLocaleString()}
+                ${absIeAgainst.toLocaleString()}
               </p>
             </div>
           </div>

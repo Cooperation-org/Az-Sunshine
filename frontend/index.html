@@ -19,40 +19,54 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      // Security Protection Layer
+      // Security Protection Layer - runs immediately before React loads
       (function() {
         'use strict';
 
-        // Disable right-click context menu
-        document.addEventListener('contextmenu', function(e) {
+        // Helper to block event
+        function blockEvent(e) {
           e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
           return false;
-        }, false);
+        }
+
+        // Disable right-click context menu - use capture phase (true) for priority
+        document.addEventListener('contextmenu', blockEvent, true);
+        window.addEventListener('contextmenu', blockEvent, true);
 
         // Disable keyboard shortcuts for DevTools and View Source
-        document.addEventListener('keydown', function(e) {
+        function handleKeyDown(e) {
+          var key = e.key || '';
+          var keyCode = e.keyCode || 0;
+          var ctrl = e.ctrlKey || e.metaKey;
+          var shift = e.shiftKey;
+
           // F12 - DevTools
-          if (e.keyCode === 123) { e.preventDefault(); return false; }
+          if (key === 'F12' || keyCode === 123) return blockEvent(e);
           // Ctrl+Shift+I - DevTools
-          if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
+          if (ctrl && shift && (key === 'I' || key === 'i' || keyCode === 73)) return blockEvent(e);
           // Ctrl+Shift+J - Console
-          if (e.ctrlKey && e.shiftKey && e.keyCode === 74) { e.preventDefault(); return false; }
+          if (ctrl && shift && (key === 'J' || key === 'j' || keyCode === 74)) return blockEvent(e);
           // Ctrl+Shift+C - Element Inspector
-          if (e.ctrlKey && e.shiftKey && e.keyCode === 67) { e.preventDefault(); return false; }
+          if (ctrl && shift && (key === 'C' || key === 'c' || keyCode === 67)) return blockEvent(e);
           // Ctrl+U - View Source
-          if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
+          if (ctrl && (key === 'U' || key === 'u' || keyCode === 85)) return blockEvent(e);
           // Ctrl+S - Save Page
-          if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
+          if (ctrl && (key === 'S' || key === 's' || keyCode === 83)) return blockEvent(e);
           // Ctrl+P - Print
-          if (e.ctrlKey && e.keyCode === 80) { e.preventDefault(); return false; }
-        }, false);
+          if (ctrl && (key === 'P' || key === 'p' || keyCode === 80)) return blockEvent(e);
+        }
+        document.addEventListener('keydown', handleKeyDown, true);
+        window.addEventListener('keydown', handleKeyDown, true);
 
         // Detect DevTools opening
-        var devtools = { open: false, orientation: null };
+        var devtools = { open: false };
         var threshold = 160;
         setInterval(function() {
-          if (window.outerHeight - window.innerHeight > threshold ||
-              window.outerWidth - window.innerWidth > threshold) {
+          var widthDiff = window.outerWidth - window.innerWidth > threshold;
+          var heightDiff = window.outerHeight - window.innerHeight > threshold;
+          if (widthDiff || heightDiff) {
             if (!devtools.open) {
               devtools.open = true;
               console.clear();
@@ -65,21 +79,25 @@
         }, 500);
 
         // Disable drag and drop
-        document.addEventListener('dragstart', function(e) {
-          e.preventDefault();
-          return false;
-        }, false);
+        document.addEventListener('dragstart', blockEvent, true);
 
         // Disable copy (except in input fields)
         document.addEventListener('copy', function(e) {
-          if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-            e.preventDefault();
-            return false;
-          }
-        }, false);
+          var tag = e.target.tagName;
+          if (tag !== 'INPUT' && tag !== 'TEXTAREA') return blockEvent(e);
+        }, true);
+
+        // Disable text selection (except in input fields)
+        document.addEventListener('selectstart', function(e) {
+          var tag = e.target.tagName;
+          if (tag !== 'INPUT' && tag !== 'TEXTAREA') return blockEvent(e);
+        }, true);
 
         // Clear console periodically
         setInterval(function() { console.clear(); }, 1000);
+
+        // Additional protection: override right-click on document ready
+        document.oncontextmenu = function() { return false; };
       })();
     </script>
   </body>

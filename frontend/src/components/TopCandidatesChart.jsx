@@ -130,7 +130,7 @@ export default function TopCandidatesChart({ officeId, cycleId, limit = 20 }) {
           afterLabel: function (context) {
             const candidate = sortedCandidates[context.dataIndex];
             const net = candidate.ie_net || 0;
-            return `Net: $${net.toLocaleString()}`;
+            return `Net: $${Math.abs(net).toLocaleString()}`;
           },
         },
       },
@@ -168,13 +168,13 @@ export default function TopCandidatesChart({ officeId, cycleId, limit = 20 }) {
           <div className="bg-gray-50 rounded p-4">
             <p className="text-sm text-gray-600">Total IE For</p>
             <p className="text-2xl font-bold text-green-600">
-              ${(data.summary?.total_ie_for || 0).toLocaleString()}
+              ${Math.abs(data.summary?.total_ie_for || 0).toLocaleString()}
             </p>
           </div>
           <div className="bg-gray-50 rounded p-4">
             <p className="text-sm text-gray-600">Total IE Against</p>
             <p className="text-2xl font-bold text-red-600">
-              ${(data.summary?.total_ie_against || 0).toLocaleString()}
+              ${Math.abs(data.summary?.total_ie_against || 0).toLocaleString()}
             </p>
           </div>
           <div className="bg-gray-50 rounded p-4">

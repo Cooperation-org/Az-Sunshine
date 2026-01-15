@@ -422,7 +422,7 @@ export default function DataValidation() {
                                   <span className="font-medium">Location:</span> {entity.city}, {entity.state}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Contributions:</span> ${entity.total_contributions.toLocaleString()}
+                                  <span className="font-medium">Contributions:</span> ${Math.abs(entity.total_contributions).toLocaleString()}
                                 </div>
                                 <div>
                                   <span className="font-medium">Transactions:</span> {entity.transaction_count}

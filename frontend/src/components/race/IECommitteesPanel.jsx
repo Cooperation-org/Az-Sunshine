@@ -1,6 +1,15 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Building2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Building2, ExternalLink } from 'lucide-react';
 import { useDarkMode } from '../../context/DarkModeContext';
+
+// Helper to generate external search URLs
+const getExternalLinks = (committeeName) => {
+  const encodedName = encodeURIComponent(committeeName);
+  return {
+    seeTheMoney: `https://seethemoney.az.gov/Committees?name=${encodedName}`,
+    openSecrets: `https://www.opensecrets.org/political-action-committees-pacs/lookup?txt=${encodedName}`
+  };
+};
 
 export default function IECommitteesPanel({ committees = [], title = "Super PAC & Dark Money Spending" }) {
   const { darkMode } = useDarkMode();
@@ -68,10 +77,46 @@ export default function IECommitteesPanel({ committees = [], title = "Super PAC 
               className={`p-3 rounded-lg ${darkMode ? 'bg-[#1A1625]' : 'bg-gray-50'}`}
             >
               <div className="flex items-start justify-between mb-2">
-                <span className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {committee.name || committee.committee_name || 'Unknown Committee'}
-                </span>
-                <span className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <span className={`font-medium text-sm truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {committee.name || committee.committee_name || 'Unknown Committee'}
+                  </span>
+                  {/* External Links */}
+                  {(() => {
+                    const name = committee.name || committee.committee_name;
+                    if (!name) return null;
+                    const links = getExternalLinks(name);
+                    return (
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <a
+                          href={links.seeTheMoney}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="View on See the Money (AZ)"
+                          className={`p-1 rounded hover:bg-opacity-80 transition-colors ${
+                            darkMode ? 'hover:bg-[#373052] text-purple-400' : 'hover:bg-purple-100 text-purple-600'
+                          }`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="text-xs font-bold">AZ</span>
+                        </a>
+                        <a
+                          href={links.openSecrets}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Search on OpenSecrets"
+                          className={`p-1 rounded hover:bg-opacity-80 transition-colors ${
+                            darkMode ? 'hover:bg-[#373052] text-blue-400' : 'hover:bg-blue-100 text-blue-600'
+                          }`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ExternalLink size={12} />
+                        </a>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <span className={`font-bold flex-shrink-0 ml-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   ${Math.abs(total).toLocaleString()}
                 </span>
               </div>
