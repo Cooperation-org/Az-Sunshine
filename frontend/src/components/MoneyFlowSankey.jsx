@@ -5,13 +5,17 @@ import { getMoneyFlow } from "../api/api";
 import { Loader, AlertTriangle } from "lucide-react";
 import { useDarkMode } from "../context/DarkModeContext";
 
+// Store node colors globally so CustomNode can access them
+let globalNodeColors = [];
+
 const CustomNode = (props) => {
   const { x, y, width, height, index, payload, containerWidth } = props;
   const { darkMode } = useDarkMode();
   const isOut = x + width + 6 > containerWidth;
 
-  // Brand colors: Purple gradient (#6B5B95 to #4C3D7D)
-  const nodeColor = darkMode ? '#8b7cb8' : '#6B5B95';
+  // Get color from global array using node index
+  const defaultColor = darkMode ? '#8b7cb8' : '#6B5B95';
+  const nodeColor = globalNodeColors[index] || defaultColor;
 
   return (
     <g>
@@ -28,7 +32,7 @@ const CustomNode = (props) => {
         strokeLinejoin="round"
         paintOrder="stroke"
       >
-        {payload.name}
+        {payload?.name || 'Unknown'}
       </text>
     </g>
   );
@@ -40,7 +44,8 @@ const CustomLink = (props) => {
 
   // Use the color from the link data, or fall back to default purple
   const linkColor = payload.color || (darkMode ? '#8b7cb8' : '#7163BA');
-  const opacity = darkMode ? 0.6 : 0.5;
+  // Higher opacity for better color visibility and traceability
+  const opacity = darkMode ? 0.75 : 0.65;
 
   return (
     <path
@@ -89,6 +94,7 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
     const links = [];
     const nodeMap = new Map();
     const donorColorMap = new Map(); // Map donor index to color
+    const nodeColors = []; // Track colors by node index
     let nodeIndex = 0;
 
     // Color palette for different donors (distinct, vibrant colors)
@@ -113,13 +119,18 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
       }
       const index = nodeIndex++;
       nodeMap.set(name, index);
-      nodes.push({ name, type });
 
-      // Assign color to donor nodes
+      // Assign color to donor nodes, others get default purple
+      let nodeColor = darkMode ? '#8b7cb8' : '#6B5B95'; // default purple
       if (type === 'donor') {
         const colorIndex = donorColorMap.size % colorPalette.length;
-        donorColorMap.set(index, colorPalette[colorIndex]);
+        nodeColor = colorPalette[colorIndex];
+        donorColorMap.set(index, nodeColor);
       }
+
+      // Store color in array by index for CustomNode to access
+      nodeColors[index] = nodeColor;
+      nodes.push({ name, type, color: nodeColor, fill: nodeColor });
 
       return index;
     };
@@ -171,6 +182,8 @@ export default function MoneyFlowSankey({ officeId, cycleId, limit = 12, height 
       }
     }
 
+    // Set global colors array for CustomNode to access
+    globalNodeColors = nodeColors;
     return { nodes, links, donorColorMap };
   }
 

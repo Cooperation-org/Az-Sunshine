@@ -27,6 +27,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "az-sunshine.org",
     "www.az-sunshine.org",
+    "azsunshine.cooperation.org",
 ]
 USE_X_FORWARDED_HOST = True
 APPEND_SLASH = True
@@ -67,9 +68,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5179",
     "http://localhost:3000",
     "http://167.172.30.134",
-    "http://167.172.30.134",
     "https://167.172.30.134",
-    
+    "http://azsunshine.cooperation.org",
+    "https://azsunshine.cooperation.org",
 ]
 
 
