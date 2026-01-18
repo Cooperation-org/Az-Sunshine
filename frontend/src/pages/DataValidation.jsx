@@ -176,6 +176,26 @@ export default function DataValidation() {
     currentPage * pageSize
   );
 
+  // Show single loading state on initial load
+  if (loading && !metrics) {
+    return (
+      <div className={`flex min-h-screen ${darkMode ? 'bg-[#1A1625]' : 'bg-gray-50'}`}>
+        <Sidebar />
+        <main className="flex-1 lg:ml-0 min-w-0">
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <Loader className="w-12 h-12 animate-spin text-purple-600 mb-4" />
+            <span className={`text-lg font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              Loading Data Validation...
+            </span>
+            <span className={`text-sm mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              Analyzing data quality and duplicates
+            </span>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex min-h-screen ${darkMode ? 'bg-[#1A1625]' : 'bg-gray-50'}`}>
       <Sidebar />
@@ -183,12 +203,7 @@ export default function DataValidation() {
 
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
           {/* Data Quality Metrics */}
-          {loading && !metrics ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader className="w-8 h-8 animate-spin text-purple-600" />
-              <span className={`ml-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading metrics...</span>
-            </div>
-          ) : metrics ? (
+          {metrics && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Overall Quality Score */}
               <div className={`rounded-xl p-4 sm:p-6 shadow-sm border ${
@@ -273,7 +288,7 @@ export default function DataValidation() {
                 <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Entities</div>
               </div>
             </div>
-          ) : null}
+          )}
 
           {/* Data Issues Alerts */}
           {metrics && (
@@ -391,12 +406,7 @@ export default function DataValidation() {
               </div>
             </div>
 
-            {loading && currentPage === 1 ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader className="w-8 h-8 animate-spin text-purple-600" />
-                <span className={`ml-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading duplicates...</span>
-              </div>
-            ) : paginatedDuplicates.length === 0 ? (
+            {paginatedDuplicates.length === 0 ? (
               <div className="flex items-center justify-center h-64 text-center">
                 <div>
                   <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
