@@ -1,6 +1,8 @@
 """
 Data Validation Views
 Endpoints for data quality checks, duplicate detection, and external source comparison
+
+OPTIMIZED: Added Zstandard compression for faster response times
 """
 
 from rest_framework.decorators import api_view, permission_classes
@@ -11,6 +13,7 @@ from django.db.models import Count, Sum, Q, F
 from django.db import connection, transaction
 from decimal import Decimal
 from .models import Transaction, Entity, Committee, Office, Cycle
+from .utils.compressed_cache import CompressedCache
 
 
 @api_view(['GET'])
@@ -21,7 +24,14 @@ def data_quality_metrics(request):
     - Completeness percentages
     - Missing critical fields
     - Data freshness
+
+    OPTIMIZED: Cached with Zstandard compression for 10 minutes
     """
+    # Try cache first
+    cache_key = 'validation_quality_metrics_v1'
+    cached_data = CompressedCache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
 
     # Transaction completeness
     total_transactions = Transaction.objects.count()
@@ -50,7 +60,7 @@ def data_quality_metrics(request):
     transaction_completeness = (complete_transactions / total_transactions * 100) if total_transactions > 0 else 0
     entity_location_completeness = (entities_with_location / total_entities * 100) if total_entities > 0 else 0
 
-    return Response({
+    response_data = {
         'overall_health': 'good' if transaction_completeness > 95 else 'warning' if transaction_completeness > 85 else 'critical',
         'transaction_completeness': round(transaction_completeness, 2),
         'entity_location_completeness': round(entity_location_completeness, 2),
@@ -63,7 +73,12 @@ def data_quality_metrics(request):
             'transactions_incomplete': total_transactions - complete_transactions,
             'entities_without_location': total_entities - entities_with_location
         }
-    })
+    }
+
+    # Cache for 10 minutes with Zstd compression
+    CompressedCache.set(cache_key, response_data, timeout=600)
+
+    return Response(response_data)
 
 
 @api_view(['GET'])
@@ -72,14 +87,57 @@ def duplicate_entities(request):
     """
     Find potential duplicate entities based on name similarity
     Uses simple matching to identify entities that might be the same person/organization
-    """
 
-    # Get entities with similar names (simplified version without fuzzy matching)
-    # This uses exact substring matching instead of pg_trgm similarity
+    OPTIMIZED: Cached with Zstandard compression for 30 minutes
+    This is a heavy O(n²) operation so caching is critical for performance
+    """
+    # Try cache first - this endpoint is slow so cache longer (30 min)
+    cache_key = 'validation_duplicate_entities_v1'
+    cached_data = CompressedCache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
+    # IMPROVED: Stricter duplicate detection to reduce false positives
+    # Only flags high-confidence duplicates (exact/near-exact name matches)
 
     duplicates = []
 
-    # Find entities with very similar names in the same city
+    # Common nickname mappings for better matching
+    NICKNAMES = {
+        'bob': 'robert', 'robert': 'bob', 'bill': 'william', 'william': 'bill',
+        'jim': 'james', 'james': 'jim', 'mike': 'michael', 'michael': 'mike',
+        'tom': 'thomas', 'thomas': 'tom', 'dick': 'richard', 'richard': 'dick',
+        'joe': 'joseph', 'joseph': 'joe', 'dan': 'daniel', 'daniel': 'dan',
+        'dave': 'david', 'david': 'dave', 'steve': 'steven', 'steven': 'steve',
+        'chris': 'christopher', 'christopher': 'chris', 'matt': 'matthew', 'matthew': 'matt',
+        'tony': 'anthony', 'anthony': 'tony', 'jack': 'john', 'john': 'jack',
+        'ed': 'edward', 'edward': 'ed', 'nick': 'nicholas', 'nicholas': 'nick',
+        'al': 'albert', 'albert': 'al', 'ben': 'benjamin', 'benjamin': 'ben',
+    }
+
+    def names_are_similar(first1, first2):
+        """Check if two first names are likely the same person"""
+        f1, f2 = first1.lower().strip(), first2.lower().strip()
+        # Exact match
+        if f1 == f2:
+            return True
+        # Nickname match
+        if NICKNAMES.get(f1) == f2 or NICKNAMES.get(f2) == f1:
+            return True
+        # One is prefix of the other (e.g., "Chris" vs "Christopher")
+        if len(f1) >= 3 and len(f2) >= 3:
+            if f1.startswith(f2[:3]) and f2.startswith(f1[:3]):
+                return True
+        return False
+
+    def is_valid_city(city):
+        """Filter out dirty/invalid city data"""
+        if not city:
+            return False
+        cleaned = city.strip().replace('.', '').replace(',', '').strip()
+        return len(cleaned) >= 3  # At least 3 characters after cleaning
+
+    # Find entities with valid data
     entities = Entity.objects.exclude(
         Q(first_name__isnull=True) | Q(first_name='')
     ).exclude(
@@ -90,13 +148,18 @@ def duplicate_entities(request):
         'name_id', 'first_name', 'last_name', 'city'
     ).order_by('city', 'last_name')
 
-    # Group by city and look for similar names
+    # Group by normalized city (skip invalid cities)
     from collections import defaultdict
     city_entities = defaultdict(list)
 
     for entity in entities:
+        city = entity['city']
+        if not is_valid_city(city):
+            continue  # Skip dirty city data
+
+        normalized_city = city.lower().strip().replace(',', '')
         full_name = f"{entity['first_name']} {entity['last_name']}".lower()
-        city_entities[entity['city'].lower()].append({
+        city_entities[normalized_city].append({
             'id': entity['name_id'],
             'name': full_name,
             'first_name': entity['first_name'],
@@ -104,32 +167,30 @@ def duplicate_entities(request):
             'city': entity['city']
         })
 
-    # Find duplicates within each city
+    # Find HIGH-CONFIDENCE duplicates only
     for city, city_ents in city_entities.items():
         for i, ent1 in enumerate(city_ents):
             for ent2 in city_ents[i+1:]:
-                # Check for name similarity
-                name1 = ent1['name']
-                name2 = ent2['name']
-
-                # Simple similarity checks:
-                # 1. Same last name and first initial
-                # 2. One name is substring of the other
-                # 3. Names differ by only middle initial
-
-                is_similar = False
+                is_duplicate = False
                 confidence = 0.0
+                reason = ''
 
-                if ent1['last_name'].lower() == ent2['last_name'].lower():
-                    if ent1['first_name'][0].lower() == ent2['first_name'][0].lower():
-                        is_similar = True
-                        confidence = 0.85
+                last1, last2 = ent1['last_name'].lower(), ent2['last_name'].lower()
+                first1, first2 = ent1['first_name'], ent2['first_name']
 
-                if name1 in name2 or name2 in name1:
-                    is_similar = True
-                    confidence = max(confidence, 0.90)
+                # HIGH CONFIDENCE: Exact same full name
+                if ent1['name'] == ent2['name']:
+                    is_duplicate = True
+                    confidence = 0.98
+                    reason = 'Exact name match'
 
-                if is_similar:
+                # HIGH CONFIDENCE: Same last name + similar first name (nickname/prefix)
+                elif last1 == last2 and names_are_similar(first1, first2):
+                    is_duplicate = True
+                    confidence = 0.92
+                    reason = 'Same last name, similar first name'
+
+                if is_duplicate:
                     duplicates.append({
                         'entities': [
                             {
@@ -144,7 +205,7 @@ def duplicate_entities(request):
                             }
                         ],
                         'confidence_score': confidence,
-                        'reason': 'Name similarity in same location'
+                        'reason': reason
                     })
 
                 if len(duplicates) >= 100:
@@ -154,10 +215,15 @@ def duplicate_entities(request):
         if len(duplicates) >= 100:
             break
 
-    return Response({
+    response_data = {
         'duplicates': duplicates,
         'total_found': len(duplicates)
-    })
+    }
+
+    # Cache for 30 minutes with Zstd compression (this is a slow endpoint)
+    CompressedCache.set(cache_key, response_data, timeout=1800)
+
+    return Response(response_data)
 
 
 @api_view(['GET'])
@@ -459,6 +525,198 @@ def merge_entities(request):
         },
         'merged_count': merged_count,
         'message': f'Successfully merged {merged_count} duplicate entities'
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+@transaction.atomic
+def auto_resolve_duplicates(request):
+    """
+    Automatically resolve high-confidence duplicate entities.
+
+    For each duplicate pair:
+    - Keep the entity with MORE transactions as the primary
+    - Merge the other entity's transactions into the primary
+    - Mark the duplicate as merged (soft delete)
+
+    POST /api/v1/validation/auto-resolve-duplicates/
+    Optional body: {"dry_run": true} to preview without making changes
+
+    Returns summary of resolved duplicates
+    """
+    dry_run = request.data.get('dry_run', False)
+
+    # Same duplicate detection logic as duplicate_entities endpoint
+    NICKNAMES = {
+        'bob': 'robert', 'robert': 'bob', 'bill': 'william', 'william': 'bill',
+        'jim': 'james', 'james': 'jim', 'mike': 'michael', 'michael': 'mike',
+        'tom': 'thomas', 'thomas': 'tom', 'dick': 'richard', 'richard': 'dick',
+        'joe': 'joseph', 'joseph': 'joe', 'dan': 'daniel', 'daniel': 'dan',
+        'dave': 'david', 'david': 'dave', 'steve': 'steven', 'steven': 'steve',
+        'chris': 'christopher', 'christopher': 'chris', 'matt': 'matthew', 'matthew': 'matt',
+        'tony': 'anthony', 'anthony': 'tony', 'jack': 'john', 'john': 'jack',
+        'ed': 'edward', 'edward': 'ed', 'nick': 'nicholas', 'nicholas': 'nick',
+        'al': 'albert', 'albert': 'al', 'ben': 'benjamin', 'benjamin': 'ben',
+    }
+
+    def names_are_similar(first1, first2):
+        f1, f2 = first1.lower().strip(), first2.lower().strip()
+        if f1 == f2:
+            return True
+        if NICKNAMES.get(f1) == f2 or NICKNAMES.get(f2) == f1:
+            return True
+        if len(f1) >= 3 and len(f2) >= 3:
+            if f1.startswith(f2[:3]) and f2.startswith(f1[:3]):
+                return True
+        return False
+
+    def is_valid_city(city):
+        if not city:
+            return False
+        cleaned = city.strip().replace('.', '').replace(',', '').strip()
+        return len(cleaned) >= 3
+
+    # Find entities with valid data
+    entities = Entity.objects.exclude(
+        Q(first_name__isnull=True) | Q(first_name='')
+    ).exclude(
+        Q(last_name__isnull=True) | Q(last_name='')
+    ).exclude(
+        Q(city__isnull=True) | Q(city='')
+    ).annotate(
+        transaction_count=Count('transactions')
+    ).values(
+        'name_id', 'first_name', 'last_name', 'city', 'transaction_count'
+    ).order_by('city', 'last_name')
+
+    # Group by normalized city
+    from collections import defaultdict
+    city_entities = defaultdict(list)
+
+    for entity in entities:
+        city = entity['city']
+        if not is_valid_city(city):
+            continue
+        normalized_city = city.lower().strip().replace(',', '')
+        city_entities[normalized_city].append({
+            'id': entity['name_id'],
+            'first_name': entity['first_name'],
+            'last_name': entity['last_name'],
+            'city': entity['city'],
+            'transaction_count': entity['transaction_count']
+        })
+
+    # Find and resolve duplicates
+    resolved = []
+    entities_merged = set()  # Track already merged entities
+
+    for city, city_ents in city_entities.items():
+        for i, ent1 in enumerate(city_ents):
+            if ent1['id'] in entities_merged:
+                continue
+
+            for ent2 in city_ents[i+1:]:
+                if ent2['id'] in entities_merged:
+                    continue
+
+                is_duplicate = False
+                confidence = 0.0
+                reason = ''
+
+                last1, last2 = ent1['last_name'].lower(), ent2['last_name'].lower()
+                first1, first2 = ent1['first_name'], ent2['first_name']
+                name1 = f"{first1} {ent1['last_name']}".lower()
+                name2 = f"{first2} {ent2['last_name']}".lower()
+
+                # HIGH CONFIDENCE: Exact same full name
+                if name1 == name2:
+                    is_duplicate = True
+                    confidence = 0.98
+                    reason = 'Exact name match'
+
+                # HIGH CONFIDENCE: Same last name + similar first name
+                elif last1 == last2 and names_are_similar(first1, first2):
+                    is_duplicate = True
+                    confidence = 0.92
+                    reason = 'Same last name, similar first name'
+
+                if is_duplicate and confidence >= 0.92:
+                    # Determine primary (entity with more transactions)
+                    if ent1['transaction_count'] >= ent2['transaction_count']:
+                        primary = ent1
+                        duplicate = ent2
+                    else:
+                        primary = ent2
+                        duplicate = ent1
+
+                    if not dry_run:
+                        # Perform the merge
+                        try:
+                            primary_entity = Entity.objects.get(name_id=primary['id'])
+                            duplicate_entity = Entity.objects.get(name_id=duplicate['id'])
+
+                            # Move all transactions from duplicate to primary
+                            transactions_moved = Transaction.objects.filter(
+                                entity=duplicate_entity
+                            ).update(entity=primary_entity)
+
+                            # Mark duplicate as merged by clearing its name
+                            # (We don't delete to preserve history)
+                            duplicate_entity.first_name = f"[MERGED INTO {primary['id']}] {duplicate_entity.first_name}"
+                            duplicate_entity.save()
+
+                            entities_merged.add(duplicate['id'])
+
+                            resolved.append({
+                                'primary': {
+                                    'id': primary['id'],
+                                    'name': f"{primary['first_name']} {primary['last_name']}",
+                                    'city': primary['city'],
+                                    'transactions': primary['transaction_count']
+                                },
+                                'merged': {
+                                    'id': duplicate['id'],
+                                    'name': f"{duplicate['first_name']} {duplicate['last_name']}",
+                                    'city': duplicate['city'],
+                                    'transactions': duplicate['transaction_count']
+                                },
+                                'confidence': confidence,
+                                'reason': reason,
+                                'transactions_moved': transactions_moved
+                            })
+                        except Entity.DoesNotExist:
+                            continue
+                    else:
+                        # Dry run - just report what would happen
+                        entities_merged.add(duplicate['id'])
+                        resolved.append({
+                            'primary': {
+                                'id': primary['id'],
+                                'name': f"{primary['first_name']} {primary['last_name']}",
+                                'city': primary['city'],
+                                'transactions': primary['transaction_count']
+                            },
+                            'merged': {
+                                'id': duplicate['id'],
+                                'name': f"{duplicate['first_name']} {duplicate['last_name']}",
+                                'city': duplicate['city'],
+                                'transactions': duplicate['transaction_count']
+                            },
+                            'confidence': confidence,
+                            'reason': reason,
+                            'would_move_transactions': duplicate['transaction_count']
+                        })
+
+    # Clear the duplicate entities cache since we modified data
+    if not dry_run and resolved:
+        CompressedCache.delete('validation_duplicate_entities_v1')
+
+    return Response({
+        'dry_run': dry_run,
+        'total_resolved': len(resolved),
+        'resolved_duplicates': resolved[:50],  # Limit response size
+        'message': f"{'Would resolve' if dry_run else 'Resolved'} {len(resolved)} duplicate entity pairs"
     })
 
 

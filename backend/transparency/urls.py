@@ -14,6 +14,7 @@ from .views_validation import (
     race_validation,
     external_comparison,
     merge_entities,
+    auto_resolve_duplicates,
     verify_against_external,
     verification_report
 )
@@ -137,6 +138,7 @@ urlpatterns = [
     path('validation/race/', race_validation, name='validation-race'),
     path('validation/external-comparison/', external_comparison, name='validation-external'),
     path('validation/merge-entities/', merge_entities, name='validation-merge'),
+    path('validation/auto-resolve-duplicates/', auto_resolve_duplicates, name='validation-auto-resolve'),
     path('validation/verify-external/', verify_against_external, name='validation-verify-external'),
     path('validation/verification-report/', verification_report, name='validation-verification-report'),
     

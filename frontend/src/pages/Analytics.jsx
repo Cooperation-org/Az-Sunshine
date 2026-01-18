@@ -29,6 +29,8 @@ import {
   RefreshCw,
   Activity,
   Loader,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 ChartJS.register(
@@ -112,6 +114,8 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState(30);
   const [refreshing, setRefreshing] = useState(false);
+  const [visitsPage, setVisitsPage] = useState(1);
+  const visitsPerPage = 15;
 
   const loadData = useCallback(async () => {
     try {
@@ -546,7 +550,7 @@ export default function Analytics() {
             </div>
           </div>
 
-          {/* Recent Visits Table */}
+          {/* Recent Visits Table with Pagination */}
           <div
             className={`mt-8 p-6 rounded-2xl border ${
               darkMode
@@ -554,15 +558,20 @@ export default function Analytics() {
                 : "bg-white border-gray-100"
             }`}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <Activity size={18} className="text-[#7667C1]" />
-              <h3
-                className={`text-sm font-bold uppercase tracking-widest ${
-                  darkMode ? "text-gray-400" : "text-gray-500"
-                }`}
-              >
-                Recent Visits
-              </h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Activity size={18} className="text-[#7667C1]" />
+                <h3
+                  className={`text-sm font-bold uppercase tracking-widest ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  Recent Visits
+                </h3>
+                <span className={`text-xs ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                  ({data?.recent_visits?.length || 0} total)
+                </span>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -580,7 +589,9 @@ export default function Analytics() {
                   </tr>
                 </thead>
                 <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-100"}`}>
-                  {data?.recent_visits?.map((visit, idx) => (
+                  {data?.recent_visits
+                    ?.slice((visitsPage - 1) * visitsPerPage, visitsPage * visitsPerPage)
+                    .map((visit, idx) => (
                     <tr key={idx}>
                       <td
                         className={`py-3 px-3 text-sm ${
@@ -628,6 +639,44 @@ export default function Analytics() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {data?.recent_visits?.length > visitsPerPage && (
+              <div className={`flex items-center justify-between mt-4 pt-4 border-t ${
+                darkMode ? "border-gray-700" : "border-gray-200"
+              }`}>
+                <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  Showing {((visitsPage - 1) * visitsPerPage) + 1} - {Math.min(visitsPage * visitsPerPage, data?.recent_visits?.length)} of {data?.recent_visits?.length}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setVisitsPage(Math.max(1, visitsPage - 1))}
+                    disabled={visitsPage === 1}
+                    className={`w-9 h-9 rounded-lg border flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                      darkMode
+                        ? "bg-[#1F1B31] text-gray-300 hover:bg-[#16131F] border-gray-700"
+                        : "bg-white text-gray-700 hover:bg-gray-100 border-gray-300"
+                    }`}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className={`text-sm px-3 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                    Page {visitsPage} of {Math.ceil((data?.recent_visits?.length || 0) / visitsPerPage)}
+                  </span>
+                  <button
+                    onClick={() => setVisitsPage(Math.min(Math.ceil((data?.recent_visits?.length || 0) / visitsPerPage), visitsPage + 1))}
+                    disabled={visitsPage >= Math.ceil((data?.recent_visits?.length || 0) / visitsPerPage)}
+                    className={`w-9 h-9 rounded-lg border flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                      darkMode
+                        ? "bg-[#1F1B31] text-gray-300 hover:bg-[#16131F] border-gray-700"
+                        : "bg-white text-gray-700 hover:bg-gray-100 border-gray-300"
+                    }`}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

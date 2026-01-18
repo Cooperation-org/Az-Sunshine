@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import Sidebar from '../components/Sidebar';
 import { useDarkMode } from "../context/DarkModeContext";
-import { 
-  Upload, File, CheckCircle, XCircle, Database, 
-  ShieldCheck, AlertTriangle, FileText, Info 
+import { useAuth } from "../context/AuthContext";
+import {
+  Upload, File, CheckCircle, XCircle, Database,
+  ShieldCheck, AlertTriangle, FileText, Info, Loader
 } from "lucide-react";
+import { importAPI, handleAdminError } from "../api/admin";
 
 // --- REFINED BANNER ---
 const Banner = () => {
@@ -48,6 +50,7 @@ const DataImport = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const { darkMode } = useDarkMode();
+  const { user } = useAuth();
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -56,22 +59,41 @@ const DataImport = () => {
 
   const handleImport = async () => {
     if (!file) return;
+    if (!user) {
+      setResult({ success: false, message: "You must be logged in to import data." });
+      return;
+    }
+
     setLoading(true);
     setResult(null);
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("source", source);
-    formData.append("import_type", importType);
-    formData.append("dry_run", dryRun);
-
     try {
-      const response = await fetch("/api/import_data/", { method: "POST", body: formData });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      setResult(data);
+      // Use the admin API with proper endpoint
+      const data = await importAPI.uploadCSV(
+        file,
+        source || `${importType}_import_${new Date().toISOString().split('T')[0]}`,
+        dryRun
+      );
+
+      // Transform response to match expected format
+      setResult({
+        success: data.status === 'success',
+        message: data.message || (dryRun ? 'Dry run completed successfully.' : 'Import completed successfully.'),
+        dry_run_summary: data.statistics ? {
+          new: data.statistics.new_records || 0,
+          duplicates: data.statistics.duplicates || 0,
+          total: data.statistics.total_rows || 0
+        } : null,
+        job_id: data.job_id,
+        file_name: data.file_name
+      });
     } catch (error) {
-      setResult({ success: false, message: "An error occurred during import.", error: error.toString() });
+      const errorData = handleAdminError(error);
+      setResult({
+        success: false,
+        message: errorData.message || "An error occurred during import.",
+        error: error.toString()
+      });
     } finally {
       setLoading(false);
     }

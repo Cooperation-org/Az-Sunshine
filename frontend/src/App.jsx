@@ -59,12 +59,12 @@ export default function App() {
           <Route path="/email-campaign" element={<ProtectedRoute><EmailCampaign /></ProtectedRoute>} />
           <Route path="/data-validation" element={<ProtectedRoute><DataValidation /></ProtectedRoute>} />
           <Route path="/workflow" element={<ProtectedRoute><WorkflowAutomation /></ProtectedRoute>} />
-          <Route path="/admin/import" element={<ProtectedRoute><DataImport /></ProtectedRoute>} />
-          <Route path="/admin/scrapers" element={<ProtectedRoute><ScraperControl /></ProtectedRoute>} />
-          <Route path="/admin/sos" element={<ProtectedRoute><SOSAutomation /></ProtectedRoute>} />
-          <Route path="/admin/seethemoney" element={<ProtectedRoute><SeeTheMoney /></ProtectedRoute>} />
-          <Route path="/admin/ad-review" element={<ProtectedRoute><AdBuyReview /></ProtectedRoute>} />
-          <Route path="/admin/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+          <Route path="/staff/import" element={<ProtectedRoute><DataImport /></ProtectedRoute>} />
+          <Route path="/staff/scrapers" element={<ProtectedRoute><ScraperControl /></ProtectedRoute>} />
+          <Route path="/staff/sos" element={<ProtectedRoute><SOSAutomation /></ProtectedRoute>} />
+          <Route path="/staff/seethemoney" element={<ProtectedRoute><SeeTheMoney /></ProtectedRoute>} />
+          <Route path="/staff/ad-review" element={<ProtectedRoute><AdBuyReview /></ProtectedRoute>} />
+          <Route path="/staff/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
           {/* 404 */}

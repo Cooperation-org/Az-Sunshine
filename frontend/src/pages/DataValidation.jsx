@@ -19,12 +19,12 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import { useDarkMode } from "../context/DarkModeContext";
-import { StatsGridSkeleton, TableSkeleton, CardSkeleton } from "../components/SkeletonLoader";
 import ConfirmationModal from "../components/ConfirmationModal";
 import {
   getDataQualityMetrics,
   getDuplicateEntities,
-  mergeEntities
+  mergeEntities,
+  autoResolveDuplicates
 } from "../api/api";
 
 export default function DataValidation() {
@@ -38,6 +38,8 @@ export default function DataValidation() {
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [autoResolving, setAutoResolving] = useState(false);
+  const [showAutoResolveModal, setShowAutoResolveModal] = useState(false);
   const pageSize = 5;
 
   useEffect(() => {
@@ -138,6 +140,24 @@ export default function DataValidation() {
     setShowMergeModal(true);
   };
 
+  const handleAutoResolve = async () => {
+    setAutoResolving(true);
+    try {
+      const result = await autoResolveDuplicates(false);
+      setShowAutoResolveModal(false);
+
+      // Reload data to show updated duplicates list
+      await loadData();
+
+      alert(`Successfully resolved ${result.total_resolved} duplicate pairs!`);
+    } catch (error) {
+      console.error("Error auto-resolving duplicates:", error);
+      alert("Failed to auto-resolve duplicates. Please try again.");
+    } finally {
+      setAutoResolving(false);
+    }
+  };
+
   const getQualityBadgeColor = (score) => {
     if (score >= 90) return "bg-green-100 text-green-800";
     if (score >= 75) return "bg-yellow-100 text-yellow-800";
@@ -164,7 +184,10 @@ export default function DataValidation() {
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
           {/* Data Quality Metrics */}
           {loading && !metrics ? (
-            <StatsGridSkeleton count={4} />
+            <div className="flex items-center justify-center py-12">
+              <Loader className="w-8 h-8 animate-spin text-purple-600" />
+              <span className={`ml-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading metrics...</span>
+            </div>
           ) : metrics ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Overall Quality Score */}
@@ -346,21 +369,32 @@ export default function DataValidation() {
                   {duplicates.length} duplicate group{duplicates.length !== 1 ? "s" : ""} found
                 </p>
               </div>
-              <button
-                onClick={loadData}
-                disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-[#7667C1] text-white rounded-lg hover:bg-[#6557B1] transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-                Refresh
-              </button>
+              <div className="flex items-center gap-2">
+                {duplicates.length > 0 && (
+                  <button
+                    onClick={() => setShowAutoResolveModal(true)}
+                    disabled={autoResolving || loading}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <CheckCircle className={`w-4 h-4`} />
+                    Auto-Resolve All
+                  </button>
+                )}
+                <button
+                  onClick={loadData}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#7667C1] text-white rounded-lg hover:bg-[#6557B1] transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                  Refresh
+                </button>
+              </div>
             </div>
 
             {loading && currentPage === 1 ? (
-              <div className="p-4 sm:p-6 space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <CardSkeleton key={i} lines={3} />
-                ))}
+              <div className="flex items-center justify-center py-16">
+                <Loader className="w-8 h-8 animate-spin text-purple-600" />
+                <span className={`ml-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading duplicates...</span>
               </div>
             ) : paginatedDuplicates.length === 0 ? (
               <div className="flex items-center justify-center h-64 text-center">
@@ -494,6 +528,18 @@ export default function DataValidation() {
               : ""
           }
           confirmText={merging ? "Merging..." : "Confirm Merge"}
+          cancelText="Cancel"
+          type="warning"
+        />
+
+        {/* Auto-Resolve Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={showAutoResolveModal}
+          onClose={() => setShowAutoResolveModal(false)}
+          onConfirm={handleAutoResolve}
+          title="Auto-Resolve All Duplicates"
+          message={`Are you sure you want to automatically resolve all ${duplicates.length} duplicate groups? This will merge high-confidence duplicates (92%+ match) by keeping the entity with more transactions as primary. This action cannot be undone.`}
+          confirmText={autoResolving ? "Resolving..." : "Resolve All"}
           cancelText="Cancel"
           type="warning"
         />

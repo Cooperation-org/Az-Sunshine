@@ -993,6 +993,21 @@ export async function mergeEntities(primaryEntityId, duplicateEntityIds) {
   }
 }
 
+/**
+ * Auto-resolve high-confidence duplicate entities
+ * @param {boolean} dryRun - If true, preview changes without making them
+ */
+export async function autoResolveDuplicates(dryRun = false) {
+  try {
+    const res = await api.post('/validation/auto-resolve-duplicates/', {
+      dry_run: dryRun
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to auto-resolve duplicates');
+  }
+}
+
 
 // ==================== EXPORT FUNCTIONS ====================
 

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
-  Mail, Send, Eye, MousePointerClick, Users, Search, 
+  Mail, Send, Eye, MousePointerClick, Users, Search,
   Loader, RefreshCw, Inbox, CheckSquare, Square
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
-import { StatsGridSkeleton } from "../components/SkeletonLoader";
-import { getSOICandidates } from "../api/api";
+import { getSOICandidates, sendBulkEmails, getEmailStatistics } from "../api/api";
 import { useDarkMode } from "../context/DarkModeContext";
 import { ToastContainer, useToast } from "../components/Toast";
 
@@ -60,7 +59,7 @@ const Banner = ({ controls, searchTerm, setSearchTerm, onSearch }) => {
 export default function EmailCampaign() {
   const { darkMode } = useDarkMode();
   const { toasts, addToast, removeToast } = useToast();
-  
+
   // State
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
@@ -70,19 +69,48 @@ export default function EmailCampaign() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [sendProgress, setSendProgress] = useState({ sent: 0, total: 0 });
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [emailStats, setEmailStats] = useState({
+    total_sent: 0,
+    open_rate: 0,
+    click_rate: 0
+  });
 
-  // Mock Stats - to be replaced by API
+  // Stats data derived from API response
   const statsData = [
-    { title: "Total Sent", value: "245", icon: Send, color: "#7667C1" },
-    { title: "Open Rate", value: "77.1%", icon: Eye, color: "#0ea5e9" },
-    { title: "Click Rate", value: "27.3%", icon: MousePointerClick, color: "#22c55e" },
+    { title: "Total Sent", value: emailStats.total_sent.toString(), icon: Send, color: "#7667C1" },
+    { title: "Open Rate", value: `${emailStats.open_rate.toFixed(1)}%`, icon: Eye, color: "#0ea5e9" },
+    { title: "Click Rate", value: `${emailStats.click_rate.toFixed(1)}%`, icon: MousePointerClick, color: "#22c55e" },
     { title: "Selected", value: selectedRecipients.size.toString(), icon: Users, color: "#fbbf24" },
   ];
 
   useEffect(() => {
     loadRecipients();
+    loadEmailStats();
+  }, []);
+
+  useEffect(() => {
+    loadRecipients();
   }, [recipientFilter, searchTerm]);
+
+  async function loadEmailStats() {
+    setStatsLoading(true);
+    try {
+      const stats = await getEmailStatistics();
+      if (stats) {
+        setEmailStats({
+          total_sent: stats.total_sent || 0,
+          open_rate: stats.open_rate || 0,
+          click_rate: stats.click_rate || 0
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load email stats:", err);
+      // Keep default values on error
+    } finally {
+      setStatsLoading(false);
+    }
+  }
 
   async function loadRecipients() {
     setLoading(true);
@@ -99,13 +127,60 @@ export default function EmailCampaign() {
   }
 
   const handleSendEmails = async () => {
-    if (selectedRecipients.size === 0) return addToast("Select recipients first", "warning");
+    if (selectedRecipients.size === 0) {
+      return addToast("Select recipients first", "warning");
+    }
+    if (!emailSubject.trim()) {
+      return addToast("Please enter a subject line", "warning");
+    }
+    if (!emailBody.trim()) {
+      return addToast("Please enter an email message", "warning");
+    }
+
     setSending(true);
-    // Logic for sending...
-    setTimeout(() => {
-        setSending(false);
-        addToast(`Successfully sent to ${selectedRecipients.size} candidates`, "success");
-    }, 2000);
+    try {
+      // Convert Set to Array of candidate IDs
+      const candidateIds = Array.from(selectedRecipients);
+
+      // Call the real backend API
+      const result = await sendBulkEmails(
+        candidateIds,
+        null, // No template ID, using custom content
+        emailSubject,
+        emailBody
+      );
+
+      if (result && result.success) {
+        addToast(
+          `Successfully sent to ${result.results?.success || candidateIds.length} candidates`,
+          "success"
+        );
+        // Clear selection and refresh stats
+        setSelectedRecipients(new Set());
+        setEmailSubject("");
+        setEmailBody("");
+        loadEmailStats();
+        loadRecipients();
+      } else {
+        const failedCount = result?.results?.failed || 0;
+        if (failedCount > 0) {
+          addToast(`Sent with ${failedCount} failures. Check logs for details.`, "warning");
+        } else {
+          addToast("Emails sent successfully", "success");
+        }
+        loadEmailStats();
+      }
+    } catch (error) {
+      console.error("Failed to send emails:", error);
+      addToast(error.message || "Failed to send emails. Please try again.", "error");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleRefreshStats = async () => {
+    await loadEmailStats();
+    addToast("Stats refreshed", "info");
   };
 
   const StatCard = ({ title, value, icon: Icon, color }) => (
@@ -130,11 +205,13 @@ export default function EmailCampaign() {
             setSearchTerm={setSearchTerm}
             onSearch={loadRecipients}
             controls={
-              <button 
-                onClick={() => addToast("Stats refreshed", "info")}
-                className="flex items-center gap-2 bg-[#7667C1] hover:bg-[#6556b0] text-white px-5 py-2 rounded-full text-sm font-medium transition-all"
+              <button
+                onClick={handleRefreshStats}
+                disabled={statsLoading}
+                className="flex items-center gap-2 bg-[#7667C1] hover:bg-[#6556b0] text-white px-5 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-50"
               >
-                <RefreshCw size={14} /> Refresh Stats
+                <RefreshCw size={14} className={statsLoading ? "animate-spin" : ""} />
+                {statsLoading ? "Loading..." : "Refresh Stats"}
               </button>
             }
           />

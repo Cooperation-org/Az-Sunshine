@@ -78,12 +78,12 @@ export default function Sidebar() {
     { path: "/soi", icon: CheckSquare, label: "SOI Tracking", badge: null },
     { path: "/email-campaign", icon: Mail, label: "Email Campaign", badge: null },
     { path: "/data-validation", icon: Database, label: "Data Validation", badge: null },
-    { path: "/admin/analytics", icon: Activity, label: "Site Analytics", badge: "NEW" },
-    { path: "/admin/seethemoney", icon: Eye, label: "SeeTheMoney", badge: "FREE" },
-    { path: "/admin/import", icon: Upload, label: "Data Import", badge: null },
-    { path: "/admin/scrapers", icon: Globe, label: "County Scrapers", badge: null },
-    { path: "/admin/sos", icon: FileCheck, label: "AZ SOS Automation", badge: null },
-    { path: "/admin/ad-review", icon: ShieldCheck, label: "Ad Buy Review", badge: null },
+    { path: "/staff/analytics", icon: Activity, label: "Site Analytics", badge: null },
+    { path: "/staff/seethemoney", icon: Eye, label: "SeeTheMoney", badge: "FREE" },
+    { path: "/staff/import", icon: Upload, label: "Data Import", badge: null },
+    { path: "/staff/scrapers", icon: Globe, label: "County Scrapers", badge: null },
+    { path: "/staff/sos", icon: FileCheck, label: "AZ SOS Automation", badge: null },
+    { path: "/staff/ad-review", icon: ShieldCheck, label: "Ad Buy Review", badge: null },
   ];
 
   const SidebarContent = ({ isMobile = false }) => (

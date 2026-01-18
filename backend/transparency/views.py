@@ -21,6 +21,7 @@ import requests
 import json
 import logging
 import os
+import re
 
 
 # Initialize logger
@@ -1423,6 +1424,53 @@ def candidates_list(request):
     # Same person with multiple committees for same office = merged
     # Same person running for different offices = separate entries
     if deduplicate:
+        def normalize_name_for_dedup(full_name, has_office=True):
+            """
+            Normalize candidate name for deduplication.
+            - Convert to uppercase
+            - For real candidates: Extract first and last name (ignore middle names)
+            - For organizations (no office): Use full name to avoid false merges
+            """
+            if not full_name:
+                return 'UNKNOWN'
+            # Uppercase and strip
+            name = full_name.upper().strip()
+
+            # Detect organizations by keywords or lack of office
+            org_keywords = ['ASSOCIATION', 'COMMITTEE', 'PAC', 'FUND', 'FOUNDATION',
+                           'CORPORATION', 'CORP', 'INC', 'LLC', 'INSTITUTE', 'COUNCIL',
+                           'ALLIANCE', 'COALITION', 'UNION', 'SOCIETY', 'ORGANIZATION']
+            is_org = not has_office or any(kw in name for kw in org_keywords)
+
+            if is_org:
+                # For organizations, use full name (just normalize whitespace)
+                return ' '.join(name.split())
+
+            # For real candidates, extract first + last name
+            parts = name.split()
+            if len(parts) == 0:
+                return 'UNKNOWN'
+            elif len(parts) == 1:
+                return parts[0]
+            elif len(parts) == 2:
+                return f"{parts[0]} {parts[1]}"
+            else:
+                # For 3+ parts, use first and last (skip middle names)
+                return f"{parts[0]} {parts[-1]}"
+
+        def normalize_office_for_dedup(office_name):
+            """
+            Normalize office name for deduplication.
+            - Convert to uppercase
+            - Remove 'No.' variations to treat 'District 3' = 'District No. 3'
+            """
+            if not office_name:
+                return 'UNKNOWN'
+            normalized = office_name.upper().strip()
+            # Remove "No." or "NO." followed by space (e.g., "District No. 3" -> "District 3")
+            normalized = re.sub(r'\bNO\.\s*', '', normalized)
+            return normalized
+
         seen_candidates = {}
         deduplicated_data = []
         for item in result_data:
@@ -1430,9 +1478,12 @@ def candidates_list(request):
             if not candidate_name:
                 candidate_name = item.get('name', {}).get('full_name') if item.get('name') else 'Unknown'
 
-            # Use name + office as key for deduplication
-            office_name = item.get('candidate_office', {}).get('name') if item.get('candidate_office') else 'Unknown'
-            dedup_key = f"{candidate_name}|{office_name}"
+            # Use normalized name + office as key for deduplication
+            office_name = item.get('candidate_office', {}).get('name') if item.get('candidate_office') else None
+            has_office = office_name is not None and office_name != 'Unknown'
+            normalized_name = normalize_name_for_dedup(candidate_name, has_office=has_office)
+            normalized_office = normalize_office_for_dedup(office_name) if office_name else 'UNKNOWN'
+            dedup_key = f"{normalized_name}|{normalized_office}"
 
             if dedup_key not in seen_candidates:
                 # First occurrence - add to results
@@ -2315,8 +2366,8 @@ def analytics_dashboard(request):
     realtime_cutoff = timezone.now() - timedelta(minutes=5)
     realtime_visitors = visits.filter(timestamp__gte=realtime_cutoff).values('session_id').distinct().count()
 
-    # Recent visits
-    recent_visits = list(visits.order_by('-timestamp')[:20].values(
+    # Recent visits - return all visits for the date range (frontend handles pagination)
+    recent_visits = list(visits.order_by('-timestamp').values(
         'path', 'country', 'city', 'device_type', 'browser', 'timestamp', 'ip_address'
     ))
     for v in recent_visits:
