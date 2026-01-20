@@ -1526,3 +1526,359 @@ class DailyAnalytics(models.Model):
 
     def __str__(self):
         return f"Analytics for {self.date}: {self.total_visits} visits"
+
+
+# =============================================================================
+# ADVANCED ANALYTICS MODELS
+# =============================================================================
+
+class UserSession(models.Model):
+    """
+    Track complete user sessions for journey analysis.
+    A session groups multiple page visits together.
+    """
+    session_id = models.CharField(max_length=64, primary_key=True)
+    visitor_id = models.CharField(max_length=64, db_index=True)
+
+    # Session timing
+    started_at = models.DateTimeField(db_index=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.IntegerField(default=0)
+
+    # Journey data
+    page_count = models.IntegerField(default=0)
+    pages_visited = models.JSONField(default=list, help_text='Ordered list of pages visited')
+    entry_page = models.CharField(max_length=500, blank=True)
+    exit_page = models.CharField(max_length=500, blank=True)
+
+    # Engagement scoring
+    engagement_score = models.CharField(max_length=20, default='casual', choices=[
+        ('casual', 'Casual'),         # 1 page, <30 sec
+        ('interested', 'Interested'), # 2-5 pages, 1-3 min
+        ('engaged', 'Engaged'),       # 5+ pages, 3+ min
+        ('power_user', 'Power User'), # Multiple sessions, advanced features
+    ])
+
+    # Visitor context
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    device_type = models.CharField(max_length=20, blank=True)
+    browser = models.CharField(max_length=50, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    country_code = models.CharField(max_length=2, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    region = models.CharField(max_length=100, blank=True)
+
+    # Referrer info
+    referrer = models.URLField(max_length=1000, blank=True)
+    referrer_domain = models.CharField(max_length=255, blank=True, db_index=True)
+    utm_source = models.CharField(max_length=100, blank=True, db_index=True)
+    utm_medium = models.CharField(max_length=100, blank=True)
+    utm_campaign = models.CharField(max_length=100, blank=True)
+
+    # Flags
+    is_bot = models.BooleanField(default=False)
+    is_bounced = models.BooleanField(default=False, help_text='Single page visit')
+
+    class Meta:
+        db_table = 'user_sessions'
+        ordering = ['-started_at']
+        indexes = [
+            models.Index(fields=['visitor_id'], name='idx_session_visitor'),
+            models.Index(fields=['started_at'], name='idx_session_started'),
+            models.Index(fields=['engagement_score'], name='idx_session_engagement'),
+            models.Index(fields=['referrer_domain'], name='idx_session_referrer'),
+        ]
+
+    def __str__(self):
+        return f"Session {self.session_id[:8]}... ({self.page_count} pages)"
+
+
+class SearchQuery(models.Model):
+    """
+    Track user search queries for search analytics.
+    """
+    query = models.CharField(max_length=500, db_index=True)
+    normalized_query = models.CharField(max_length=500, db_index=True, help_text='Lowercase, trimmed')
+
+    # Context
+    session_id = models.CharField(max_length=64, blank=True, db_index=True)
+    visitor_id = models.CharField(max_length=64, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    # Results
+    results_count = models.IntegerField(default=0)
+    had_results = models.BooleanField(default=True)
+    clicked_result = models.BooleanField(default=False)
+    clicked_position = models.IntegerField(null=True, blank=True, help_text='Position of clicked result')
+
+    # Timing
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    response_time_ms = models.IntegerField(null=True, blank=True)
+
+    # Search type
+    search_type = models.CharField(max_length=50, default='general', choices=[
+        ('general', 'General Search'),
+        ('candidate', 'Candidate Search'),
+        ('committee', 'Committee Search'),
+        ('transaction', 'Transaction Search'),
+    ])
+
+    class Meta:
+        db_table = 'search_queries'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['normalized_query', '-timestamp'], name='idx_search_query_time'),
+            models.Index(fields=['had_results'], name='idx_search_no_results'),
+        ]
+
+    def __str__(self):
+        return f'"{self.query}" ({self.results_count} results)'
+
+
+class CandidateView(models.Model):
+    """
+    Track views of individual candidates for interest heatmap.
+    """
+    candidate = models.ForeignKey(
+        'Entity', on_delete=models.CASCADE, related_name='candidate_views',
+        null=True, blank=True
+    )
+    candidate_name = models.CharField(max_length=255, db_index=True)
+    office = models.CharField(max_length=255, blank=True)
+    district = models.CharField(max_length=100, blank=True, db_index=True)
+
+    # View context
+    session_id = models.CharField(max_length=64, blank=True)
+    visitor_id = models.CharField(max_length=64, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    # Geographic
+    country = models.CharField(max_length=100, blank=True)
+    country_code = models.CharField(max_length=2, blank=True)
+    region = models.CharField(max_length=100, blank=True, db_index=True)
+    city = models.CharField(max_length=100, blank=True)
+
+    # Engagement
+    time_on_page = models.IntegerField(null=True, blank=True, help_text='Seconds')
+    scrolled_to_bottom = models.BooleanField(default=False)
+    clicked_donation_link = models.BooleanField(default=False)
+    viewed_ie_spending = models.BooleanField(default=False)
+
+    # Source
+    referrer = models.URLField(max_length=1000, blank=True)
+    referrer_domain = models.CharField(max_length=255, blank=True)
+
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = 'candidate_views'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['candidate_name', '-timestamp'], name='idx_candview_name_time'),
+            models.Index(fields=['district'], name='idx_candview_district'),
+            models.Index(fields=['region'], name='idx_candview_region'),
+        ]
+
+    def __str__(self):
+        return f"View: {self.candidate_name} ({self.timestamp.date()})"
+
+
+class ReferrerStats(models.Model):
+    """
+    Aggregated referrer statistics for traffic source analysis.
+    """
+    domain = models.CharField(max_length=255, db_index=True)
+    full_url = models.URLField(max_length=1000, blank=True)
+
+    # Classification
+    source_type = models.CharField(max_length=50, default='other', choices=[
+        ('social', 'Social Media'),
+        ('search', 'Search Engine'),
+        ('news', 'News Site'),
+        ('direct', 'Direct'),
+        ('email', 'Email'),
+        ('other', 'Other'),
+    ])
+    platform = models.CharField(max_length=50, blank=True, help_text='twitter, facebook, google, etc.')
+
+    # Metrics
+    visit_count = models.IntegerField(default=0)
+    unique_visitors = models.IntegerField(default=0)
+    last_seen = models.DateTimeField(auto_now=True)
+    first_seen = models.DateTimeField(auto_now_add=True)
+
+    # Quality metrics
+    avg_pages_per_session = models.FloatField(default=1.0)
+    avg_session_duration = models.FloatField(default=0)
+    bounce_rate = models.FloatField(default=0, help_text='Percentage 0-100')
+
+    class Meta:
+        db_table = 'referrer_stats'
+        ordering = ['-visit_count']
+        indexes = [
+            models.Index(fields=['source_type', '-visit_count'], name='idx_ref_type_count'),
+        ]
+
+    def __str__(self):
+        return f"{self.domain} ({self.visit_count} visits)"
+
+
+class APIUsage(models.Model):
+    """
+    Track API endpoint usage for API analytics.
+    """
+    endpoint = models.CharField(max_length=500, db_index=True)
+    method = models.CharField(max_length=10, default='GET')
+
+    # Request context
+    ip_address = models.GenericIPAddressField(db_index=True)
+    user_agent = models.TextField(blank=True)
+    api_key = models.CharField(max_length=100, blank=True, db_index=True)
+    user = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    # Response
+    status_code = models.IntegerField(default=200)
+    response_time_ms = models.IntegerField(null=True, blank=True)
+    response_size_bytes = models.IntegerField(null=True, blank=True)
+
+    # Rate limiting
+    is_rate_limited = models.BooleanField(default=False)
+
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = 'api_usage'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['endpoint', '-timestamp'], name='idx_api_endpoint_time'),
+            models.Index(fields=['ip_address', '-timestamp'], name='idx_api_ip_time'),
+        ]
+
+    def __str__(self):
+        return f"{self.method} {self.endpoint} ({self.status_code})"
+
+
+class ContentPerformance(models.Model):
+    """
+    Track content performance metrics by page/section.
+    """
+    path = models.CharField(max_length=500, db_index=True)
+    content_type = models.CharField(max_length=50, default='page', choices=[
+        ('page', 'Page'),
+        ('candidate_profile', 'Candidate Profile'),
+        ('committee_profile', 'Committee Profile'),
+        ('ie_spending', 'IE Spending'),
+        ('dark_money', 'Dark Money'),
+        ('race_analysis', 'Race Analysis'),
+        ('document', 'Document/PDF'),
+    ])
+
+    # Date for daily aggregation
+    date = models.DateField(db_index=True)
+
+    # Metrics
+    views = models.IntegerField(default=0)
+    unique_visitors = models.IntegerField(default=0)
+    avg_time_on_page = models.FloatField(default=0, help_text='Seconds')
+    bounce_rate = models.FloatField(default=0, help_text='Percentage 0-100')
+    scroll_depth_avg = models.FloatField(default=0, help_text='Percentage 0-100')
+
+    # Engagement
+    total_clicks = models.IntegerField(default=0)
+    shares = models.IntegerField(default=0)
+    downloads = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'content_performance'
+        unique_together = ['path', 'date']
+        ordering = ['-date', '-views']
+        indexes = [
+            models.Index(fields=['content_type', '-date'], name='idx_content_type_date'),
+        ]
+
+    def __str__(self):
+        return f"{self.path} ({self.date}): {self.views} views"
+
+
+class AnomalyAlert(models.Model):
+    """
+    Store detected anomalies and alerts.
+    """
+    alert_type = models.CharField(max_length=50, choices=[
+        ('traffic_spike', 'Unusual Traffic Spike'),
+        ('traffic_drop', 'Unusual Traffic Drop'),
+        ('bot_attack', 'Potential Bot Attack'),
+        ('geo_anomaly', 'Geographic Anomaly'),
+        ('error_spike', 'Error Rate Spike'),
+        ('candidate_viral', 'Candidate Going Viral'),
+        ('api_abuse', 'API Abuse Detected'),
+    ])
+
+    severity = models.CharField(max_length=20, default='medium', choices=[
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ])
+
+    # Alert details
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    metric_name = models.CharField(max_length=100, blank=True)
+    expected_value = models.FloatField(null=True, blank=True)
+    actual_value = models.FloatField(null=True, blank=True)
+    threshold = models.FloatField(null=True, blank=True)
+
+    # Context
+    related_path = models.CharField(max_length=500, blank=True)
+    related_ip = models.GenericIPAddressField(null=True, blank=True)
+    related_country = models.CharField(max_length=100, blank=True)
+
+    # Status
+    is_acknowledged = models.BooleanField(default=False)
+    acknowledged_by = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL, null=True, blank=True
+    )
+    acknowledged_at = models.DateTimeField(null=True, blank=True)
+
+    # Timing
+    detected_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'anomaly_alerts'
+        ordering = ['-detected_at']
+        indexes = [
+            models.Index(fields=['alert_type', '-detected_at'], name='idx_alert_type_time'),
+            models.Index(fields=['severity', 'is_acknowledged'], name='idx_alert_severity'),
+        ]
+
+    def __str__(self):
+        return f"[{self.severity.upper()}] {self.title}"
+
+
+class HourlyTrafficPattern(models.Model):
+    """
+    Aggregated hourly traffic for time-based pattern analysis.
+    """
+    date = models.DateField(db_index=True)
+    hour = models.IntegerField()  # 0-23
+
+    visits = models.IntegerField(default=0)
+    unique_visitors = models.IntegerField(default=0)
+    page_views = models.IntegerField(default=0)
+
+    # Device breakdown
+    desktop = models.IntegerField(default=0)
+    mobile = models.IntegerField(default=0)
+    tablet = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'hourly_traffic'
+        unique_together = ['date', 'hour']
+        ordering = ['-date', '-hour']
+
+    def __str__(self):
+        return f"{self.date} {self.hour}:00 - {self.visits} visits"

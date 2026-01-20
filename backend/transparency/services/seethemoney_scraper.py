@@ -171,20 +171,34 @@ class SeeTheMoneyScraper:
                     logger.warning(f"Could not set election cycle: {e}")
 
                 # Set date range for quarterly chunking (CRITICAL FIX for timeouts)
+                # NOTE: Website now uses hidden inputs for dates - try visible inputs first,
+                # then fall back to JavaScript injection for hidden fields
                 try:
                     logger.info(f"Setting date range: {start_date} to {end_date}")
-                    start_date_input = page.locator("input[name*='StartDate'], input[id*='StartDate'], input[placeholder*='Start']")
-                    end_date_input = page.locator("input[name*='EndDate'], input[id*='EndDate'], input[placeholder*='End']")
+
+                    # Try visible date inputs first
+                    start_date_input = page.locator("input[name*='StartDate']:visible, input[id*='StartDate']:visible, input[placeholder*='Start']:visible")
+                    end_date_input = page.locator("input[name*='EndDate']:visible, input[id*='EndDate']:visible, input[placeholder*='End']:visible")
 
                     if start_date_input.count() > 0:
                         start_date_input.first.fill(start_date)
-                        logger.info(f"Set start date: {start_date}")
+                        logger.info(f"Set start date via visible input: {start_date}")
+                    else:
+                        # Try JavaScript injection for hidden fields
+                        logger.info("Date inputs are hidden, using JavaScript injection...")
+                        page.evaluate(f"""
+                            const startInput = document.querySelector('input[id*="StartDate"], input[name*="StartDate"]');
+                            const endInput = document.querySelector('input[id*="EndDate"], input[name*="EndDate"]');
+                            if (startInput) {{ startInput.value = '{start_date}'; }}
+                            if (endInput) {{ endInput.value = '{end_date}'; }}
+                        """)
+                        logger.info(f"Set dates via JavaScript: {start_date} to {end_date}")
 
                     if end_date_input.count() > 0:
                         end_date_input.first.fill(end_date)
-                        logger.info(f"Set end date: {end_date}")
+                        logger.info(f"Set end date via visible input: {end_date}")
                 except Exception as e:
-                    logger.warning(f"Could not set date range: {e}")
+                    logger.warning(f"Could not set date range: {e} - continuing with default dates")
 
                 # Set Filer Type (entity type) - checkboxes
                 try:

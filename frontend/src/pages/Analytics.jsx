@@ -432,13 +432,17 @@ export default function Analytics() {
                     key={idx}
                     className="flex items-center justify-between"
                   >
-                    <span
-                      className={`text-sm truncate max-w-[200px] ${
-                        darkMode ? "text-gray-300" : "text-gray-700"
+                    <a
+                      href={page.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`text-sm truncate max-w-[200px] hover:underline ${
+                        darkMode ? "text-purple-400 hover:text-purple-300" : "text-purple-600 hover:text-purple-700"
                       }`}
+                      title={page.path}
                     >
                       {page.path}
-                    </span>
+                    </a>
                     <span
                       className={`text-sm font-medium ${
                         darkMode ? "text-gray-400" : "text-gray-500"
@@ -598,7 +602,16 @@ export default function Analytics() {
                           darkMode ? "text-gray-300" : "text-gray-700"
                         }`}
                       >
-                        {visit.path}
+                        <a
+                          href={visit.path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`hover:underline ${
+                            darkMode ? "text-purple-400 hover:text-purple-300" : "text-purple-600 hover:text-purple-700"
+                          }`}
+                        >
+                          {visit.path}
+                        </a>
                       </td>
                       <td
                         className={`py-3 px-3 text-sm ${

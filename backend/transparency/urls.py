@@ -40,6 +40,27 @@ from .views_candidate_aggregate import (
     candidate_aggregate_ie_spending
 )
 from .views_ie_analysis import dark_money_disclosures, race_ie_committees
+from .views_analytics import (
+    user_journeys,
+    funnel_analysis,
+    candidate_heatmap,
+    candidate_viral_alerts,
+    search_analytics,
+    track_search,
+    referrer_intelligence,
+    engagement_metrics,
+    geographic_intelligence,
+    time_patterns,
+    api_usage_analytics,
+    content_performance,
+    anomaly_alerts,
+    acknowledge_alert,
+    run_anomaly_detection,
+    advanced_analytics_dashboard,
+    track_pageview,
+    track_engagement,
+    track_candidate_view,
+)
 
 app_name = 'transparency'
 
@@ -163,6 +184,29 @@ urlpatterns = [
     path('analytics/dashboard/', analytics_dashboard, name='analytics-dashboard'),
     path('analytics/realtime/', analytics_realtime, name='analytics-realtime'),
     path('analytics/geo/', analytics_geo, name='analytics-geo'),
+
+    # === ADVANCED ANALYTICS (Beyond Google Analytics) ===
+    path('analytics/advanced/', advanced_analytics_dashboard, name='analytics-advanced'),
+    path('analytics/journeys/', user_journeys, name='analytics-journeys'),
+    path('analytics/funnels/', funnel_analysis, name='analytics-funnels'),
+    path('analytics/candidate-heatmap/', candidate_heatmap, name='analytics-candidate-heatmap'),
+    path('analytics/candidate-viral/', candidate_viral_alerts, name='analytics-candidate-viral'),
+    path('analytics/search/', search_analytics, name='analytics-search'),
+    path('analytics/track-search/', track_search, name='analytics-track-search'),
+    path('analytics/referrers/', referrer_intelligence, name='analytics-referrers'),
+    path('analytics/engagement/', engagement_metrics, name='analytics-engagement'),
+    path('analytics/geographic/', geographic_intelligence, name='analytics-geographic'),
+    path('analytics/time-patterns/', time_patterns, name='analytics-time-patterns'),
+    path('analytics/api-usage/', api_usage_analytics, name='analytics-api-usage'),
+    path('analytics/content/', content_performance, name='analytics-content'),
+    path('analytics/alerts/', anomaly_alerts, name='analytics-alerts'),
+    path('analytics/alerts/<int:alert_id>/acknowledge/', acknowledge_alert, name='analytics-alert-acknowledge'),
+    path('analytics/run-detection/', run_anomaly_detection, name='analytics-run-detection'),
+
+    # === FRONTEND TRACKING (Public - no auth required) ===
+    path('analytics/track-pageview/', track_pageview, name='analytics-track-pageview'),
+    path('analytics/track-engagement/', track_engagement, name='analytics-track-engagement'),
+    path('analytics/track-candidate-view/', track_candidate_view, name='analytics-track-candidate-view'),
 
     # Router MUST come last
     path('', include(router.urls)),

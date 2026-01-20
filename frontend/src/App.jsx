@@ -4,6 +4,7 @@ import { DarkModeProvider } from "./context/DarkModeContext";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useSecurityProtection } from "./hooks/useSecurityProtection";
+import { usePageTracking } from "./hooks/usePageTracking";
 
 // Auth Pages
 import Login from "./pages/Login";
@@ -30,8 +31,15 @@ import SeeTheMoney from "./pages/SeeTheMoney";
 import ReportAdBuy from "./pages/ReportAdBuy";
 import AdBuyReview from "./pages/AdBuyReview";
 import Analytics from "./pages/Analytics";
+import AdvancedAnalytics from "./pages/AdvancedAnalytics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+
+// Analytics tracker component (must be inside Router)
+function AnalyticsTracker() {
+  usePageTracking();
+  return null;
+}
 
 export default function App() {
   // Apply security protection (right-click, DevTools, etc.)
@@ -40,6 +48,7 @@ export default function App() {
   return (
     <DarkModeProvider>
       <AuthProvider>
+        <AnalyticsTracker />
         <Routes>
           {/* Public Routes - No Login Required */}
           <Route path="/login" element={<Login />} />
@@ -65,6 +74,7 @@ export default function App() {
           <Route path="/staff/seethemoney" element={<ProtectedRoute><SeeTheMoney /></ProtectedRoute>} />
           <Route path="/staff/ad-review" element={<ProtectedRoute><AdBuyReview /></ProtectedRoute>} />
           <Route path="/staff/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+          <Route path="/staff/advanced-analytics" element={<ProtectedRoute><AdvancedAnalytics /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
           {/* 404 */}

@@ -1308,6 +1308,220 @@ export async function getAnalyticsGeo(days = 30) {
 }
 
 
+// ==================== ADVANCED ANALYTICS ====================
+
+/**
+ * Get advanced analytics dashboard (all metrics combined)
+ */
+export async function getAdvancedAnalyticsDashboard(days = 30) {
+  try {
+    const res = await api.get(`/analytics/advanced/?days=${days}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load advanced analytics dashboard');
+  }
+}
+
+/**
+ * Get user journey data (sessions, paths)
+ */
+export async function getUserJourneys(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/journeys/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load user journeys');
+  }
+}
+
+/**
+ * Get funnel analysis data
+ */
+export async function getFunnelAnalysis(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/funnels/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load funnel analysis');
+  }
+}
+
+/**
+ * Get candidate interest heatmap data
+ */
+export async function getCandidateHeatmap(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/candidate-heatmap/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load candidate heatmap');
+  }
+}
+
+/**
+ * Get candidate viral alerts
+ */
+export async function getCandidateViralAlerts(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/candidate-viral/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load candidate viral alerts');
+  }
+}
+
+/**
+ * Get search analytics data
+ */
+export async function getSearchAnalytics(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/search/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load search analytics');
+  }
+}
+
+/**
+ * Track a search query from the frontend
+ */
+export async function trackSearch(query, resultsCount, clickedResult = false, searchType = 'general') {
+  try {
+    const res = await api.post('/analytics/track-search/', {
+      query,
+      results_count: resultsCount,
+      clicked_result: clickedResult,
+      search_type: searchType,
+    });
+    return res.data;
+  } catch (error) {
+    // Silent fail for tracking - don't interrupt user experience
+    console.error('Search tracking failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Get referrer intelligence data
+ */
+export async function getReferrerIntelligence(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/referrers/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load referrer intelligence');
+  }
+}
+
+/**
+ * Get engagement metrics
+ */
+export async function getEngagementMetrics(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/engagement/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load engagement metrics');
+  }
+}
+
+/**
+ * Get geographic intelligence (AZ regions)
+ */
+export async function getGeographicIntelligence(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/geographic/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load geographic intelligence');
+  }
+}
+
+/**
+ * Get time-based traffic patterns
+ */
+export async function getTimePatterns(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/time-patterns/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load time patterns');
+  }
+}
+
+/**
+ * Get API usage analytics
+ */
+export async function getAPIUsageAnalytics(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/api-usage/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load API usage analytics');
+  }
+}
+
+/**
+ * Get content performance metrics
+ */
+export async function getContentPerformance(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/content/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load content performance');
+  }
+}
+
+/**
+ * Get anomaly alerts
+ */
+export async function getAnomalyAlerts(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/analytics/alerts/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load anomaly alerts');
+  }
+}
+
+/**
+ * Acknowledge an alert
+ */
+export async function acknowledgeAlert(alertId) {
+  try {
+    const res = await api.post(`/analytics/alerts/${alertId}/acknowledge/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to acknowledge alert');
+  }
+}
+
+/**
+ * Run anomaly detection
+ */
+export async function runAnomalyDetection() {
+  try {
+    const res = await api.post('/analytics/run-detection/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to run anomaly detection');
+  }
+}
+
+
 // Export the api instance for custom requests
 export { api };
 

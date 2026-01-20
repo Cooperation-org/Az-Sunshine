@@ -262,6 +262,7 @@ class AnalyticsMiddleware(MiddlewareMixin):
         """Record the visit in the database."""
         import uuid
         from threading import Thread
+        from urllib.parse import urlparse, parse_qs
 
         # Get client info
         client_ip = self.get_client_ip(request)
@@ -280,13 +281,21 @@ class AnalyticsMiddleware(MiddlewareMixin):
         # Parse user agent for device/browser info
         device_type, browser, os = self.parse_user_agent(user_agent)
 
+        # Extract UTM parameters
+        utm_source = request.GET.get('utm_source', '')
+        utm_medium = request.GET.get('utm_medium', '')
+        utm_campaign = request.GET.get('utm_campaign', '')
+
         # Run the database insert in a separate thread to not block response
         def save_visit():
-            from transparency.models import SiteVisit
+            from transparency.models import SiteVisit, UserSession, CandidateView
+            from django.utils import timezone
+            from datetime import timedelta
 
             # Get geolocation from IP (using free IP-API service)
             geo_data = self.get_geolocation(client_ip)
 
+            # Save the basic visit
             SiteVisit.objects.create(
                 session_id=session_id,
                 visitor_id=visitor_id,
@@ -305,6 +314,106 @@ class AnalyticsMiddleware(MiddlewareMixin):
                 longitude=geo_data.get('lon'),
                 user=request.user if request.user.is_authenticated else None,
             )
+
+            # Update or create UserSession for advanced analytics
+            now = timezone.now()
+            session_timeout = timedelta(minutes=30)
+
+            try:
+                # Try to get existing session (not expired)
+                session = UserSession.objects.filter(
+                    session_id=session_id,
+                    ended_at__isnull=True,
+                    started_at__gte=now - session_timeout
+                ).first()
+
+                if session:
+                    # Update existing session
+                    pages = session.pages_visited or []
+                    if path not in pages[-5:]:  # Avoid duplicate consecutive pages
+                        pages.append(path)
+                    session.pages_visited = pages
+                    session.page_count = len(pages)
+                    session.exit_page = path
+                    session.duration_seconds = int((now - session.started_at).total_seconds())
+
+                    # Update engagement score based on behavior
+                    if session.page_count >= 5 and session.duration_seconds >= 180:
+                        session.engagement_score = 'power_user'
+                    elif session.page_count >= 3 or session.duration_seconds >= 60:
+                        session.engagement_score = 'engaged'
+                    elif session.page_count >= 2:
+                        session.engagement_score = 'interested'
+
+                    session.save()
+                else:
+                    # Create new session
+                    # Determine referrer source
+                    referrer_source = ''
+                    referrer_medium = 'direct'
+                    if referrer:
+                        try:
+                            parsed = urlparse(referrer)
+                            referrer_source = parsed.netloc
+                            if 'google' in referrer_source or 'bing' in referrer_source:
+                                referrer_medium = 'organic'
+                            elif 'facebook' in referrer_source or 'twitter' in referrer_source or 'linkedin' in referrer_source:
+                                referrer_medium = 'social'
+                            else:
+                                referrer_medium = 'referral'
+                        except:
+                            pass
+
+                    UserSession.objects.create(
+                        session_id=session_id,
+                        visitor_id=visitor_id,
+                        started_at=now,
+                        page_count=1,
+                        pages_visited=[path],
+                        entry_page=path,
+                        exit_page=path,
+                        referrer=referrer[:500] if referrer else '',
+                        referrer_domain=referrer_source[:100] if referrer_source else '',
+                        utm_source=utm_source[:100] if utm_source else '',
+                        utm_medium=utm_medium[:100] if utm_medium else '',
+                        utm_campaign=utm_campaign[:200] if utm_campaign else '',
+                        device_type=device_type,
+                        browser=browser[:50] if browser else '',
+                        country=geo_data.get('country', '')[:100],
+                        country_code=geo_data.get('country_code', '')[:10],
+                        region=geo_data.get('region', '')[:100],
+                        city=geo_data.get('city', '')[:100],
+                        is_bot=False,
+                        is_bounced=True,
+                        engagement_score='casual',
+                    )
+
+                # Track candidate views
+                if '/candidate/' in path:
+                    try:
+                        # Extract candidate ID from path like /candidate/123
+                        parts = path.strip('/').split('/')
+                        if len(parts) >= 2:
+                            candidate_id = parts[-1]
+                            if candidate_id.isdigit():
+                                from transparency.models import Committee
+                                committee = Committee.objects.filter(id=int(candidate_id)).first()
+                                if committee:
+                                    CandidateView.objects.create(
+                                        session_id=session_id,
+                                        visitor_id=visitor_id,
+                                        candidate_id=int(candidate_id),
+                                        candidate_name=committee.name[:255],
+                                        district=committee.district[:100] if committee.district else '',
+                                        viewed_ie_spending=False,
+                                    )
+                    except Exception:
+                        pass
+
+            except Exception as e:
+                # Log but don't fail
+                import logging
+                logging.getLogger('analytics').warning(f"Session tracking error: {e}")
 
         # Run in background thread
         Thread(target=save_visit, daemon=True).start()

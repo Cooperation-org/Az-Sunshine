@@ -6,7 +6,7 @@ import {
   HelpCircle, Moon, Sun, Upload, Globe,
   FileCheck, PanelLeftClose, PanelLeft, Bell,
   ChevronUp, Eye, Megaphone, ShieldCheck, Database,
-  Menu, X, LogOut, LogIn, CheckCircle, Activity
+  Menu, X, LogOut, LogIn, CheckCircle, Activity, Zap
 } from "lucide-react";
 import { useDarkMode } from "../context/DarkModeContext";
 import { useAuth } from "../context/AuthContext";
@@ -79,6 +79,7 @@ export default function Sidebar() {
     { path: "/email-campaign", icon: Mail, label: "Email Campaign", badge: null },
     { path: "/data-validation", icon: Database, label: "Data Validation", badge: null },
     { path: "/staff/analytics", icon: Activity, label: "Site Analytics", badge: null },
+    { path: "/staff/advanced-analytics", icon: Zap, label: "Advanced Analytics", badge: "NEW" },
     { path: "/staff/seethemoney", icon: Eye, label: "SeeTheMoney", badge: "FREE" },
     { path: "/staff/import", icon: Upload, label: "Data Import", badge: null },
     { path: "/staff/scrapers", icon: Globe, label: "County Scrapers", badge: null },
