@@ -1884,3 +1884,164 @@ class HourlyTrafficPattern(models.Model):
 
     def __str__(self):
         return f"{self.date} {self.hour}:00 - {self.visits} visits"
+
+
+# ==================== FEC INDEPENDENT EXPENDITURE DATA ====================
+
+class FECIndependentExpenditure(models.Model):
+    """
+    FEC Independent Expenditure data from federal filings.
+    This tracks IE spending reported to the FEC for federal races (House, Senate).
+    """
+    fec_file_id = models.CharField(
+        max_length=50,
+        unique=True,
+        primary_key=True,
+        help_text='FEC file ID (unique identifier for this expenditure)'
+    )
+    transaction_id = models.CharField(
+        max_length=100,
+        db_index=True,
+        help_text='FEC transaction ID'
+    )
+
+    # Committee information
+    committee_id = models.CharField(
+        max_length=20,
+        db_index=True,
+        help_text='FEC committee ID (e.g., C00484642)'
+    )
+    committee_name = models.CharField(
+        max_length=255,
+        db_index=True,
+        help_text='Name of the committee making the expenditure'
+    )
+
+    # Amount
+    amount = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        db_index=True,
+        help_text='Amount of the expenditure'
+    )
+
+    # Support/Oppose
+    is_support = models.BooleanField(
+        db_index=True,
+        help_text='True for support, False for oppose'
+    )
+
+    # Candidate information
+    candidate_id = models.CharField(
+        max_length=20,
+        db_index=True,
+        help_text='FEC candidate ID (e.g., S8FL00273)'
+    )
+    candidate_name = models.CharField(
+        max_length=255,
+        db_index=True,
+        help_text='Full candidate name'
+    )
+    candidate_first_name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Candidate first name'
+    )
+    candidate_last_name = models.CharField(
+        max_length=100,
+        db_index=True,
+        help_text='Candidate last name'
+    )
+    candidate_party = models.CharField(
+        max_length=10,
+        db_index=True,
+        help_text='Candidate party (e.g., REP, DEM)'
+    )
+    candidate_office = models.CharField(
+        max_length=10,
+        db_index=True,
+        help_text='H for House, S for Senate'
+    )
+    candidate_office_district = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        help_text='Congressional district (for House races)'
+    )
+
+    # Race identifier
+    race = models.CharField(
+        max_length=20,
+        db_index=True,
+        help_text='Race identifier (e.g., AZ-S1, AZ-06)'
+    )
+
+    # Election cycle
+    cycle = models.IntegerField(
+        db_index=True,
+        help_text='Election year/cycle'
+    )
+
+    # Dates
+    expenditure_date = models.DateField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Date of the expenditure'
+    )
+    filing_date = models.DateField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Date the expenditure was filed with FEC'
+    )
+
+    # Details
+    expenditure_description = models.TextField(
+        blank=True,
+        help_text='Description of the expenditure'
+    )
+    payee_name = models.CharField(
+        max_length=255,
+        blank=True,
+        db_index=True,
+        help_text='Name of payee receiving the expenditure'
+    )
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'fec_independent_expenditures'
+        ordering = ['-expenditure_date', '-amount']
+        verbose_name = 'FEC Independent Expenditure'
+        verbose_name_plural = 'FEC Independent Expenditures'
+        indexes = [
+            # Committee queries
+            models.Index(fields=['committee_id', '-expenditure_date'], name='idx_fec_ie_comm_date'),
+            models.Index(fields=['committee_name'], name='idx_fec_ie_comm_name'),
+
+            # Candidate queries
+            models.Index(fields=['candidate_id', '-expenditure_date'], name='idx_fec_ie_cand_date'),
+            models.Index(fields=['candidate_last_name'], name='idx_fec_ie_cand_name'),
+
+            # Race queries
+            models.Index(fields=['race', 'cycle'], name='idx_fec_ie_race_cycle'),
+            models.Index(fields=['cycle', 'is_support'], name='idx_fec_ie_cycle_support'),
+
+            # Amount queries
+            models.Index(fields=['-amount'], name='idx_fec_ie_amount_desc'),
+
+            # Combined queries
+            models.Index(fields=['candidate_party', 'cycle', '-amount'], name='idx_fec_ie_party_cycle'),
+            models.Index(fields=['candidate_office', 'race', 'cycle'], name='idx_fec_ie_office_race'),
+        ]
+
+    def __str__(self):
+        action = 'FOR' if self.is_support else 'AGAINST'
+        return f"{self.committee_name} ${self.amount:,.2f} {action} {self.candidate_name} ({self.race})"
+
+    @property
+    def support_oppose_display(self):
+        return 'Support' if self.is_support else 'Oppose'

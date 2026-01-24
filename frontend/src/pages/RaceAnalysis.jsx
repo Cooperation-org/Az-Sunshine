@@ -7,7 +7,8 @@ import { ChartSkeleton, TableSkeleton } from "../components/SkeletonLoader";
 import { useDarkMode } from "../context/DarkModeContext";
 import {
   ChevronDown, ChevronUp, SlidersHorizontal, BarChart3, Users,
-  TrendingUp, TrendingDown, DollarSign, Target, Calendar, ToggleLeft, ToggleRight
+  TrendingUp, TrendingDown, DollarSign, Target, Calendar, ToggleLeft, ToggleRight,
+  Flag, ArrowRight
 } from "lucide-react";
 import ViewToggle from "../components/ViewToggle";
 import CandidateCard from "../components/race/CandidateCard";
@@ -16,6 +17,7 @@ import AdBuyCard from "../components/race/AdBuyCard";
 import IEAdBuyCorrelation from "../components/race/IEAdBuyCorrelation";
 import DarkMoneyDisclosurePanel from "../components/race/DarkMoneyDisclosurePanel";
 import IECommitteesPanel from "../components/race/IECommitteesPanel";
+import DataDisclaimer from "../components/DataDisclaimer";
 import { getPartyInfo } from "../utils/partyUtils";
 import { formatNumber } from "../utils/currencyFormat";
 
@@ -434,6 +436,24 @@ export default function RaceAnalysis() {
             view={view} setView={setView}
           />
 
+          {/* Cross-link to Federal Races */}
+          <Link
+            to="/federal-races"
+            className={`flex items-center justify-between p-4 mb-6 rounded-xl border transition-all hover:border-[#7163BA] ${
+              darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-200'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Flag size={18} className="text-[#7163BA]" />
+              <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                Looking for <strong>federal races</strong> (U.S. Senate, Congress)?
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[#7163BA] font-medium text-sm">
+              View Federal Elections <ArrowRight size={16} />
+            </div>
+          </Link>
+
           {loading ? (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><div className="h-24 bg-gray-200 animate-pulse rounded-2xl"></div></div>
@@ -520,6 +540,9 @@ export default function RaceAnalysis() {
                 <StatCard title="Top Recipient" value={topCandidate ? topCandidate.subject_committee__candidate__last_name : "N/A"} icon={TrendingUp} color="#22c55e" />
                 <StatCard title="Total Donors" value={topDonors.length} icon={Users} color="#3b82f6" />
               </div>
+
+              {/* Data Disclaimer */}
+              <DataDisclaimer className="mt-4" />
 
               {/* Chart & Donors Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -611,7 +634,6 @@ export default function RaceAnalysis() {
                     <tr>
                       {[
                         { label: 'Candidate', key: 'name' },
-                        { label: 'Party', key: 'party' },
                         { label: 'Total IE', key: 'total_ie' },
                         { label: 'Net IE', key: 'net_ie' }
                       ].map((col) => (
@@ -640,16 +662,11 @@ export default function RaceAnalysis() {
                                 to={`/candidate/${candidateId}`}
                                 className="hover:text-[#7163BA] hover:underline transition-colors"
                               >
-                                {c.subject_committee__candidate__first_name} {c.subject_committee__candidate__last_name}
+                                {c.subject_committee__candidate__first_name} {c.subject_committee__candidate__last_name} <span className={partyInfo.colors.text}>({partyInfo.abbr})</span>
                               </Link>
                             ) : (
-                              <span>{c.subject_committee__candidate__first_name} {c.subject_committee__candidate__last_name}</span>
+                              <span>{c.subject_committee__candidate__first_name} {c.subject_committee__candidate__last_name} <span className={partyInfo.colors.text}>({partyInfo.abbr})</span></span>
                             )}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${partyInfo.colors.bgLight} ${partyInfo.colors.text}`}>
-                              ({partyInfo.abbr}) {partyInfo.fullName}
-                            </span>
                           </td>
                           <td className={`px-6 py-4 text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                             ${formatNumber(c.total_ie)}

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import DashboardHeroBanner from "../components/DashboardHeroBanner";
+import DataDisclaimer from "../components/DataDisclaimer";
 import api from "../api/api";
 import { useDarkMode } from "../context/DarkModeContext";
 
@@ -541,6 +542,9 @@ export default function Dashboard() {
               );
             })}
           </div>
+
+          {/* Data Disclaimer */}
+          <DataDisclaimer className="mt-2" />
 
           {/* Spending Trends Chart - Full Width */}
           {trendsLoaded && trendsData.length > 0 && (

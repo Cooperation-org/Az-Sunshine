@@ -35,7 +35,7 @@ import {
 } from "chart.js";
 
 import Sidebar from "../components/Sidebar";
-
+import Header from "../components/Header";
 import GrassrootsThresholdBadge from "../components/GrassrootsThresholdBadge";
 import { getCandidateById, getCandidateIESpending, getCandidateAggregate, getCandidateAggregateIESpending, getTransactions } from "../api/api";
 import { exportToCSV } from "../utils/csvExport";

@@ -1522,6 +1522,71 @@ export async function runAnomalyDetection() {
 }
 
 
+// ==================== FEC FEDERAL ELECTION ENDPOINTS ====================
+
+/**
+ * Get list of federal races with spending totals
+ */
+export async function getFECRaces(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/fec/races/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load federal races');
+  }
+}
+
+/**
+ * Get detailed spending for a specific federal race
+ */
+export async function getFECRaceDetail(race, cycle) {
+  try {
+    const res = await api.get(`/fec/race/${race}/${cycle}/`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load federal race details');
+  }
+}
+
+/**
+ * Get list of federal PACs that spent in Arizona
+ */
+export async function getFECCommittees(params = {}) {
+  try {
+    const queryString = buildQueryString(params);
+    const res = await api.get(`/fec/committees/?${queryString}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load federal committees');
+  }
+}
+
+/**
+ * Search FEC expenditures
+ */
+export async function searchFECExpenditures(query) {
+  try {
+    const res = await api.get(`/fec/search/?q=${encodeURIComponent(query)}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to search FEC expenditures');
+  }
+}
+
+/**
+ * Get FEC data status and summary
+ */
+export async function getFECStatus() {
+  try {
+    const res = await api.get('/fec/status/');
+    return res.data;
+  } catch (error) {
+    handleError(error, 'Failed to load FEC status');
+  }
+}
+
+
 // Export the api instance for custom requests
 export { api };
 

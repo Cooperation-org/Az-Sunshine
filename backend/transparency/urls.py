@@ -40,6 +40,13 @@ from .views_candidate_aggregate import (
     candidate_aggregate_ie_spending
 )
 from .views_ie_analysis import dark_money_disclosures, race_ie_committees
+from .views_fec import (
+    fec_races,
+    fec_race_detail,
+    fec_committees,
+    fec_search,
+    fec_status,
+)
 from .views_analytics import (
     user_journeys,
     funnel_analysis,
@@ -207,6 +214,13 @@ urlpatterns = [
     path('analytics/track-pageview/', track_pageview, name='analytics-track-pageview'),
     path('analytics/track-engagement/', track_engagement, name='analytics-track-engagement'),
     path('analytics/track-candidate-view/', track_candidate_view, name='analytics-track-candidate-view'),
+
+    # === FEC FEDERAL ELECTION DATA ===
+    path('fec/races/', fec_races, name='fec-races'),
+    path('fec/race/<str:race>/<int:cycle>/', fec_race_detail, name='fec-race-detail'),
+    path('fec/committees/', fec_committees, name='fec-committees'),
+    path('fec/search/', fec_search, name='fec-search'),
+    path('fec/status/', fec_status, name='fec-status'),
 
     # Router MUST come last
     path('', include(router.urls)),

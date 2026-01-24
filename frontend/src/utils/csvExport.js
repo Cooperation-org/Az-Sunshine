@@ -133,7 +133,10 @@ export async function exportToCSV(data, columns, filename, setLoading = null) {
 export async function exportWithFormatter(data, formatter, filename) {
   try {
     const formattedData = data.map(formatter);
-    const csvContent = convertToCSV(formattedData, Object.keys(formattedData[0] || {}));
+    // Convert keys to column objects with key and label properties
+    const keys = Object.keys(formattedData[0] || {});
+    const columns = keys.map(key => ({ key, label: key }));
+    const csvContent = convertToCSV(formattedData, columns);
     downloadCSV(csvContent, filename);
     return true;
   } catch (error) {

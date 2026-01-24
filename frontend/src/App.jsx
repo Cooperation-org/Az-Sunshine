@@ -18,6 +18,7 @@ import Candidates from "./pages/Candidates";
 import Expenditures from "./pages/Expenditures";
 import SOIManagement from "./pages/SOIManagement";
 import RaceAnalysis from "./pages/RaceAnalysis";
+import FederalRaces from "./pages/FederalRaces";
 // PrimaryRaceView removed - consolidated into RaceAnalysis
 import EmailCampaign from "./pages/EmailCampaign";
 import DataValidation from "./pages/DataValidation";
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="/candidates" element={<Candidates />} />
           <Route path="/candidate/:id" element={<CandidateDetail />} />
           <Route path="/race-analysis" element={<RaceAnalysis />} />
+          <Route path="/federal-races" element={<FederalRaces />} />
           <Route path="/donors" element={<Donors />} />
           <Route path="/expenditures" element={<Expenditures />} />
           <Route path="/visualizations" element={<Visualizations />} />

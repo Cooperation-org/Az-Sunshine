@@ -207,9 +207,15 @@ export default function Donors() {
                             <div className="w-8 h-8 rounded-lg bg-[#7667C1] flex items-center justify-center text-white text-xs font-bold">
                               {donorName.charAt(0).toUpperCase()}
                             </div>
-                            <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            <a
+                              href={links.seeTheMoney}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`text-sm font-medium hover:text-[#7163BA] hover:underline transition-colors cursor-pointer ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                              title="View donor details on See the Money"
+                            >
                               {donorName}
-                            </span>
+                            </a>
                           </td>
                           <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                             {donor.entity_type?.name || "N/A"}
