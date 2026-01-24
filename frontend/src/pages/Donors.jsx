@@ -1,11 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Search, Download, Loader } from "lucide-react";
+import { Search, Download, Loader, ExternalLink } from "lucide-react";
 import { getDonors } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import { TableSkeleton } from "../components/SkeletonLoader";
 import { exportToCSV } from "../utils/csvExport";
 import { useDarkMode } from "../context/DarkModeContext";
 import Pagination from "../components/Pagination";
+
+// Helper to generate external search URLs for donors
+const getExternalLinks = (donorName) => {
+  const encodedName = encodeURIComponent(donorName);
+  return {
+    seeTheMoney: `https://seethemoney.az.gov/Donors?name=${encodedName}`,
+    openSecrets: `https://www.opensecrets.org/search?q=${encodedName}&type=donors`
+  };
+};
 
 // --- REFINED BANNER COMPONENT (Consistent with Dashboard & Candidates) ---
 const Banner = ({ controls, searchTerm, setSearchTerm, onSearch }) => {
@@ -174,7 +183,7 @@ export default function Donors() {
               <table className="min-w-full divide-y divide-gray-200 whitespace-nowrap">
                 <thead className={darkMode ? 'bg-[#373052]' : 'bg-gray-50'}>
                   <tr>
-                    {["Donor/Entity Name", "Entity Type", "Location"].map((h) => (
+                    {["Donor/Entity Name", "Entity Type", "Location", "Links"].map((h) => (
                       <th key={h} className={`py-4 px-6 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         {h}
                       </th>
@@ -183,30 +192,64 @@ export default function Donors() {
                 </thead>
                 <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
                   {loading && currentPage === 1 ? (
-                    <TableSkeleton rows={10} columns={3} />
+                    <TableSkeleton rows={10} columns={4} />
                   ) : donors.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="py-12 text-center text-gray-500 text-sm">No donors found.</td>
+                      <td colSpan="4" className="py-12 text-center text-gray-500 text-sm">No donors found.</td>
                     </tr>
                   ) : (
-                    donors.map((donor, idx) => (
-                      <tr key={donor.name_id || idx} className={`transition-colors ${darkMode ? 'hover:bg-[#373052]' : 'hover:bg-purple-50/50'}`}>
-                        <td className="py-4 px-6 flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-[#7667C1] flex items-center justify-center text-white text-xs font-bold">
-                            {(donor.full_name || donor.name || "?").charAt(0).toUpperCase()}
-                          </div>
-                          <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {donor.full_name || donor.name || "Unknown"}
-                          </span>
-                        </td>
-                        <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          {donor.entity_type?.name || "N/A"}
-                        </td>
-                        <td className={`py-4 px-6 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {donor.city && donor.state ? `${donor.city}, ${donor.state}` : "N/A"}
-                        </td>
-                      </tr>
-                    ))
+                    donors.map((donor, idx) => {
+                      const donorName = donor.full_name || donor.name || "Unknown";
+                      const links = getExternalLinks(donorName);
+                      return (
+                        <tr key={donor.name_id || idx} className={`transition-colors ${darkMode ? 'hover:bg-[#373052]' : 'hover:bg-purple-50/50'}`}>
+                          <td className="py-4 px-6 flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-[#7667C1] flex items-center justify-center text-white text-xs font-bold">
+                              {donorName.charAt(0).toUpperCase()}
+                            </div>
+                            <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                              {donorName}
+                            </span>
+                          </td>
+                          <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {donor.entity_type?.name || "N/A"}
+                          </td>
+                          <td className={`py-4 px-6 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {donor.city && donor.state ? `${donor.city}, ${donor.state}` : "N/A"}
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={links.seeTheMoney}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="View on See the Money (AZ)"
+                                className={`px-2 py-1 rounded text-xs font-bold transition-colors ${
+                                  darkMode
+                                    ? 'bg-[#373052] text-purple-400 hover:bg-purple-500/30'
+                                    : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+                                }`}
+                              >
+                                AZ
+                              </a>
+                              <a
+                                href={links.openSecrets}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Search on OpenSecrets"
+                                className={`p-1.5 rounded transition-colors ${
+                                  darkMode
+                                    ? 'hover:bg-[#373052] text-blue-400'
+                                    : 'hover:bg-blue-100 text-blue-600'
+                                }`}
+                              >
+                                <ExternalLink size={14} />
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -224,33 +267,65 @@ export default function Donors() {
                 No donors found.
               </div>
             ) : (
-              donors.map((donor, idx) => (
-                <div
-                  key={donor.name_id || idx}
-                  className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg p-4`}
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#7667C1] flex items-center justify-center text-white text-sm font-bold">
-                      {(donor.full_name || donor.name || "?").charAt(0).toUpperCase()}
+              donors.map((donor, idx) => {
+                const donorName = donor.full_name || donor.name || "Unknown";
+                const links = getExternalLinks(donorName);
+                return (
+                  <div
+                    key={donor.name_id || idx}
+                    className={`${darkMode ? 'bg-[#2D2844] border-gray-700' : 'bg-white border-gray-100'} rounded-2xl border shadow-lg p-4`}
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-lg bg-[#7667C1] flex items-center justify-center text-white text-sm font-bold">
+                        {donorName.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
+                          {donorName}
+                        </p>
+                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {donor.entity_type?.name || "N/A"}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
-                        {donor.full_name || donor.name || "Unknown"}
-                      </p>
-                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {donor.entity_type?.name || "N/A"}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className={`flex justify-between items-center pt-2 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Location</span>
-                    <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {donor.city && donor.state ? `${donor.city}, ${donor.state}` : "N/A"}
-                    </span>
+                    <div className={`flex justify-between items-center pt-2 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Location</span>
+                      <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {donor.city && donor.state ? `${donor.city}, ${donor.state}` : "N/A"}
+                      </span>
+                    </div>
+
+                    {/* External Links */}
+                    <div className={`flex items-center gap-2 pt-3 mt-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                      <a
+                        href={links.seeTheMoney}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition-colors ${
+                          darkMode
+                            ? 'bg-[#373052] text-purple-400 hover:bg-purple-500/30'
+                            : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+                        }`}
+                      >
+                        See the Money (AZ)
+                      </a>
+                      <a
+                        href={links.openSecrets}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition-colors ${
+                          darkMode
+                            ? 'bg-[#373052] text-blue-400 hover:bg-blue-500/30'
+                            : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                        }`}
+                      >
+                        OpenSecrets
+                      </a>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
