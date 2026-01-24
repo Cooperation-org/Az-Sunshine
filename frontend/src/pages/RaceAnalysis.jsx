@@ -338,10 +338,15 @@ export default function RaceAnalysis() {
 
   async function loadIECommittees() {
     try {
-      const data = await getRaceIECommittees({
+      const params = {
         office_id: selectedOffice,
         cycle_id: selectedCycle
-      });
+      };
+      // Apply date filters for Primary Only toggle
+      if (dateFrom) params.date_from = dateFrom;
+      if (effectiveDateTo) params.date_to = effectiveDateTo;
+
+      const data = await getRaceIECommittees(params);
       setIECommittees(data.ie_committees || []);
     } catch (e) {
       console.error(e);

@@ -851,12 +851,15 @@ def race_ie_committees(request):
     """
     Get all IE committees (Super PACs) that spent money in a specific race.
 
-    GET /api/v1/races/ie-committees/?office_id=1&cycle_id=1
+    GET /api/v1/races/ie-committees/?office_id=1&cycle_id=1&date_from=2024-01-01&date_to=2024-08-01
 
     Returns list of IE committees with their spending for/against candidates.
+    Supports date_from and date_to filters for Primary Only toggle.
     """
     office_id = request.GET.get('office_id')
     cycle_id = request.GET.get('cycle_id')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
 
     if not office_id or not cycle_id:
         return Response({
@@ -870,8 +873,16 @@ def race_ie_committees(request):
         candidate__isnull=False
     ).values_list('committee_id', flat=True)
 
+    # Build date filter
+    date_filter = Q()
+    if date_from:
+        date_filter &= Q(transaction_date__gte=date_from)
+    if date_to:
+        date_filter &= Q(transaction_date__lte=date_to)
+
     # Get all IE transactions targeting these candidates
     ie_transactions = Transaction.objects.filter(
+        date_filter,
         subject_committee_id__in=candidate_committees,
         deleted=False
     ).select_related('committee__name')
