@@ -50,6 +50,12 @@ const ArizonaSunshineBanner = ({ onRefresh, refreshing = false }) => {
           >
             Aggregating independent expenditures to correlate spending with legislative actions.
           </p>
+
+          <p
+            className="text-[10px] md:text-xs italic max-w-lg leading-relaxed text-white/50 mt-2"
+          >
+            Note: Reported figures may be incomplete due to data availability and reporting delays.
+          </p>
         </div>
       </div>
 
