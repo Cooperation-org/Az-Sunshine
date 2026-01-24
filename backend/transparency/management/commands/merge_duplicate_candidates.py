@@ -2,22 +2,22 @@
 Merge Duplicate Candidate Entities
 
 This command identifies and merges duplicate candidate entities that represent
-the same person across multiple election cycles. It uses strict matching criteria
-to ensure only true duplicates are merged.
+the same person across multiple election cycles.
 
-Matching Criteria (HIGH CONFIDENCE):
+Matching Criteria:
 - Same first name + last name (case insensitive)
-- Same city OR both have city and one is a known variation (PHOENIX vs Phoenix)
-- At least one of:
-  * Same office held
-  * Adjacent election cycles
-  * Both have committees with similar names
+- Optional: Same city (use --strict flag)
 
 Safety Features:
 - Dry run mode by default (use --execute to actually merge)
 - Audit log of all merges
-- Preserves the entity with most transactions as primary
+- Preserves the entity with most committees/transactions as primary
 - Updates all related records (transactions, committees)
+
+Usage:
+    python manage.py merge_duplicate_candidates                  # Dry run
+    python manage.py merge_duplicate_candidates --execute        # Actually merge
+    python manage.py merge_duplicate_candidates --strict         # Require city match
 """
 
 import json
@@ -53,6 +53,11 @@ class Command(BaseCommand):
             type=int,
             default=2,
             help='Minimum number of entities to consider as duplicate (default: 2)'
+        )
+        parser.add_argument(
+            '--strict',
+            action='store_true',
+            help='Require city match for merge (default: merge by name only)'
         )
 
     def normalize_city(self, city):
@@ -111,9 +116,12 @@ class Command(BaseCommand):
         limit = options['limit']
         candidate_filter = options.get('candidate')
         min_entities = options['min_entities']
+        strict = options.get('strict', False)
 
         mode = "EXECUTE MODE" if execute else "DRY RUN MODE"
-        self.stdout.write(self.style.WARNING(f'\n=== DUPLICATE CANDIDATE MERGER ({mode}) ===\n'))
+        match_mode = "STRICT (city match required)" if strict else "NAME ONLY"
+        self.stdout.write(self.style.WARNING(f'\n=== DUPLICATE CANDIDATE MERGER ({mode}) ==='))
+        self.stdout.write(self.style.WARNING(f'Matching mode: {match_mode}\n'))
 
         # Find all candidate committees grouped by entity
         self.stdout.write('Analyzing candidate entities...')
@@ -188,40 +196,47 @@ class Command(BaseCommand):
                 cities = set(e['city'] for e in ent_entries if e['city'])
                 entity_cities[eid] = list(cities)
 
-            # Find entities that should be merged (same city)
-            merge_groups = []
-            processed = set()
+            # Determine merge groups based on mode
+            if strict:
+                # STRICT MODE: Require city match
+                merge_groups = []
+                processed = set()
 
-            for eid1, cities1 in entity_cities.items():
-                if eid1 in processed:
-                    continue
-
-                group = {eid1}
-                processed.add(eid1)
-
-                for eid2, cities2 in entity_cities.items():
-                    if eid2 in processed:
+                for eid1, cities1 in entity_cities.items():
+                    if eid1 in processed:
                         continue
 
-                    # Check if cities match
-                    should_merge = False
-                    for c1 in cities1:
-                        for c2 in cities2:
-                            if self.cities_match(c1, c2):
-                                should_merge = True
+                    group = {eid1}
+                    processed.add(eid1)
+
+                    for eid2, cities2 in entity_cities.items():
+                        if eid2 in processed:
+                            continue
+
+                        # Check if cities match
+                        should_merge = False
+                        for c1 in cities1:
+                            for c2 in cities2:
+                                if self.cities_match(c1, c2):
+                                    should_merge = True
+                                    break
+                            if should_merge:
                                 break
+
                         if should_merge:
-                            break
+                            group.add(eid2)
+                            processed.add(eid2)
 
-                    if should_merge:
-                        group.add(eid2)
-                        processed.add(eid2)
-
-                if len(group) > 1:
-                    merge_groups.append(group)
+                    if len(group) > 1:
+                        merge_groups.append(group)
+            else:
+                # NAME ONLY MODE: Merge all entities with same name
+                merge_groups = [set(entities_by_id.keys())]
 
             # Process merge groups
             for group in merge_groups:
+                if len(group) < 2:
+                    continue
                 # Get transaction counts for each entity
                 entity_scores = []
                 for eid in group:
