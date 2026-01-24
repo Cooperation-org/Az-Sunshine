@@ -1316,7 +1316,8 @@ def candidates_list(request):
     cycle_id = request.query_params.get('cycle', '')
     search = request.query_params.get('search', '')
     deduplicate = request.query_params.get('deduplicate', 'true').lower() == 'true'  # Default to deduplicated
-    cache_key = f'candidates_list_p{page_num}_s{page_size}_o{office_id}_pt{party_id}_c{cycle_id}_q{search}_d{deduplicate}'
+    merge_cross_office = request.query_params.get('merge_cross_office', 'false').lower() == 'true'  # Merge same person across offices
+    cache_key = f'candidates_list_p{page_num}_s{page_size}_o{office_id}_pt{party_id}_c{cycle_id}_q{search}_d{deduplicate}_m{merge_cross_office}'
 
     # Try to get from Zstd-compressed cache (10 minute cache)
     cached_data = CompressedCache.get(cache_key)
@@ -1483,12 +1484,19 @@ def candidates_list(request):
             has_office = office_name is not None and office_name != 'Unknown'
             normalized_name = normalize_name_for_dedup(candidate_name, has_office=has_office)
             normalized_office = normalize_office_for_dedup(office_name) if office_name else 'UNKNOWN'
-            dedup_key = f"{normalized_name}|{normalized_office}"
+
+            # If merge_cross_office is True, use just name (same person = one entry regardless of office)
+            # Otherwise, use name|office (same person in different offices = separate entries)
+            if merge_cross_office:
+                dedup_key = normalized_name
+            else:
+                dedup_key = f"{normalized_name}|{normalized_office}"
 
             if dedup_key not in seen_candidates:
                 # First occurrence - add to results
                 item['all_cycles'] = [item.get('election_cycle', {}).get('name')] if item.get('election_cycle') else []
                 item['all_committee_ids'] = [item.get('committee_id')]  # Track all committee IDs for this candidate
+                item['all_offices'] = [office_name] if office_name else []  # Track all offices for cross-office merge
                 seen_candidates[dedup_key] = len(deduplicated_data)
                 deduplicated_data.append(item)
             else:
@@ -1505,6 +1513,10 @@ def candidates_list(request):
                 new_cycle = item.get('election_cycle', {}).get('name') if item.get('election_cycle') else None
                 if new_cycle and new_cycle not in existing.get('all_cycles', []):
                     existing.setdefault('all_cycles', []).append(new_cycle)
+
+                # Add office to list if not already there (for cross-office merge)
+                if office_name and office_name not in existing.get('all_offices', []):
+                    existing.setdefault('all_offices', []).append(office_name)
 
                 # Aggregate IE totals
                 existing['ie_total_for'] = existing.get('ie_total_for', 0) + item.get('ie_total_for', 0)

@@ -124,7 +124,7 @@ export default function Candidates() {
   async function loadCandidates(page, signal = null) {
     setLoading(true);
     try {
-      const params = { page, page_size: 10 };
+      const params = { page, page_size: 10, merge_cross_office: true };
       if (searchTerm) params.search = searchTerm;
       const candidatesData = await getCandidates(params, signal);
       setCandidates(candidatesData.results || []);
@@ -142,7 +142,7 @@ export default function Candidates() {
   const handleExportCSV = async () => {
     try {
       setExporting(true);
-      const params = { page_size: totalCount || 1000 };
+      const params = { page_size: totalCount || 1000, merge_cross_office: true };
       if (searchTerm) params.search = searchTerm;
       const allCandidatesData = await getCandidates(params);
       const allCandidates = allCandidatesData.results || [];
@@ -215,7 +215,22 @@ export default function Candidates() {
                             {candidate.candidate?.full_name || "Unknown"}
                           </Link>
                         </td>
-                        <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{candidate.candidate_office?.name || "N/A"}</td>
+                        <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {candidate.all_offices && candidate.all_offices.length > 1 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {candidate.all_offices.slice(0, 2).map((office, i) => (
+                                <span key={i} className={`px-1.5 py-0.5 rounded text-xs ${darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                                  {office}
+                                </span>
+                              ))}
+                              {candidate.all_offices.length > 2 && (
+                                <span className="text-xs text-gray-500">+{candidate.all_offices.length - 2} more</span>
+                              )}
+                            </div>
+                          ) : (
+                            candidate.candidate_office?.name || "N/A"
+                          )}
+                        </td>
                         <td className={`py-4 px-6 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{candidate.candidate_party?.name || "N/A"}</td>
                         <td className="py-4 px-6">
                            <span className={`whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium ${darkMode ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"}`}>Active</span>
@@ -276,7 +291,9 @@ export default function Candidates() {
                         {candidate.candidate?.full_name || "Unknown"}
                       </p>
                       <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {candidate.candidate_office?.name || "N/A"}
+                        {candidate.all_offices && candidate.all_offices.length > 1
+                          ? `${candidate.all_offices.length} offices`
+                          : candidate.candidate_office?.name || "N/A"}
                       </p>
                     </div>
                     <span className={`whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium ${darkMode ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"}`}>Active</span>

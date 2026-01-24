@@ -320,7 +320,7 @@ export default function RaceAnalysis() {
     if (selectedOffice && selectedCycle) {
       // Pass all values explicitly to avoid closure issues
       loadRaceData(selectedOffice, selectedCycle, dateFrom, effectiveDateTo);
-      loadIECommittees();
+      loadIECommittees(selectedOffice, selectedCycle, dateFrom, effectiveDateTo);
       if (view === 'race') {
         loadAdBuys();
       }
@@ -339,15 +339,15 @@ export default function RaceAnalysis() {
     }
   }
 
-  async function loadIECommittees() {
+  async function loadIECommittees(officeId, cycleId, fromDate, toDate) {
     try {
       const params = {
-        office_id: selectedOffice,
-        cycle_id: selectedCycle
+        office_id: officeId,
+        cycle_id: cycleId
       };
       // Apply date filters for Primary Only toggle
-      if (dateFrom) params.date_from = dateFrom;
-      if (effectiveDateTo) params.date_to = effectiveDateTo;
+      if (fromDate) params.date_from = fromDate;
+      if (toDate) params.date_to = toDate;
 
       const data = await getRaceIECommittees(params);
       setIECommittees(data.ie_committees || []);
@@ -537,7 +537,7 @@ export default function RaceAnalysis() {
               {/* Stat Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatCard title="Total Race IE" value={`$${formatNumber(totalSpending)}`} icon={DollarSign} color="#7667C1" />
-                <StatCard title="Top Recipient" value={topCandidate ? topCandidate.subject_committee__candidate__last_name : "N/A"} icon={TrendingUp} color="#22c55e" />
+                <StatCard title="Top Recipient" value={topCandidate ? `${topCandidate.subject_committee__candidate__first_name || ''} ${topCandidate.subject_committee__candidate__last_name || ''}`.trim() : "N/A"} icon={TrendingUp} color="#22c55e" />
                 <StatCard title="Total Donors" value={topDonors.length} icon={Users} color="#3b82f6" />
               </div>
 
@@ -554,7 +554,12 @@ export default function RaceAnalysis() {
                   <div className="h-[350px]">
                     <Bar
                       data={{
-                        labels: raceData.candidates.map(c => c.subject_committee__candidate__last_name),
+                        labels: raceData.candidates.map(c => {
+                          const firstName = c.subject_committee__candidate__first_name || '';
+                          const lastName = c.subject_committee__candidate__last_name || '';
+                          const partyInfo = getPartyInfo(c.subject_committee__candidate_party__name);
+                          return `${firstName} ${lastName} (${partyInfo.abbr})`.trim();
+                        }),
                         datasets: [
                           {
                             label: 'IE For Benefit',
