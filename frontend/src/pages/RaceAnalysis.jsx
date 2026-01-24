@@ -57,6 +57,12 @@ const filterOfficesByDistrict = (offices, district) => {
   });
 };
 
+// Normalize office name for display (remove "No." for consistency)
+const normalizeOfficeName = (name) => {
+  if (!name) return name;
+  return name.replace(/District\s+No\.\s+/gi, 'District ');
+};
+
 // --- REFINED BANNER WITH INTEGRATED FILTERS ---
 const Banner = ({
   offices,
@@ -140,7 +146,7 @@ const Banner = ({
             >
               <option value="" className="bg-[#2D2844]">Select Office</option>
               {filteredOffices.map((o) => (
-                <option key={o.office_id} value={o.office_id} className="bg-[#2D2844]">{o.name}</option>
+                <option key={o.office_id} value={o.office_id} className="bg-[#2D2844]">{normalizeOfficeName(o.name)}</option>
               ))}
             </select>
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
