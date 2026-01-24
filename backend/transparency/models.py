@@ -217,14 +217,15 @@ class Entity(models.Model):
         ).distinct()
         
         # IE spending by those committees
+        # Use candidate__ (actual person) not name__ (committee official name)
         ie_impact = Transaction.objects.filter(
             committee__in=committees_donated_to,
             subject_committee__isnull=False,
             deleted=False
         ).values(
             'subject_committee__committee_id',
-            'subject_committee__name__last_name',
-            'subject_committee__name__first_name',
+            'subject_committee__candidate__last_name',
+            'subject_committee__candidate__first_name',
             'subject_committee__candidate_office__name',
             'is_for_benefit'
         ).annotate(
@@ -969,12 +970,13 @@ class RaceAggregationManager:
 
         # Aggregate IE FOR and AGAINST separately per candidate
         # Use Abs() since expenses are stored as negative values
+        # Use candidate__ fields (actual person) not name__ fields (committee name)
         race_spending = Transaction.objects.filter(
             **filters
         ).values(
             'subject_committee__committee_id',
-            'subject_committee__name__last_name',
-            'subject_committee__name__first_name',
+            'subject_committee__candidate__last_name',
+            'subject_committee__candidate__first_name',
             'subject_committee__candidate_party__name',
         ).annotate(
             ie_for=Sum(Abs('amount'), filter=Q(is_for_benefit=True)),

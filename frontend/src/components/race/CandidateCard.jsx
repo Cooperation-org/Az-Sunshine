@@ -29,7 +29,7 @@ export default function CandidateCard({ candidate }) {
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            {candidate.subject_committee__name__first_name} {candidate.subject_committee__name__last_name}
+            {candidate.subject_committee__candidate__first_name} {candidate.subject_committee__candidate__last_name}
           </h3>
           {candidateId && (
             <ExternalLink size={14} className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />

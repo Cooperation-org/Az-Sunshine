@@ -373,8 +373,8 @@ export default function RaceAnalysis() {
       let aVal, bVal;
       switch (sortConfig.key) {
         case 'name':
-          aVal = (a.subject_committee__name__last_name || '').toLowerCase();
-          bVal = (b.subject_committee__name__last_name || '').toLowerCase();
+          aVal = (a.subject_committee__candidate__last_name || '').toLowerCase();
+          bVal = (b.subject_committee__candidate__last_name || '').toLowerCase();
           break;
         case 'party':
           aVal = (a.subject_committee__candidate_party__name || '').toLowerCase();
@@ -517,7 +517,7 @@ export default function RaceAnalysis() {
               {/* Stat Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatCard title="Total Race IE" value={`$${formatNumber(totalSpending)}`} icon={DollarSign} color="#7667C1" />
-                <StatCard title="Top Recipient" value={topCandidate ? topCandidate.subject_committee__name__last_name : "N/A"} icon={TrendingUp} color="#22c55e" />
+                <StatCard title="Top Recipient" value={topCandidate ? topCandidate.subject_committee__candidate__last_name : "N/A"} icon={TrendingUp} color="#22c55e" />
                 <StatCard title="Total Donors" value={topDonors.length} icon={Users} color="#3b82f6" />
               </div>
 
@@ -531,7 +531,7 @@ export default function RaceAnalysis() {
                   <div className="h-[350px]">
                     <Bar
                       data={{
-                        labels: raceData.candidates.map(c => c.subject_committee__name__last_name),
+                        labels: raceData.candidates.map(c => c.subject_committee__candidate__last_name),
                         datasets: [
                           {
                             label: 'IE For Benefit',
@@ -640,10 +640,10 @@ export default function RaceAnalysis() {
                                 to={`/candidate/${candidateId}`}
                                 className="hover:text-[#7163BA] hover:underline transition-colors"
                               >
-                                {c.subject_committee__name__first_name} {c.subject_committee__name__last_name}
+                                {c.subject_committee__candidate__first_name} {c.subject_committee__candidate__last_name}
                               </Link>
                             ) : (
-                              <span>{c.subject_committee__name__first_name} {c.subject_committee__name__last_name}</span>
+                              <span>{c.subject_committee__candidate__first_name} {c.subject_committee__candidate__last_name}</span>
                             )}
                           </td>
                           <td className="px-6 py-4">
