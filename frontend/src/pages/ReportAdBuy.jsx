@@ -59,6 +59,7 @@ export default function ReportAdBuy() {
   const [offices, setOffices] = useState([]);
   const [candidates, setCandidates] = useState([]);
   const [isOtherOffice, setIsOtherOffice] = useState(false);
+  const [isOtherCandidate, setIsOtherCandidate] = useState(false);
   const [customOfficeName, setCustomOfficeName] = useState('');
   const [customCandidateName, setCustomCandidateName] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
@@ -108,10 +109,12 @@ export default function ReportAdBuy() {
     const value = e.target.value;
     if (value === 'other') {
       setIsOtherOffice(true);
+      setIsOtherCandidate(false);
       setFormData(prev => ({ ...prev, office_id: 'other', candidate_id: '' }));
       setCandidates([]);
     } else {
       setIsOtherOffice(false);
+      setIsOtherCandidate(false);
       setCustomOfficeName('');
       setCustomCandidateName('');
       setFormData(prev => ({ ...prev, office_id: value, candidate_id: '' }));
@@ -122,6 +125,20 @@ export default function ReportAdBuy() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setError('');
+  };
+
+  // Handle candidate selection change
+  const handleCandidateChange = (e) => {
+    const value = e.target.value;
+    if (value === 'other') {
+      setIsOtherCandidate(true);
+      setFormData(prev => ({ ...prev, candidate_id: 'other' }));
+    } else {
+      setIsOtherCandidate(false);
+      setCustomCandidateName('');
+      setFormData(prev => ({ ...prev, candidate_id: value }));
+    }
     setError('');
   };
 
@@ -205,7 +222,7 @@ export default function ReportAdBuy() {
       setError('Please select the office for this ad.');
       return false;
     }
-    // Validate based on whether "Other" is selected
+    // Validate based on whether "Other" is selected for office or candidate
     if (isOtherOffice) {
       if (!customOfficeName.trim()) {
         setError('Please enter the office name.');
@@ -215,8 +232,14 @@ export default function ReportAdBuy() {
         setError('Please enter the candidate name.');
         return false;
       }
+    } else if (isOtherCandidate) {
+      // Office is selected from list, but candidate is "Other"
+      if (!customCandidateName.trim()) {
+        setError('Please enter the candidate name.');
+        return false;
+      }
     } else {
-      if (!formData.candidate_id) {
+      if (!formData.candidate_id || formData.candidate_id === 'other') {
         setError('Please select the candidate this ad is about.');
         return false;
       }
@@ -254,12 +277,19 @@ export default function ReportAdBuy() {
 
       // Handle "Other" office/candidate case
       if (isOtherOffice) {
-        // Don't send candidate_id, instead include custom info in paid_for_by field
-        // and add details to admin_notes
+        // Don't send candidate_id, instead include custom info in admin_notes
         const customInfo = `[CUSTOM ENTRY] Office: ${customOfficeName}, Candidate: ${customCandidateName}`;
         formDataObj.append('admin_notes', customInfo);
-        // Still need to provide paid_for_by with the custom candidate info appended
-        formDataObj.append('paid_for_by', `${formData.paid_for_by} (Re: ${customCandidateName} for ${customOfficeName})`);
+        // Override paid_for_by with the custom candidate info appended
+        formDataObj.set('paid_for_by', `${formData.paid_for_by} (Re: ${customCandidateName} for ${customOfficeName})`);
+      } else if (isOtherCandidate) {
+        // Office is from the list, but candidate is custom
+        const selectedOffice = offices.find(o => String(o.office_id) === String(formData.office_id));
+        const officeName = selectedOffice?.name || 'Unknown Office';
+        const customInfo = `[CUSTOM CANDIDATE] Office: ${officeName}, Candidate: ${customCandidateName}`;
+        formDataObj.append('admin_notes', customInfo);
+        // Override paid_for_by with the custom candidate info appended
+        formDataObj.set('paid_for_by', `${formData.paid_for_by} (Re: ${customCandidateName} for ${officeName})`);
       } else {
         formDataObj.append('candidate', formData.candidate_id);
       }
@@ -310,6 +340,7 @@ export default function ReportAdBuy() {
     setImagePreview(null);
     setError('');
     setIsOtherOffice(false);
+    setIsOtherCandidate(false);
     setCustomOfficeName('');
     setCustomCandidateName('');
     if (fileInputRef.current) {
@@ -611,7 +642,7 @@ export default function ReportAdBuy() {
                       }`}>
                         Candidate <span className="text-red-400">*</span>
                       </label>
-                      {isOtherOffice ? (
+                      {isOtherOffice || isOtherCandidate ? (
                         <input
                           type="text"
                           placeholder="Enter candidate name"
@@ -627,7 +658,7 @@ export default function ReportAdBuy() {
                         <select
                           name="candidate_id"
                           value={formData.candidate_id}
-                          onChange={handleChange}
+                          onChange={handleCandidateChange}
                           disabled={!formData.office_id}
                           className={`w-full px-4 py-3 rounded-xl border-none text-sm ${
                             darkMode
@@ -641,11 +672,17 @@ export default function ReportAdBuy() {
                               {candidate.candidate?.full_name || candidate.name?.full_name || 'Unknown'}
                             </option>
                           ))}
+                          <option value="other">Other (not listed)</option>
                         </select>
                       )}
                       {!formData.office_id && !isOtherOffice && (
                         <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                           Please select an office first
+                        </p>
+                      )}
+                      {isOtherCandidate && !isOtherOffice && (
+                        <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Enter the candidate name since they're not in our database yet
                         </p>
                       )}
                     </div>
