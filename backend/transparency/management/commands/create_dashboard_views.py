@@ -65,6 +65,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS('  top_ie_committees_mv created'))
                 
                 # 3. Create Top Donors View (if not exists)
+                # Name format: "{First Name} {Last Name}" for individuals, or just "{Committee Name}" for single-name entities
                 self.stdout.write('Creating top_donors_mv...')
                 cursor.execute("""
                     DROP MATERIALIZED VIEW IF EXISTS top_donors_mv CASCADE;
@@ -72,7 +73,15 @@ class Command(BaseCommand):
                     CREATE MATERIALIZED VIEW top_donors_mv AS
                     SELECT
                         e.name_id as entity_id,
-                        COALESCE(e.last_name || ', ' || e.first_name, e.last_name, 'Unknown') as entity_name,
+                        CASE
+                            WHEN e.first_name IS NOT NULL AND e.first_name != '' AND e.last_name IS NOT NULL AND e.last_name != ''
+                            THEN TRIM(e.first_name || ' ' || e.last_name)
+                            WHEN e.last_name IS NOT NULL AND e.last_name != ''
+                            THEN TRIM(e.last_name)
+                            WHEN e.first_name IS NOT NULL AND e.first_name != ''
+                            THEN TRIM(e.first_name)
+                            ELSE 'Unknown'
+                        END as entity_name,
                         e.city,
                         e.state,
                         et.name as entity_type,
