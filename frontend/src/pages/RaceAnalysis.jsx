@@ -17,6 +17,7 @@ import IEAdBuyCorrelation from "../components/race/IEAdBuyCorrelation";
 import DarkMoneyDisclosurePanel from "../components/race/DarkMoneyDisclosurePanel";
 import IECommitteesPanel from "../components/race/IECommitteesPanel";
 import { getPartyInfo } from "../utils/partyUtils";
+import { formatNumber } from "../utils/currencyFormat";
 
 // Arizona Primary Election Dates (day before primary to capture all pre-primary spending)
 const AZ_PRIMARY_DATES = {
@@ -515,7 +516,7 @@ export default function RaceAnalysis() {
 
               {/* Stat Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <StatCard title="Total Race IE" value={`$${Math.abs(totalSpending).toLocaleString()}`} icon={DollarSign} color="#7667C1" />
+                <StatCard title="Total Race IE" value={`$${formatNumber(totalSpending)}`} icon={DollarSign} color="#7667C1" />
                 <StatCard title="Top Recipient" value={topCandidate ? topCandidate.subject_committee__name__last_name : "N/A"} icon={TrendingUp} color="#22c55e" />
                 <StatCard title="Total Donors" value={topDonors.length} icon={Users} color="#3b82f6" />
               </div>
@@ -557,7 +558,7 @@ export default function RaceAnalysis() {
                         plugins: {
                           tooltip: {
                             callbacks: {
-                              label: (ctx) => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+                              label: (ctx) => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
                             }
                           },
                           legend: {
@@ -575,7 +576,7 @@ export default function RaceAnalysis() {
                           y: {
                             stacked: true,
                             ticks: {
-                              callback: (value) => `$${value.toLocaleString()}`
+                              callback: (value) => `$${value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
                             }
                           }
                         }
@@ -593,7 +594,7 @@ export default function RaceAnalysis() {
                             <p className={`text-sm font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{donor.entity__first_name} {donor.entity__last_name}</p>
                             <p className="text-xs text-gray-500">{donor.entity__occupation || "Individual"}</p>
                           </div>
-                          <span className="text-sm font-mono font-bold text-[#7667C1]">${Math.abs(parseFloat(donor.total_contributed)).toLocaleString()}</span>
+                          <span className="text-sm font-mono font-bold text-[#7667C1]">${formatNumber(donor.total_contributed)}</span>
                         </div>
                       ))}
                    </div>
@@ -651,7 +652,7 @@ export default function RaceAnalysis() {
                             </span>
                           </td>
                           <td className={`px-6 py-4 text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            ${Math.abs(parseFloat(c.total_ie || 0)).toLocaleString()}
+                            ${formatNumber(c.total_ie)}
                           </td>
                           <td className="px-6 py-4">
                             {(() => {
@@ -660,7 +661,7 @@ export default function RaceAnalysis() {
                               const netIE = ieFor - ieAgainst;
                               return (
                                 <span className={`text-sm font-bold ${netIE >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                  {netIE >= 0 ? '+' : ''}${Math.abs(netIE).toLocaleString()}
+                                  {netIE >= 0 ? '+' : '-'}${formatNumber(netIE)}
                                 </span>
                               );
                             })()}

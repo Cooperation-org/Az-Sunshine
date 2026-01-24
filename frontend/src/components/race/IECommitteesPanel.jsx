@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Building2, ExternalLink } from 'lucide-react';
 import { useDarkMode } from '../../context/DarkModeContext';
+import { formatNumber } from '../../utils/currencyFormat';
 
 // Helper to generate external search URLs
 const getExternalLinks = (committeeName) => {
@@ -36,7 +37,7 @@ export default function IECommitteesPanel({ committees = [], title = "Super PAC 
           </h3>
         </div>
         <span className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          ${Math.abs(totalSpending).toLocaleString()}
+          ${formatNumber(totalSpending)}
         </span>
       </div>
 
@@ -44,10 +45,10 @@ export default function IECommitteesPanel({ committees = [], title = "Super PAC 
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-2">
           <span className="text-green-500 font-medium">
-            For: ${Math.abs(totalFor).toLocaleString()}
+            For: ${formatNumber(totalFor)}
           </span>
           <span className="text-red-500 font-medium">
-            Against: ${Math.abs(totalAgainst).toLocaleString()}
+            Against: ${formatNumber(totalAgainst)}
           </span>
         </div>
         {totalSpending > 0 && (
@@ -117,7 +118,7 @@ export default function IECommitteesPanel({ committees = [], title = "Super PAC 
                   })()}
                 </div>
                 <span className={`font-bold flex-shrink-0 ml-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  ${Math.abs(total).toLocaleString()}
+                  ${formatNumber(total)}
                 </span>
               </div>
 
@@ -143,11 +144,11 @@ export default function IECommitteesPanel({ committees = [], title = "Super PAC 
               <div className="flex justify-between text-xs">
                 <div className="flex items-center gap-1 text-green-500">
                   <TrendingUp size={12} />
-                  <span>${Math.abs(ieFor).toLocaleString()}</span>
+                  <span>${formatNumber(ieFor)}</span>
                 </div>
                 <div className="flex items-center gap-1 text-red-500">
                   <TrendingDown size={12} />
-                  <span>${Math.abs(ieAgainst).toLocaleString()}</span>
+                  <span>${formatNumber(ieAgainst)}</span>
                 </div>
               </div>
             </div>

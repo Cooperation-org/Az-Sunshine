@@ -1,6 +1,7 @@
 import React from 'react';
 import { DollarSign, Users, ExternalLink } from 'lucide-react';
 import { useDarkMode } from '../../context/DarkModeContext';
+import { formatNumber } from '../../utils/currencyFormat';
 
 export default function RaceSummaryPanel({ raceData, topDonors }) {
   const { darkMode } = useDarkMode();
@@ -42,7 +43,7 @@ export default function RaceSummaryPanel({ raceData, topDonors }) {
             <p className={`text-2xl font-bold ${
               darkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              ${totalIE.toLocaleString()}
+              ${formatNumber(totalIE)}
             </p>
           </div>
         </div>
@@ -83,7 +84,7 @@ export default function RaceSummaryPanel({ raceData, topDonors }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-mono font-bold text-[#7163BA]">
-                    ${Math.abs(parseFloat(donor.total_contributed || 0)).toLocaleString()}
+                    ${formatNumber(donor.total_contributed)}
                   </span>
                   <ExternalLink size={14} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>

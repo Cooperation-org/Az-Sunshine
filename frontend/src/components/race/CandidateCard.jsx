@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { TrendingUp, TrendingDown, DollarSign, ExternalLink } from 'lucide-react';
 import { useDarkMode } from '../../context/DarkModeContext';
 import { getPartyInfo } from '../../utils/partyUtils';
+import { formatNumber } from '../../utils/currencyFormat';
 
 export default function CandidateCard({ candidate }) {
   const { darkMode } = useDarkMode();
@@ -50,7 +51,7 @@ export default function CandidateCard({ candidate }) {
             <span className="text-xs font-medium text-gray-500">IE For</span>
           </div>
           <span className="text-sm font-bold text-green-500">
-            ${ieFor.toLocaleString()}
+            ${formatNumber(ieFor)}
           </span>
         </div>
 
@@ -61,7 +62,7 @@ export default function CandidateCard({ candidate }) {
             <span className="text-xs font-medium text-gray-500">IE Against</span>
           </div>
           <span className="text-sm font-bold text-red-500">
-            ${ieAgainst.toLocaleString()}
+            ${formatNumber(ieAgainst)}
           </span>
         </div>
 
@@ -73,7 +74,7 @@ export default function CandidateCard({ candidate }) {
               <span className="text-xs font-medium text-gray-500">Net Benefit</span>
             </div>
             <span className={`text-lg font-bold ${netBenefit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {netBenefit >= 0 ? '+' : ''}${netBenefit.toLocaleString()}
+              {netBenefit >= 0 ? '+' : '-'}${formatNumber(netBenefit)}
             </span>
           </div>
         </div>
